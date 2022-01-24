@@ -16,4 +16,7 @@ body {
   .ms-3 {
     width: 75%;
   }
+  #highlighted {
+    margin-top: 40px;
+  }
 }
