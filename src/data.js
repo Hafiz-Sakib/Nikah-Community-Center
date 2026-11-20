@@ -42,7 +42,7 @@ export const packages = [
 ]
 
 export const addons = [
-  { id: 'catering', label: 'Catering (per guest)', price: 650, perGuest: true, hint: 'Full buffet menu' },
+  { id: 'catering', label: 'Hall catering (per guest, from)', price: 450, perGuest: true, hint: 'Choose a food package while booking — see the Food page' },
   { id: 'stage', label: 'Stage & floral decoration', price: 18000, hint: 'Themed stage, entrance, seating' },
   { id: 'sound', label: 'Sound, lights & projector', price: 9000, hint: 'Mic, DJ console, LED wall' },
   { id: 'photo', label: 'Photo & video coverage', price: 22000, hint: 'Photographer + cinematographer' },
@@ -66,12 +66,12 @@ export const stats = [
 ]
 
 export const gallery = [
-  { src: 'hero-1.webp', alt: 'Couple walking through a flower shower', span: 'md:col-span-2 md:row-span-2' },
-  { src: 'ceremony.webp', alt: 'Family wedding ceremony', span: '' },
-  { src: 'hero-4.webp', alt: 'Catering and dining setup', span: '' },
-  { src: 'crowd.webp', alt: 'Guests celebrating', span: 'md:col-span-2' },
-  { src: 'hero-2.webp', alt: 'Main hall decoration', span: '' },
-  { src: 'hero-3.webp', alt: 'Reception stage', span: '' },
+  { src: 'hero-1.webp', alt: 'Bengali bride and groom entering the hall', span: 'md:col-span-2 md:row-span-2' },
+  { src: 'ceremony.webp', alt: 'Nikah ceremony with family', span: '' },
+  { src: 'hero-4.webp', alt: 'Wedding feast set up in the hall', span: '' },
+  { src: 'crowd.webp', alt: 'Guests at a reception', span: 'md:col-span-2' },
+  { src: 'hero-2.webp', alt: 'Convention hall decorated for a wedding', span: '' },
+  { src: 'hero-3.webp', alt: 'Holud stage and decoration', span: '' },
 ]
 
 export const reviews = [
@@ -125,22 +125,22 @@ export const values = [
 ]
 
 export const nav = [
-  { to: '/', label: 'Home' },
-  { to: '/about', label: 'About & Contact' },
-  { to: '/facilities', label: 'Facilities' },
-  { to: '/events', label: 'Events' },
-  { to: '/food', label: 'Food' },
-  { to: '/gallery', label: 'Gallery' },
-  { to: '/packages', label: 'Packages' },
+  { to: '/', label: 'Home', icon: 'home', hint: 'Start here' },
+  { to: '/facilities', label: 'Facilities', icon: 'building', hint: 'Hall, parking, power & rooms' },
+  { to: '/events', label: 'Events', icon: 'sparkles', hint: 'Weddings, holud, milad & more' },
+  { to: '/food', label: 'Food', icon: 'utensils', hint: 'Bengali wedding menus' },
+  { to: '/gallery', label: 'Gallery', icon: 'image', hint: 'Moments we have hosted' },
+  { to: '/packages', label: 'Packages', icon: 'gift', hint: 'Pricing & what is included' },
+  { to: '/about', label: 'About Us', icon: 'users', hint: 'Our story, contact & FAQ' },
 ]
 
 /* ---------- Food menu ----------
    `by` = which packages serve the dish, and the variation each one gets.
    Photos: public/images/food-<id>.webp (a gradient + emoji tile shows until you add them). */
 export const foodPkgs = [
-  { id: 'wedding-basic', short: 'Basic', name: 'Wedding Basic' },
-  { id: 'wedding-plus', short: 'Plus', name: 'Wedding Plus' },
-  { id: 'corporate', short: 'Corporate', name: 'Corporate Event' },
+  { id: 'wedding-basic', short: 'Basic', name: 'Wedding Basic', price: 450, text: 'Simple, hearty wedding menu' },
+  { id: 'wedding-plus', short: 'Plus', name: 'Wedding Plus', price: 650, text: 'Full premium wedding feast' },
+  { id: 'corporate', short: 'Corporate', name: 'Corporate Event', price: 550, text: 'Buffet with tea & coffee' },
 ]
 export const foodCats = [
   { id: 'welcome', label: 'Welcome & starters', emoji: '🥤' },

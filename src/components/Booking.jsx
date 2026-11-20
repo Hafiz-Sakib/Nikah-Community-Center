@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { packages, addons, eventTypes, CONTACT } from '../data'
+import { packages, addons, eventTypes, CONTACT, foodPkgs, foodItems } from '../data'
 import { addBooking, useBookings, takenSlots, shiftFree, SHIFTS, quote, newId, money, fmtDate, toast } from '../lib/store'
 import Calendar from './Calendar'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -26,13 +26,14 @@ function Row({ k, v, strong }) {
   return <div className={`flex items-start justify-between gap-4 py-1.5 text-sm ${strong ? 'font-semibold text-fg' : 'text-slate-600'}`}><span>{k}</span><span className="text-right">{v}</span></div>
 }
 
-function Summary({ f, q, pkg, shift }) {
+function Summary({ f, q, pkg, shift, menu }) {
   return (
     <div className="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/70">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Booking summary</p>
       <Row k="Package" v={pkg.name} />
       <Row k="Event" v={f.eventType} />
       <Row k="Guests" v={f.guests} />
+      <Row k="Food" v={menu ? `Hall catering · ${menu.name}` : 'Own caterer'} />
       <Row k="Date" v={f.date ? fmtDate(f.date) : '—'} />
       <Row k="Shift" v={shift ? shift.label : '—'} />
       <div className="my-2 border-t border-dashed border-slate-300" />
@@ -72,6 +73,7 @@ function Success({ b, pkg, onNew, onManage }) {
         <Row k="Event" v={`${b.eventType} · ${pkg.name}`} />
         <Row k="Date" v={fmtDate(b.date)} />
         <Row k="Time" v={`${s.label} (${s.time})`} />
+        <Row k="Food" v={b.catering === 'hall' ? `Hall catering · ${foodPkgs.find((m) => m.id === b.menu)?.name ?? ''}` : 'Own caterer'} />
         <Row k="Total" v={money(b.total)} />
         <Row k="Advance due" v={money(b.advance)} strong />
       </div>
@@ -95,7 +97,7 @@ export default function Booking() {
   const [dir, setDir] = useState(1)
   const [tried, setTried] = useState(false)
   const [done, setDone] = useState(null)
-  const [f, setF] = useState({ packageId: 'wedding-plus', eventType: 'Wedding', guests: 200, date: '', shift: '', addons: [], name: '', phone: '', email: '', notes: '' })
+  const [f, setF] = useState({ packageId: 'wedding-plus', eventType: 'Wedding', guests: 200, date: '', shift: '', addons: [], catering: 'own', menu: 'wedding-plus', name: '', phone: '', email: '', notes: '' })
   const set = (p) => setF((x) => ({ ...x, ...p }))
 
   useEffect(() => {
@@ -109,7 +111,8 @@ export default function Booking() {
   const pkg = packages.find((p) => p.id === f.packageId)
   const shift = SHIFTS.find((s) => s.id === f.shift)
   const taken = useMemo(() => (f.date ? takenSlots(f.date, bookings) : null), [f.date, bookings])
-  const q = quote({ pkg, shift: f.shift, date: f.date, guests: f.guests, addons: f.addons, addonDefs: addons })
+  const menu = f.catering === 'hall' ? foodPkgs.find((m) => m.id === f.menu) : null
+  const q = quote({ pkg, shift: f.shift, date: f.date, guests: f.guests, addons: f.addons, addonDefs: addons, food: menu })
   const cap = Math.min(600, pkg.cap)
   useEffect(() => { if (f.guests > cap) set({ guests: cap }) }, [cap]) // eslint-disable-line
   useEffect(() => { if (f.date && f.shift && taken && !shiftFree(f.shift, taken)) set({ shift: '' }) }, [taken]) // eslint-disable-line
@@ -170,11 +173,11 @@ export default function Booking() {
                         </div>
                         <div>
                           <p className="mb-2 text-sm font-medium text-fg">Package</p>
-                          <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="grid gap-3 sm:grid-cols-3">
                             {packages.map((p) => (
                               <button key={p.id} type="button" onClick={() => set({ packageId: p.id })} aria-pressed={f.packageId === p.id}
                                 className={`relative rounded-2xl p-4 text-left ring-1 transition ${f.packageId === p.id ? 'bg-brand-soft ring-2 ring-brand' : 'bg-surface ring-slate-200 hover:ring-brand/40'}`}>
-                                <span className="flex items-center justify-between"><b className="text-fg">{p.name}</b>{p.popular && <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">Popular</span>}</span>
+                                <span className="flex flex-wrap items-center justify-between gap-1"><b className="text-fg">{p.name}</b>{p.popular && <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">Popular</span>}</span>
                                 <span className="mt-1 block text-sm text-brand-ink">{money(p.price)} <span className="text-slate-400">/ shift</span></span>
                                 <span className="mt-1 block text-xs text-slate-500">Up to {p.cap} guests</span>
                               </button>
@@ -219,9 +222,47 @@ export default function Booking() {
                     {step === 2 && (
                       <div className="space-y-6">
                         <div>
+                          <p className="mb-2 text-sm font-medium text-fg">Food & catering</p>
+                          <div className="grid gap-2.5 sm:grid-cols-2">
+                            {[['own', 'Own caterer', 'Bring your own caterer (tell us in advance)'], ['hall', 'Convention hall catering', 'Our in-house kitchen and serving staff']].map(([id, label, hint]) => {
+                              const on = f.catering === id
+                              return (
+                                <button key={id} type="button" aria-pressed={on} onClick={() => set({ catering: id, ...(id === 'hall' && f.catering !== 'hall' ? { menu: f.packageId } : {}) })}
+                                  className={`rounded-2xl p-4 text-left ring-1 transition ${on ? 'bg-brand-soft ring-2 ring-brand' : 'bg-surface ring-slate-200 hover:ring-brand/40'}`}>
+                                  <b className="block text-sm text-fg">{label}</b><span className="text-xs text-slate-600">{hint}</span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                          <AnimatePresence initial={false}>
+                            {f.catering === 'hall' && (
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                                <p className="mb-2 mt-5 text-sm font-medium text-fg">Choose a food package</p>
+                                <div className="grid gap-2.5 sm:grid-cols-3">
+                                  {foodPkgs.map((m) => {
+                                    const on = f.menu === m.id
+                                    const dishes = foodItems.filter((i) => i.by[m.id])
+                                    return (
+                                      <button key={m.id} type="button" aria-pressed={on} onClick={() => set({ menu: m.id })}
+                                        className={`flex flex-col rounded-2xl p-3.5 text-left ring-1 transition ${on ? 'bg-brand-soft ring-2 ring-brand' : 'bg-surface ring-slate-200 hover:ring-brand/40'}`}>
+                                        <b className="text-sm text-fg">{m.name} menu</b>
+                                        <span className="text-xs text-slate-600">{m.text}</span>
+                                        <span className="mt-1 text-sm font-semibold text-brand-ink">{money(m.price)} <span className="text-xs font-normal text-slate-600">/ guest</span></span>
+                                        <span className="mt-1 text-xs text-slate-600">{dishes.length} dishes · {money(m.price * f.guests)} for {f.guests}</span>
+                                        <span className="mt-2 text-xs leading-snug text-slate-600">{dishes.slice(0, 4).map((d) => d.name).join(', ')}…</span>
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                                <a href="#/food" target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-semibold text-brand hover:underline">See full menu with photos →</a>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                        <div>
                           <p className="mb-2 text-sm font-medium text-fg">Optional extras</p>
                           <div className="grid gap-2.5 sm:grid-cols-2">
-                            {addons.map((a) => {
+                            {addons.filter((a) => a.id !== 'catering').map((a) => {
                               const on = f.addons.includes(a.id)
                               return (
                                 <button key={a.id} type="button" aria-pressed={on} onClick={() => set({ addons: on ? f.addons.filter((x) => x !== a.id) : [...f.addons, a.id] })}
@@ -247,7 +288,7 @@ export default function Booking() {
                         <div className="rounded-2xl bg-slate-50 p-4 text-sm">
                           <Row k="Name" v={f.name} /><Row k="Mobile" v={f.phone} />{f.email && <Row k="Email" v={f.email} />}{f.notes && <Row k="Notes" v={<span className="max-w-[16rem] break-words">{f.notes}</span>} />}
                         </div>
-                        <div className="lg:hidden"><Summary f={f} q={q} pkg={pkg} shift={shift} /></div>
+                        <div className="lg:hidden"><Summary f={f} q={q} pkg={pkg} shift={shift} menu={menu} /></div>
                         <p className="text-xs leading-relaxed text-slate-500">By confirming you agree to our cancellation policy: full advance refund if cancelled 14+ days before the event. No payment is taken online — our team will contact you for the 30% advance.</p>
                       </div>
                     )}
@@ -266,7 +307,7 @@ export default function Booking() {
             )}
           </div>
 
-          <aside className="hidden lg:block"><div className="sticky top-24"><Summary f={f} q={q} pkg={pkg} shift={shift} />
+          <aside className="hidden lg:block"><div className="sticky top-24"><Summary f={f} q={q} pkg={pkg} shift={shift} menu={menu} />
             <p className="mt-3 flex items-center gap-2 px-2 text-xs text-slate-500"><CalendarIcon width={16} height={16} />Dates are held for 24 hours until the advance is received.</p></div></aside>
         </div>
       </div>

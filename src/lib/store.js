@@ -61,14 +61,15 @@ export const dayStatus = (iso, bookings) => {
 export const shiftFree = (shift, t) => (shift === 'full' ? !t.morning && !t.evening : !t[shift])
 
 /* ---------- pricing ---------- */
-export function quote({ pkg, shift, date, guests, addons = [], addonDefs }) {
+export function quote({ pkg, shift, date, guests, addons = [], addonDefs, food = null }) {
   const mult = SHIFTS.find((s) => s.id === shift)?.mult ?? 1
   const base = pkg.price * mult
   const weekend = date ? [5, 6].includes(fromISO(date).getDay()) : false // Fri & Sat
   const weekendFee = weekend ? Math.round(base * 0.15) : 0
-  const lines = addons.map((id) => {
+  const lines = food ? [{ id: 'catering', label: `Hall catering · ${food.name} menu`, amount: food.price * guests, note: `${guests} guests × ${food.price}` }] : []
+  addons.forEach((id) => {
     const a = addonDefs.find((x) => x.id === id)
-    return { id, label: a.label, amount: a.perGuest ? a.price * guests : a.price, note: a.perGuest ? `${guests} guests` : '' }
+    lines.push({ id, label: a.label, amount: a.perGuest ? a.price * guests : a.price, note: a.perGuest ? `${guests} guests` : '' })
   })
   const total = base + weekendFee + lines.reduce((s, l) => s + l.amount, 0)
   return { base, weekend, weekendFee, lines, total, advance: Math.round(total * 0.3) }

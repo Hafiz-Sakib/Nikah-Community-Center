@@ -21,7 +21,7 @@ export default function About({ scrollTo }) {
   }, [scrollTo])
   return (
     <>
-      <PageHero title="About & Contact" text="A warm, well-run community center built around your celebrations — and the easiest way to reach us." image="hero-3.webp" />
+      <PageHero title="About Us" text="A warm, well-run community center built around your celebrations — and the easiest way to reach us." image="hero-3.webp" />
       <div className="container-x -mb-6 mt-8 flex justify-center gap-2">
         <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="rounded-full bg-brand-soft px-5 py-2 text-sm font-medium text-brand-ink transition active:scale-95">About us</button>
         <button onClick={() => jump('contact')} className="rounded-full bg-slate-100 px-5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 active:scale-95">Contact us</button>

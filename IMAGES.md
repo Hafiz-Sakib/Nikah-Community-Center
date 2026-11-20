@@ -5,11 +5,11 @@ Replace a file with a new image **using the same file name** and the site update
 ## Existing images -> Bengali wedding pictures
 | File | Used in | What to put |
 |---|---|---|
-| hero-1.webp | Home hero slide 1, Gallery (large) | Bengali bride & groom walking in, flower shower |
-| hero-2.webp | Home hero, Gallery, Packages banner | Decorated wedding stage (gate / floral backdrop) |
-| hero-3.webp | Home hero, About banner | Holud ceremony (yellow decor, family) |
-| hero-4.webp | Home hero, Facilities and Food banner | Bengali wedding feast / guests dining |
-| hero-5.webp | Gallery, Birthday event | Gaye holud / mehendi or sweets |
+| hero-1.webp | Home carousel slide 1, Gallery (large) | Bengali bride & groom entering the hall (flower shower) |
+| hero-2.webp | Home carousel, Gallery, Packages banner | Convention hall decorated for a wedding: stage, floral gate |
+| hero-3.webp | Home carousel, About banner | Wide shot of a spacious AC convention hall, round tables set |
+| hero-4.webp | Home carousel, Facilities and Food banner | Bengali wedding feast: buffet / guests dining |
+| hero-5.webp | Gallery, Birthday event | Holud / mehendi decor or a hall entrance at night |
 | hero-6.webp | Weddings event, Events banner | Bengali bride in red saree, close-up |
 | ceremony.webp | Home + About (ceremony block), Receptions | Nikah / akd ceremony with family |
 | crowd.webp | Gallery, Corporate event, FAQ | Guests celebrating at a reception |

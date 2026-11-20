@@ -6,7 +6,6 @@ import Ceremony from '../components/Ceremony'
 import SectionHead from '../components/SectionHead'
 import { StatsBand, FacilitiesGrid } from '../components/Facilities'
 import Events from '../components/Events'
-import FoodMenu from '../components/Food'
 import { PackageGrid } from '../components/Packages'
 import Gallery from '../components/Gallery'
 import Reviews from '../components/Reviews'
@@ -32,11 +31,6 @@ export default function Home() {
         <SectionHead eyebrow="Events" title="Celebrate every occasion" text="From intimate milad to grand receptions — pick an event and we’ll set the stage." />
         <div className="mt-12"><Events limit={3} /></div>
         <More to="/events">Explore all events</More>
-      </div></section>
-      <section className="py-16 sm:py-24"><div className="container-wide">
-        <SectionHead eyebrow="Food" title="A taste of Bengali weddings" text="Polao, rezala, mezbani beef, mishti doi and more — the menu changes with your package." />
-        <div className="mt-12"><FoodMenu limit={8} /></div>
-        <More to="/food">See the full menu</More>
       </div></section>
       <section className="py-16 sm:py-24"><div className="container-wide">
         <SectionHead eyebrow="Packages" title="Simple, honest pricing" text="Choose a package, add extras, and see the full price before you confirm." />
