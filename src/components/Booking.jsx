@@ -1,0 +1,268 @@
+import { useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { packages, addons, eventTypes, CONTACT } from '../data'
+import { addBooking, useBookings, takenSlots, shiftFree, SHIFTS, quote, newId, money, fmtDate, toast } from '../lib/store'
+import Calendar from './Calendar'
+import Reveal from './Reveal'
+import { CalendarIcon, CheckIcon, MinusIcon, PlusIcon, ArrowRight, ChevronLeft, DownloadIcon, ChatIcon } from './Icons'
+
+const STEPS = ['Event', 'Date & shift', 'Details', 'Confirm']
+const phoneOk = (p) => /^(?:\+?88)?01[3-9]\d{8}$/.test(p.replace(/[\s-]/g, ''))
+const emailOk = (e) => !e || /^\S+@\S+\.\S+$/.test(e)
+const input = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15'
+
+function Field({ label, error, children }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium text-ink">{label}</span>
+      {children}
+      <AnimatePresence>{error && <motion.span initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-1 block text-xs text-red-500">{error}</motion.span>}</AnimatePresence>
+    </label>
+  )
+}
+
+function Row({ k, v, strong }) {
+  return <div className={`flex items-start justify-between gap-4 py-1.5 text-sm ${strong ? 'font-semibold text-ink' : 'text-slate-600'}`}><span>{k}</span><span className="text-right">{v}</span></div>
+}
+
+function Summary({ f, q, pkg, shift }) {
+  return (
+    <div className="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200/70">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Booking summary</p>
+      <Row k="Package" v={pkg.name} />
+      <Row k="Event" v={f.eventType} />
+      <Row k="Guests" v={f.guests} />
+      <Row k="Date" v={f.date ? fmtDate(f.date) : '—'} />
+      <Row k="Shift" v={shift ? shift.label : '—'} />
+      <div className="my-2 border-t border-dashed border-slate-300" />
+      <Row k={`Hall (${shift?.label ?? 'shift'})`} v={money(q.base)} />
+      {q.weekend && <Row k="Weekend surcharge 15%" v={money(q.weekendFee)} />}
+      {q.lines.map((l) => <Row key={l.id} k={l.label} v={money(l.amount)} />)}
+      <div className="my-2 border-t border-slate-300" />
+      <Row k="Total" v={money(q.total)} strong />
+      <Row k="Advance (30%)" v={<span className="text-brand">{money(q.advance)}</span>} strong />
+    </div>
+  )
+}
+
+function ics(b, pkg) {
+  const s = SHIFTS.find((x) => x.id === b.shift)
+  const t = { morning: ['100000', '150000'], evening: ['170000', '223000'], full: ['100000', '223000'] }[b.shift]
+  const d = b.date.replace(/-/g, '')
+  const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Nikah Community Center//EN', 'BEGIN:VEVENT', `UID:${b.id}@ncc`, `DTSTAMP:${d}T000000`,
+    `DTSTART:${d}T${t[0]}`, `DTEND:${d}T${t[1]}`, `SUMMARY:${b.eventType} at Nikah Community Center`, `LOCATION:${CONTACT.address}`,
+    `DESCRIPTION:Booking ${b.id} - ${pkg.name} - ${s.label}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n')
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(new Blob([body], { type: 'text/calendar' })); a.download = `${b.id}.ics`; a.click()
+}
+
+function Success({ b, pkg, onNew, onManage }) {
+  const s = SHIFTS.find((x) => x.id === b.shift)
+  const msg = encodeURIComponent(`Hello! I booked ${b.eventType} on ${fmtDate(b.date)} (${s.label}). Booking ID: ${b.id}. Name: ${b.name}.`)
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="mx-auto max-w-lg text-center">
+      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><motion.path d="m5 12 5 5 9-10" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.25, duration: 0.5 }} /></svg>
+      </motion.div>
+      <h3 className="mt-5 text-2xl font-semibold text-ink">Request received!</h3>
+      <p className="mt-2 text-sm text-slate-500">Your date is held. Our team will call <b>{b.phone}</b> to confirm and collect the advance.</p>
+      <div className="mt-6 rounded-3xl bg-slate-50 p-5 text-left ring-1 ring-slate-200/70">
+        <div className="mb-2 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Booking ID</span><span className="rounded-full bg-brand-soft px-3 py-1 font-mono text-sm font-semibold text-brand-dark">{b.id}</span></div>
+        <Row k="Event" v={`${b.eventType} · ${pkg.name}`} />
+        <Row k="Date" v={fmtDate(b.date)} />
+        <Row k="Time" v={`${s.label} (${s.time})`} />
+        <Row k="Total" v={money(b.total)} />
+        <Row k="Advance due" v={money(b.advance)} strong />
+      </div>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <button onClick={() => ics(b, pkg)} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-ink transition hover:bg-slate-200 active:scale-95"><DownloadIcon width={18} height={18} />Add to calendar</button>
+        <a href={`https://wa.me/${CONTACT.whatsapp}?text=${msg}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 active:scale-95"><ChatIcon width={18} height={18} />WhatsApp us</a>
+      </div>
+      <div className="mt-4 flex justify-center gap-5 text-sm font-medium text-brand">
+        <button onClick={onManage} className="hover:underline">My bookings</button><button onClick={onNew} className="hover:underline">Book another date</button>
+      </div>
+    </motion.div>
+  )
+}
+
+export default function Booking({ prefill, onManage }) {
+  const bookings = useBookings()
+  const [step, setStep] = useState(0)
+  const [dir, setDir] = useState(1)
+  const [tried, setTried] = useState(false)
+  const [done, setDone] = useState(null)
+  const [f, setF] = useState({ packageId: 'wedding-plus', eventType: 'Wedding', guests: 200, date: '', shift: '', addons: [], name: '', phone: '', email: '', notes: '' })
+  const set = (p) => setF((x) => ({ ...x, ...p }))
+
+  useEffect(() => { if (prefill) { setDone(null); setStep(prefill.date ? 1 : 0); setF((x) => ({ ...x, ...prefill.data })) } }, [prefill])
+
+  const pkg = packages.find((p) => p.id === f.packageId)
+  const shift = SHIFTS.find((s) => s.id === f.shift)
+  const taken = useMemo(() => (f.date ? takenSlots(f.date, bookings) : null), [f.date, bookings])
+  const q = quote({ pkg, shift: f.shift, date: f.date, guests: f.guests, addons: f.addons, addonDefs: addons })
+  const cap = Math.min(600, pkg.cap)
+  useEffect(() => { if (f.guests > cap) set({ guests: cap }) }, [cap]) // eslint-disable-line
+  useEffect(() => { if (f.date && f.shift && taken && !shiftFree(f.shift, taken)) set({ shift: '' }) }, [taken]) // eslint-disable-line
+
+  const errs = { shift: tried && step === 1 && (!f.date ? 'Pick a date' : !f.shift ? 'Pick a shift' : ''), name: tried && step === 2 && f.name.trim().length < 2 ? 'Enter your name' : '', phone: tried && step === 2 && !phoneOk(f.phone) ? 'Enter a valid mobile number, e.g. 01712345678' : '', email: tried && step === 2 && !emailOk(f.email) ? 'Enter a valid email' : '' }
+  const valid = [true, f.date && f.shift, f.name.trim().length >= 2 && phoneOk(f.phone) && emailOk(f.email), true][step]
+
+  const go = (d) => {
+    if (d > 0 && !valid) { setTried(true); toast('Please complete the highlighted fields', 'error'); return }
+    setTried(false); setDir(d); setStep((s) => s + d)
+  }
+  const confirm = () => {
+    const fresh = takenSlots(f.date, bookings)
+    if (!shiftFree(f.shift, fresh)) { toast('Sorry, that shift was just taken', 'error'); setStep(1); return }
+    const b = { id: newId(), createdAt: new Date().toISOString(), status: 'pending', ...f, name: f.name.trim(), phone: f.phone.replace(/[\s-]/g, ''), total: q.total, advance: q.advance }
+    addBooking(b); setDone(b); toast('Booking request submitted')
+    document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })
+  }
+  const reset = () => { setDone(null); setStep(0); setF((x) => ({ ...x, date: '', shift: '', addons: [], notes: '' })) }
+
+  const slide = { enter: (d) => ({ opacity: 0, x: d * 40 }), center: { opacity: 1, x: 0 }, exit: (d) => ({ opacity: 0, x: d * -40 }) }
+
+  return (
+    <section id="booking" className="relative py-16 sm:py-24">
+      <div className="container-x">
+        <Reveal><h2 className="section-title">Book your date</h2></Reveal>
+        <Reveal delay={0.08}><p className="mx-auto mt-3 max-w-xl text-center text-slate-500">Check live availability, pick your shift and reserve in under two minutes.</p></Reveal>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_340px]">
+          <div className="rounded-[2rem] bg-white p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
+            {done ? <Success b={done} pkg={packages.find((p) => p.id === done.packageId)} onNew={reset} onManage={onManage} /> : (
+              <>
+                <ol className="mb-8 flex items-center" aria-label="Progress">
+                  {STEPS.map((s, i) => (
+                    <li key={s} className="flex flex-1 items-center last:flex-none">
+                      <div className="flex items-center gap-2">
+                        <motion.span animate={{ backgroundColor: i <= step ? '#3f87f5' : '#e2e8f0', color: i <= step ? '#fff' : '#64748b' }} className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold">
+                          {i < step ? <CheckIcon width={16} height={16} /> : i + 1}
+                        </motion.span>
+                        <span className={`hidden text-sm font-medium sm:block ${i === step ? 'text-ink' : 'text-slate-400'}`}>{s}</span>
+                      </div>
+                      {i < STEPS.length - 1 && <div className="mx-2 h-0.5 flex-1 overflow-hidden rounded-full bg-slate-200 sm:mx-3"><motion.div className="h-full bg-brand" animate={{ width: i < step ? '100%' : '0%' }} transition={{ duration: 0.4 }} /></div>}
+                    </li>
+                  ))}
+                </ol>
+
+                <AnimatePresence mode="wait" custom={dir} initial={false}>
+                  <motion.div key={step} custom={dir} variants={slide} initial="enter" animate="center" exit="exit" transition={{ duration: 0.22 }}>
+                    {step === 0 && (
+                      <div className="space-y-6">
+                        <div>
+                          <p className="mb-2 text-sm font-medium text-ink">Event type</p>
+                          <div className="flex flex-wrap gap-2">
+                            {eventTypes.map((t) => (
+                              <button key={t} type="button" onClick={() => set({ eventType: t })} className={`relative rounded-full px-4 py-2 text-sm font-medium transition ${f.eventType === t ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                                {f.eventType === t && <motion.span layoutId="evt" className="absolute inset-0 rounded-full bg-brand" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />}
+                                <span className="relative">{t}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="mb-2 text-sm font-medium text-ink">Package</p>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {packages.map((p) => (
+                              <button key={p.id} type="button" onClick={() => set({ packageId: p.id })} aria-pressed={f.packageId === p.id}
+                                className={`relative rounded-2xl p-4 text-left ring-1 transition ${f.packageId === p.id ? 'bg-brand-soft ring-2 ring-brand' : 'bg-white ring-slate-200 hover:ring-brand/40'}`}>
+                                <span className="flex items-center justify-between"><b className="text-ink">{p.name}</b>{p.popular && <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">Popular</span>}</span>
+                                <span className="mt-1 block text-sm text-brand-dark">{money(p.price)} <span className="text-slate-400">/ shift</span></span>
+                                <span className="mt-1 block text-xs text-slate-500">Up to {p.cap} guests</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
+                          <div><p className="text-sm font-medium text-ink">Expected guests</p><p className="text-xs text-slate-500">Max {cap} for this package</p></div>
+                          <div className="flex items-center gap-3">
+                            <button type="button" aria-label="Fewer guests" onClick={() => set({ guests: Math.max(20, f.guests - 10) })} className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200 active:scale-90"><MinusIcon width={18} height={18} /></button>
+                            <motion.span key={f.guests} initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-12 text-center text-lg font-semibold tabular-nums text-ink">{f.guests}</motion.span>
+                            <button type="button" aria-label="More guests" onClick={() => set({ guests: Math.min(cap, f.guests + 10) })} className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200 active:scale-90"><PlusIcon width={18} height={18} /></button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {step === 1 && (
+                      <div className="grid gap-8 md:grid-cols-2">
+                        <Calendar value={f.date} onChange={(d) => set({ date: d })} bookings={bookings} />
+                        <div>
+                          <p className="mb-2 text-sm font-medium text-ink">{f.date ? fmtDate(f.date, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Select a date first'}</p>
+                          <div className="space-y-2.5">
+                            {SHIFTS.map((s) => {
+                              const free = taken ? shiftFree(s.id, taken) : false
+                              const on = f.shift === s.id
+                              return (
+                                <button key={s.id} type="button" disabled={!f.date || !free} onClick={() => set({ shift: s.id })} aria-pressed={on}
+                                  className={`relative flex w-full items-center justify-between rounded-2xl p-4 text-left ring-1 transition ${on ? 'bg-brand-soft ring-2 ring-brand' : 'bg-white ring-slate-200 enabled:hover:ring-brand/40'} disabled:cursor-not-allowed disabled:opacity-50`}>
+                                  <span><b className="block text-ink">{s.label}</b><span className="text-xs text-slate-500">{s.time}</span></span>
+                                  <span className="text-right text-sm">{f.date && !free ? <span className="font-medium text-red-500">Booked</span> : <span className="font-semibold text-brand-dark">{money(pkg.price * s.mult * (f.date && [5, 6].includes(new Date(f.date + 'T00:00').getDay()) ? 1.15 : 1))}</span>}</span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                          {errs.shift && <p className="mt-2 text-xs text-red-500">{errs.shift}</p>}
+                          {q.weekend && <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-700">Friday / Saturday: a 15% weekend surcharge is included in these prices.</p>}
+                        </div>
+                      </div>
+                    )}
+
+                    {step === 2 && (
+                      <div className="space-y-6">
+                        <div>
+                          <p className="mb-2 text-sm font-medium text-ink">Optional extras</p>
+                          <div className="grid gap-2.5 sm:grid-cols-2">
+                            {addons.map((a) => {
+                              const on = f.addons.includes(a.id)
+                              return (
+                                <button key={a.id} type="button" aria-pressed={on} onClick={() => set({ addons: on ? f.addons.filter((x) => x !== a.id) : [...f.addons, a.id] })}
+                                  className={`flex items-start gap-3 rounded-2xl p-3.5 text-left ring-1 transition ${on ? 'bg-brand-soft ring-2 ring-brand' : 'bg-white ring-slate-200 hover:ring-brand/40'}`}>
+                                  <motion.span animate={{ scale: on ? 1 : 0.9, backgroundColor: on ? '#3f87f5' : '#f1f5f9' }} className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white">{on && <CheckIcon width={14} height={14} />}</motion.span>
+                                  <span><b className="block text-sm text-ink">{a.label}</b><span className="text-xs text-slate-500">{a.hint}</span><span className="mt-0.5 block text-xs font-semibold text-brand-dark">{money(a.price)}{a.perGuest ? ' / guest' : ''}</span></span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Field label="Full name" error={errs.name}><input className={input} value={f.name} onChange={(e) => set({ name: e.target.value })} placeholder="Your name" autoComplete="name" /></Field>
+                          <Field label="Mobile number" error={errs.phone}><input className={input} value={f.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="01XXXXXXXXX" inputMode="tel" autoComplete="tel" /></Field>
+                          <div className="sm:col-span-2"><Field label="Email (optional)" error={errs.email}><input className={input} value={f.email} onChange={(e) => set({ email: e.target.value })} placeholder="you@example.com" inputMode="email" autoComplete="email" /></Field></div>
+                          <div className="sm:col-span-2"><Field label="Notes (optional)"><textarea className={input} rows={3} value={f.notes} onChange={(e) => set({ notes: e.target.value })} placeholder="Theme, special requests, setup timing…" /></Field></div>
+                        </div>
+                      </div>
+                    )}
+
+                    {step === 3 && (
+                      <div className="space-y-5">
+                        <div className="rounded-2xl bg-slate-50 p-4 text-sm">
+                          <Row k="Name" v={f.name} /><Row k="Mobile" v={f.phone} />{f.email && <Row k="Email" v={f.email} />}{f.notes && <Row k="Notes" v={<span className="max-w-[16rem] break-words">{f.notes}</span>} />}
+                        </div>
+                        <div className="lg:hidden"><Summary f={f} q={q} pkg={pkg} shift={shift} /></div>
+                        <p className="text-xs leading-relaxed text-slate-500">By confirming you agree to our cancellation policy: full advance refund if cancelled 14+ days before the event. No payment is taken online — our team will contact you for the 30% advance.</p>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                <div className="mt-8 flex items-center justify-between gap-3">
+                  <button type="button" onClick={() => go(-1)} disabled={step === 0} className="inline-flex items-center gap-1 rounded-full px-4 py-3 text-sm font-semibold text-slate-600 transition enabled:hover:bg-slate-100 disabled:invisible"><ChevronLeft width={18} height={18} />Back</button>
+                  <div className="flex items-center gap-4">
+                    <span className="hidden text-sm text-slate-500 sm:block">Total <b className="text-ink">{money(q.total)}</b></span>
+                    {step < 3 ? <button type="button" onClick={() => go(1)} className="btn-primary">Continue <ArrowRight /></button>
+                      : <button type="button" onClick={confirm} className="btn-primary !bg-emerald-500 !shadow-emerald-500/30 hover:!bg-emerald-600"><CheckIcon width={18} height={18} />Confirm booking</button>}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <aside className="hidden lg:block"><div className="sticky top-24"><Summary f={f} q={q} pkg={pkg} shift={shift} />
+            <p className="mt-3 flex items-center gap-2 px-2 text-xs text-slate-500"><CalendarIcon width={16} height={16} />Dates are held for 24 hours until the advance is received.</p></div></aside>
+        </div>
+      </div>
+    </section>
+  )
+}
