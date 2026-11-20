@@ -12,7 +12,7 @@
   --page: 255 255 255; --surface: 255 255 255; --fg: 11 13 23;
   --s50: 248 250 252; --s100: 241 245 249; --s200: 226 232 240; --s300: 203 213 225; --s400: 148 163 184;
   --s500: 100 116 139; --s600: 71 85 105; --s700: 51 65 85; --s800: 30 41 59; --s900: 15 23 42;
-  --brand-soft: 234 242 255; --brand-ink: 37 99 214;
+  --brand-soft: 234 242 255; --brand-ink: 37 99 214; --logo: 111 2 2;
   --shadow-dock: 0 10px 40px -8px rgba(15,23,42,.28), 0 2px 6px rgba(15,23,42,.08);
   --shadow-card: 0 1px 2px rgba(15,23,42,.04), 0 14px 40px -14px rgba(15,23,42,.14);
 }
@@ -22,7 +22,7 @@
   --page: 10 14 28; --surface: 18 25 46; --fg: 235 240 250;
   --s50: 14 20 38; --s100: 25 33 56; --s200: 38 48 74; --s300: 62 74 102; --s400: 124 138 166;
   --s500: 150 164 190; --s600: 178 190 212; --s700: 205 214 231; --s800: 226 232 244; --s900: 241 245 252;
-  --brand-soft: 25 43 78; --brand-ink: 138 184 255;
+  --brand-soft: 25 43 78; --brand-ink: 138 184 255; --logo: 244 176 176;
   --shadow-dock: 0 10px 40px -8px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06);
   --shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 18px 48px -16px rgba(0,0,0,.7);
 }
@@ -39,6 +39,8 @@
   .container-x { @apply mx-auto w-full max-w-6xl px-5 sm:px-8; }
   .container-wide { @apply mx-auto w-full max-w-7xl px-4 sm:px-6; }
   .section-title { @apply text-center text-2xl font-semibold tracking-tight text-fg sm:text-3xl md:text-4xl; }
+  .logo-mark { background-color: rgb(var(--logo)); -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
+  .logo-mark-light { background-color: rgb(254 205 211); }
   .btn-primary { @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:bg-brand-dark active:scale-95; }
 }
 

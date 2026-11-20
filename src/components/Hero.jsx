@@ -40,7 +40,7 @@ export default function Hero() {
           onDragEnd={(_, { offset, velocity }) => { if (offset.x < -70 || velocity.x < -450) go(1); else if (offset.x > 70 || velocity.x > 450) go(-1) }} />
 
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center">
-          <div className="container-x pb-24 md:pb-20">
+          <div className="container-x pb-20 md:pb-20">
             <AnimatePresence mode="wait">
               <motion.div key={i} className="max-w-2xl text-white" initial="hidden" animate="show" exit={{ opacity: 0, y: -10, transition: { duration: 0.2 } }}
                 variants={{ show: { transition: { staggerChildren: 0.08, delayChildren: 0.35 } } }}>
@@ -66,7 +66,7 @@ export default function Hero() {
         </div>
 
         {/* controls */}
-        <div className="absolute inset-x-0 bottom-[4.75rem] z-10 md:bottom-20">
+        <div className="absolute inset-x-0 bottom-8 z-10 md:bottom-20">
           <div className="container-x flex items-end justify-between gap-6">
             <div className="flex items-center gap-4 text-white">
               <div className="flex items-baseline gap-1 font-medium tabular-nums">

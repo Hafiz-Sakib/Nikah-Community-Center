@@ -15,6 +15,7 @@ export default {
         surface: v('surface'),
         fg: v('fg'),
         brand: { DEFAULT: '#3f87f5', dark: '#2563d6', soft: v('brand-soft'), ink: v('brand-ink') },
+        logo: v('logo'),
         ink: '#0b0d17',
       },
       keyframes: {

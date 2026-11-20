@@ -66,18 +66,23 @@ export const stats = [
 ]
 
 export const gallery = [
-  { src: 'hero-1.webp', alt: 'Bengali bride and groom entering the hall', span: 'md:col-span-2 md:row-span-2' },
-  { src: 'ceremony.webp', alt: 'Nikah ceremony with family', span: '' },
-  { src: 'hero-4.webp', alt: 'Wedding feast set up in the hall', span: '' },
-  { src: 'crowd.webp', alt: 'Guests at a reception', span: 'md:col-span-2' },
-  { src: 'hero-2.webp', alt: 'Convention hall decorated for a wedding', span: '' },
-  { src: 'hero-3.webp', alt: 'Holud stage and decoration', span: '' },
+  { src: 'g-bride-diya.webp', alt: 'Bride in a red saree with diya', span: 'md:col-span-2 md:row-span-2' },
+  { src: 'g-holud-girl.webp', alt: 'Holud morning with marigold garlands', span: '' },
+  { src: 'g-couple-stage.webp', alt: 'Bride and groom on a floral stage', span: '' },
+  { src: 'reception.webp', alt: 'Rose-covered entrance gate', span: '' },
+  { src: 'g-bride-white.webp', alt: 'Bride among candle-lit pillars', span: '' },
+  { src: 'g-hall.webp', alt: 'Our air-conditioned hall, set for an event', span: 'md:col-span-2' },
+  { src: 'g-holud-play.webp', alt: 'Holud celebration with family and friends', span: '' },
+  { src: 'party.webp', alt: 'Sunflower and rose engagement stage', span: '' },
+  { src: 'g-bride-lamps.webp', alt: 'Bride in a red lehenga among lamps', span: '' },
+  { src: 'corporate.webp', alt: 'Stage and screen set up for a corporate event', span: 'md:col-span-2' },
+  { src: 'g-veil.webp', alt: 'Bride in a long veil at sunset', span: '' },
 ]
 
 export const reviews = [
-  { name: 'Mr. Williamson', role: 'Wedding, Plus package', img: 'person-1.webp', stars: 5, text: 'Everything from the stage to the food was handled by one team. Booking online took five minutes and the advance was easy.' },
-  { name: 'John Smith', role: 'Corporate annual dinner', img: 'person-2.webp', stars: 4.5, text: 'Clean hall, proper sound setup and punctual staff. Our guests kept asking where we found the venue.' },
-  { name: 'Robert Henry', role: 'Reception, Basic package', img: 'person-3.webp', stars: 4, text: 'Fair pricing and no surprises on the day. Parking was a big help for our out-of-town guests.' },
+  { name: 'Tanvir Ahmed', role: 'Wedding, Plus package', stars: 5, text: 'Everything from the stage to the food was handled by one team. Booking online took five minutes and the advance was easy.' },
+  { name: 'Nusrat Jahan', role: 'Corporate annual dinner', stars: 4.5, text: 'Clean hall, proper sound setup and punctual staff. Our guests kept asking where we found the venue.' },
+  { name: 'Mahmudul Hasan', role: 'Reception, Basic package', stars: 4, text: 'Fair pricing and no surprises on the day. Parking was a big help for our out-of-town guests.' },
 ]
 
 export const faqs = [
@@ -103,10 +108,10 @@ export const compare = [
 export const events = [
   { slug: 'Wedding', icon: 'heart', image: 'hero-6.webp', title: 'Weddings', text: 'A complete setting for your biggest day: stage, bridal room, catering and a team that keeps the day on schedule.', pkg: 'wedding-plus', guests: '100–600 guests' },
   { slug: 'Holud', icon: 'sparkles', image: 'hero-3.webp', title: 'Holud & Cultural', text: 'Colourful, high-energy evenings with room for dance, music and family traditions.', pkg: 'wedding-basic', guests: '80–400 guests' },
-  { slug: 'Reception', icon: 'gift', image: 'ceremony.webp', title: 'Receptions', text: 'An elegant hall, warm lighting and buffet service for the celebration with everyone you love.', pkg: 'wedding-plus', guests: '150–600 guests' },
-  { slug: 'Corporate', icon: 'mic', image: 'crowd.webp', title: 'Corporate & Seminars', text: 'Sound, projector and a professional setup for conferences, annual dinners and product launches.', pkg: 'corporate', guests: '50–500 guests' },
-  { slug: 'Milad', icon: 'moon', image: 'hero-2.webp', title: 'Milad & Family', text: 'A calm, respectful space for milad, aqiqah and family gatherings, with food arranged for you.', pkg: 'wedding-basic', guests: '40–300 guests' },
-  { slug: 'Birthday', icon: 'cake', image: 'hero-5.webp', title: 'Birthdays & Parties', text: 'Flexible morning or evening shifts with decoration and catering add-ons.', pkg: 'wedding-basic', guests: '30–300 guests' },
+  { slug: 'Reception', icon: 'gift', image: 'reception.webp', title: 'Receptions', text: 'An elegant hall, warm lighting and buffet service for the celebration with everyone you love.', pkg: 'wedding-plus', guests: '150–600 guests' },
+  { slug: 'Corporate', icon: 'mic', image: 'corporate.webp', title: 'Corporate & Seminars', text: 'Sound, projector and a professional setup for conferences, annual dinners and product launches.', pkg: 'corporate', guests: '50–500 guests' },
+  { slug: 'Milad', icon: 'moon', image: 'milad.webp', title: 'Milad & Family', text: 'A calm, respectful space for milad, aqiqah and family gatherings, with food arranged for you.', pkg: 'wedding-basic', guests: '40–300 guests' },
+  { slug: 'Birthday', icon: 'cake', image: 'party.webp', title: 'Birthdays & Parties', text: 'Flexible morning or evening shifts with decoration and catering add-ons.', pkg: 'wedding-basic', guests: '30–300 guests' },
 ]
 
 export const process = [

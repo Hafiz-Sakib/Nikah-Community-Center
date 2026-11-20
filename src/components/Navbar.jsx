@@ -1,14 +1,60 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { nav } from '../data'
-import { MenuIcon, CloseIcon, ArrowRight, ClipboardIcon, ICONS2, HomeIcon } from './Icons'
+import { MenuIcon, CloseIcon, ArrowRight, ClipboardIcon, ChevronDown, ICONS2, HomeIcon } from './Icons'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 import { InstallButton } from './Install'
 
 const NAV_ICONS = { ...ICONS2, home: HomeIcon }
 const isOn = (to, pathname, isActive) => isActive || (to === '/about' && pathname === '/contact')
+
+/* Desktop: 4 direct links + one "Venue" dropdown keeps the bar short and calm. Mobile menu lists everything. */
+const DIRECT = ['/', '/events', '/food', '/packages']
+const direct = nav.filter((n) => DIRECT.includes(n.to))
+const venue = nav.filter((n) => !DIRECT.includes(n.to))
+const linkCls = (on) => `relative flex items-center gap-1 rounded-full whitespace-nowrap px-3.5 py-2 text-sm font-medium transition-colors ${on ? 'text-brand-ink' : 'text-slate-600 hover:text-fg'}`
+const pill = <motion.span layoutId="desk-pill" className="absolute inset-0 -z-10 rounded-full bg-brand-soft" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />
+
+function VenueMenu({ pathname }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const on = venue.some((n) => isOn(n.to, pathname, pathname === n.to))
+  useEffect(() => { setOpen(false) }, [pathname])
+  useEffect(() => {
+    if (!open) return
+    const out = (e) => { if (!ref.current?.contains(e.target)) setOpen(false) }
+    const esc = (e) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('pointerdown', out); document.addEventListener('keydown', esc)
+    return () => { document.removeEventListener('pointerdown', out); document.removeEventListener('keydown', esc) }
+  }, [open])
+  return (
+    <li ref={ref} className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <button type="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className={linkCls(on)}>
+        {on && pill}Venue<ChevronDown width={15} height={15} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div role="menu" initial={{ opacity: 0, y: 6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.15 }}
+            className="absolute left-1/2 top-full z-10 w-64 -translate-x-1/2 pt-2">
+            <div className="rounded-2xl bg-surface p-2 shadow-dock ring-1 ring-fg/5">
+              {venue.map((n) => {
+                const Ico = NAV_ICONS[n.icon]
+                return (
+                  <NavLink key={n.to} to={n.to} role="menuitem" className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-100 ${isOn(n.to, pathname, isActive) ? 'bg-brand-soft text-brand-ink' : 'text-fg'}`}>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-brand-ink"><Ico width={18} height={18} /></span>
+                    <span className="min-w-0"><span className="block text-sm font-semibold leading-tight">{n.label}</span><span className="block truncate text-xs text-slate-500">{n.hint}</span></span>
+                  </NavLink>
+                )
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </li>
+  )
+}
 
 export default function Navbar({ count }) {
   const [scrolled, setScrolled] = useState(false)
@@ -27,23 +73,21 @@ export default function Navbar({ count }) {
         className={`fixed inset-x-0 top-0 z-[60] transition-all duration-300 ${scrolled || open ? 'bg-surface/85 shadow-sm backdrop-blur-xl' : 'bg-surface'}`}>
         <nav className="container-wide flex h-16 items-center justify-between gap-3" aria-label="Main">
           <Logo />
-          <ul className="hidden items-center gap-0.5 lg:flex">
-            {nav.map((n) => {
-              const Ico = NAV_ICONS[n.icon]
-              return (
-                <li key={n.to}>
-                  <NavLink to={n.to} end={n.to === '/'} className={({ isActive }) => `relative flex items-center gap-1.5 rounded-full whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors ${isOn(n.to, pathname, isActive) ? 'text-brand-ink' : 'text-slate-600 hover:text-fg'}`}>
-                    {({ isActive }) => (<>{isOn(n.to, pathname, isActive) && <motion.span layoutId="desk-pill" className="absolute inset-0 -z-10 rounded-full bg-brand-soft" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />}<Ico width={17} height={17} className="hidden min-[1380px]:block" />{n.label}</>)}
-                  </NavLink>
-                </li>
-              )
-            })}
+          <ul className="hidden items-center gap-1 lg:flex">
+            {direct.map((n) => (
+              <li key={n.to}>
+                <NavLink to={n.to} end={n.to === '/'} className={({ isActive }) => linkCls(isActive)}>
+                  {({ isActive }) => (<>{isActive && pill}{n.label}</>)}
+                </NavLink>
+              </li>
+            ))}
+            <VenueMenu pathname={pathname} />
           </ul>
           <div className="flex items-center gap-2">
             <ThemeToggle className="hidden sm:block" />
-            <Link to="/my-bookings" aria-label="My bookings" title="My bookings" className="relative hidden h-10 items-center gap-2 rounded-full px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 lg:flex">
-              <ClipboardIcon width={19} height={19} /><span className="hidden 2xl:inline">My bookings</span>
-              {count > 0 && <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{count}</span>}
+            <Link to="/my-bookings" aria-label="My bookings" title="My bookings" className="relative hidden h-10 w-10 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 lg:flex">
+              <ClipboardIcon width={20} height={20} />
+              {count > 0 && <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{count}</span>}
             </Link>
             <Link to="/booking" className="btn-primary hidden !px-5 !py-2.5 sm:inline-flex">Book Now</Link>
             <button onClick={() => setOpen((o) => !o)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-fg transition active:scale-90 lg:hidden">
@@ -58,7 +102,7 @@ export default function Navbar({ count }) {
       <AnimatePresence>
         {open && (
           <motion.div className="fixed inset-0 z-[55] bg-surface pt-20 lg:hidden" initial={{ clipPath: 'inset(0 0 100% 0)' }} animate={{ clipPath: 'inset(0 0 0% 0)' }} exit={{ clipPath: 'inset(0 0 100% 0)' }} transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}>
-            <motion.ul initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.05, delayChildren: 0.2 } } }} className="container-x max-h-full space-y-1 overflow-y-auto pb-40">
+            <motion.ul initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.05, delayChildren: 0.2 } } }} className="container-x max-h-full space-y-1 overflow-y-auto pb-24">
               <motion.li variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }} className="flex items-center justify-between rounded-2xl bg-slate-100 px-4 py-3 sm:hidden"><span className="font-medium text-fg">Dark mode</span><ThemeToggle /></motion.li>
               {[...nav, { to: '/my-bookings', label: 'My bookings', icon: 'clipboard', hint: 'Look up or cancel a booking' }].map((n) => {
                 const Ico = NAV_ICONS[n.icon]

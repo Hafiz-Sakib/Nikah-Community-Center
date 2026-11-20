@@ -5,7 +5,7 @@ import ThemeToggle from './ThemeToggle'
 import { InstallButton } from './Install'
 export default function Footer() {
   return (
-    <footer className="bg-ink pb-32 pt-14 text-white lg:pb-10">
+    <footer className="bg-ink pb-10 pt-14 text-white">
       <div className="container-x grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <Logo light />

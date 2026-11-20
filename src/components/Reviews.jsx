@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { reviews, img } from '../data'
+import { reviews } from '../data'
 import { Star } from './Icons'
 import SectionHead from './SectionHead'
 
@@ -15,7 +15,7 @@ export default function Reviews() {
             <motion.figure key={r.name} initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }}
               transition={{ delay: i * 0.1, type: 'spring', stiffness: 110, damping: 16 }} whileHover={{ y: -6 }}
               className="flex w-[82%] shrink-0 snap-center flex-col items-center rounded-3xl bg-surface p-7 text-center shadow-dock ring-1 ring-slate-100 sm:w-auto sm:last:col-span-2 lg:last:col-span-1">
-              <img src={img(r.img)} alt={r.name} loading="lazy" className="h-20 w-20 rounded-full object-cover ring-4 ring-brand-soft" />
+              <span aria-hidden className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-2xl font-semibold text-brand-ink ring-4 ring-brand-soft/60">{r.name.split(' ').map((w) => w[0]).slice(0, 2).join('')}</span>
               <blockquote className="mt-5 flex-1 text-sm leading-relaxed text-slate-600">“{r.text}”</blockquote>
               <div className="mt-4 flex gap-0.5" role="img" aria-label={`${r.stars} out of 5 stars`}>{stars(r.stars).map((f, k) => <Star key={k} fill={f} />)}</div>
               <figcaption className="mt-2"><b className="block text-fg">{r.name}</b><span className="text-xs text-slate-400">{r.role}</span></figcaption>

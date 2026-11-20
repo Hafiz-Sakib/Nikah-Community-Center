@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { TabBar } from '@/components/tab-bar'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Toaster from './components/Toaster'
@@ -19,23 +18,12 @@ import NotFound from './pages/NotFound'
 import { InstallBanner } from './components/Install'
 import { useBookings, toast } from './lib/store'
 
-const pathOf = { home: '/', explore: '/events', packages: '/packages', 'my-bookings': '/my-bookings', booking: '/booking' }
-const tabFor = (p) => {
-  if (p === '/') return 'home'
-  if (['/events', '/facilities', '/gallery', '/about', '/contact', '/food'].includes(p)) return 'explore'
-  if (p === '/packages') return 'packages'
-  if (p === '/my-bookings') return 'my-bookings'
-  if (p === '/booking') return 'booking'
-  return ''
-}
-
 function Page({ children }) {
   return <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.28 }}>{children}</motion.div>
 }
 
 export default function App() {
   const location = useLocation()
-  const navigate = useNavigate()
   const bookings = useBookings()
   const count = bookings.filter((b) => b.status !== 'cancelled').length
   useEffect(() => { window.scrollTo(0, 0) }, [location.pathname])
@@ -44,14 +32,6 @@ export default function App() {
     window.addEventListener('offline', off); window.addEventListener('online', on)
     return () => { window.removeEventListener('offline', off); window.removeEventListener('online', on) }
   }, [])
-
-  const tabs = [
-    { id: 'home', label: 'Home', icon: 'home' },
-    { id: 'explore', label: 'Explore', icon: 'search' },
-    { id: 'packages', label: 'Packages', icon: 'chart' },
-    { id: 'my-bookings', label: 'Bookings', icon: 'history', badge: count },
-    { id: 'booking', label: 'Book', icon: 'profile' },
-  ]
 
   return (
     <>
@@ -77,9 +57,6 @@ export default function App() {
         </main>
       </AnimatePresence>
       <Footer />
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 lg:hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
-        <TabBar className="pointer-events-auto" tabs={tabs} value={tabFor(location.pathname)} onChange={(id) => navigate(pathOf[id])} />
-      </div>
       <InstallBanner />
       <Toaster />
     </>

@@ -10,7 +10,7 @@ import { money } from '../lib/store'
 export default function PackagesPage() {
   return (
     <>
-      <PageHero title="Packages" text="Transparent pricing for every kind of event." image="hero-2.webp" />
+      <PageHero title="Packages" text="Transparent pricing for every kind of event." image="hero-6.webp" />
       <section className="py-16 sm:py-24"><div className="container-wide"><PackageGrid /></div></section>
       <section className="bg-slate-50 py-16 sm:py-24"><div className="container-x">
         <SectionHead eyebrow="Compare" title="Find the right fit" />

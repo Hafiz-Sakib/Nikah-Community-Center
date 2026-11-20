@@ -15,8 +15,8 @@ Installable (manifest + service worker via vite-plugin-pwa), works offline after
 ## Dark mode
 Toggle in the navbar (circle-reveal animation). Follows system setting on first visit, then remembers the choice. Colours are CSS variables in `src/index.css`.
 
-## Mobile tab bar
-`src/components/tab-bar.jsx` — Motion Brew style TabBar (variants: pill | labels | action), used in `src/App.jsx`.
+## Navigation
+Desktop: Home, Events, Food, Packages and a "Venue" dropdown (Facilities, Gallery, About). Mobile: hamburger menu only (no bottom bar).
 
 ## Booking system (demo, localStorage)
 Wizard, live availability, weekend surcharge, 30% advance, booking ID, .ics, WhatsApp, My bookings, staff dashboard (passcode in src/data.js, default admin123).
