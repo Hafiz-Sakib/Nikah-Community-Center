@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
+import { Link } from 'react-router-dom'
 import { img } from '../data'
 import { ArrowRight } from './Icons'
 import Reveal from './Reveal'
@@ -18,10 +19,10 @@ export default function Ceremony() {
           <Reveal delay={0.1}><p className="mt-3 text-lg font-medium text-brand">Where there is love, there is life!</p></Reveal>
           <Reveal delay={0.2}><p className="mt-4 leading-relaxed text-slate-600">A wedding ceremony is a joyous occasion through which a couple starts their married life. It is not merely an obligation, but a socially and culturally important event — and we treat every one that way.</p></Reveal>
           <Reveal delay={0.3}>
-            <motion.a href="#gallery" whileHover="hover" className="btn-primary mt-7 w-full sm:w-auto">
+            <motion.div whileHover="hover" className="mt-7"><Link to="/gallery" className="btn-primary w-full sm:w-auto">
               Explore Our Gallery
               <motion.span variants={{ hover: { x: 4 } }} className="inline-flex"><ArrowRight /></motion.span>
-            </motion.a>
+            </Link></motion.div>
           </Reveal>
         </div>
       </div>

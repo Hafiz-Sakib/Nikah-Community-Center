@@ -7,24 +7,24 @@ export const CONTACT = {
   mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Community+Center+Chattogram',
   adminPass: 'admin123',
 }
-export const BOOK_URL = '#booking'
 export const img = (n) => `${import.meta.env.BASE_URL}images/${n}`
 
 export const slides = [
-  { image: 'hero-1.webp', title: 'The Perfect Venue For Your Next Event', text: 'Best decorated, clean and budget-friendly community center in Chittagong. Check a date and book in minutes.', cta: true },
-  { image: 'hero-2.webp', title: 'Spacious. Elegant. Ready.', text: 'Air-conditioned hall for up to 600 guests with a dedicated team handling every detail.' },
-  { image: 'hero-3.webp', title: 'Your Day, Beautifully Held', text: 'From stage decoration to guest flow — we are strict about quality and service.' },
-  { image: 'hero-4.webp', title: 'Fresh, Generous Catering', text: 'In-house kitchen with menus for weddings, receptions, milad and corporate events.' },
+  { image: 'hero-1.webp', eyebrow: 'Chattogram’s favourite venue', title: 'The perfect venue for your next event', text: 'Best decorated, clean and budget-friendly community center. Check a date and book in minutes.' },
+  { image: 'hero-6.webp', eyebrow: 'Weddings & receptions', title: 'Where your story begins beautifully', text: 'Elegant stage décor, bridal rooms and a dedicated team for your biggest day.' },
+  { image: 'hero-3.webp', eyebrow: 'Holud & celebrations', title: 'Make every moment unforgettable', text: 'A spacious, air-conditioned hall for up to 600 guests with easy parking.' },
+  { image: 'hero-2.webp', eyebrow: 'Engagements & Nikah', title: 'Small details, handled with care', text: 'From flowers to flow of the day — one team looks after everything.' },
+  { image: 'hero-4.webp', eyebrow: 'In-house catering', title: 'Fresh, generous menus for every guest', text: 'Experienced chefs and serving staff, with menus to suit your budget.' },
 ]
 
 export const eventTypes = ['Wedding', 'Reception', 'Holud', 'Corporate', 'Birthday', 'Milad', 'Other']
 export const marquee = ['Weddings', 'Holud', 'Receptions', 'Aqiqah', 'Milad', 'Corporate Events', 'Seminars', 'Birthdays', 'Engagements', 'Book Fairs']
 
 export const packages = [
-  { id: 'business-fair', price: 30000, name: 'Business Fair', desc: 'Book fairs, craft fairs and expos.', cap: 300, items: ['Limited space access', 'Security facility', 'Event support', 'Decoration design', 'Per day bill'] },
-  { id: 'wedding-basic', price: 55000, name: 'Wedding Basic', desc: 'Weddings with a basic plan and limited items.', cap: 400, items: ['Full space access', 'Food arrangement', 'Management support', 'Decoration design', 'Billed per shift'] },
-  { id: 'wedding-plus', price: 85000, name: 'Wedding Plus', desc: 'Most weddings with premium plans.', cap: 600, popular: true, items: ['Full space access', 'Security facility', 'Dedicated team', 'Premium decoration', 'Pay as per plan'] },
-  { id: 'corporate', price: 120000, name: 'Corporate Event', desc: 'Dedicated team for corporate events.', cap: 500, items: ['Full space access', 'Buffet food', 'Premium decoration', 'Sound & projector', 'Per day plan'] },
+  { id: 'business-fair', icon: 'briefcase', tag: 'Fairs & expos', price: 30000, name: 'Business Fair', desc: 'Book fairs, craft fairs and expos.', cap: 300, items: ['Limited space access', 'Security facility', 'Event support', 'Decoration design', 'Per day bill'] },
+  { id: 'wedding-basic', icon: 'heart', tag: 'Simple & elegant', price: 55000, name: 'Wedding Basic', desc: 'Weddings with a basic plan and limited items.', cap: 400, items: ['Full space access', 'Food arrangement', 'Management support', 'Decoration design', 'Billed per shift'] },
+  { id: 'wedding-plus', icon: 'sparkles', tag: 'Most booked', price: 85000, name: 'Wedding Plus', desc: 'Most weddings with premium plans.', cap: 600, popular: true, items: ['Full space access', 'Security facility', 'Dedicated team', 'Premium decoration', 'Pay as per plan'] },
+  { id: 'corporate', icon: 'building', tag: 'Teams & brands', price: 120000, name: 'Corporate Event', desc: 'Dedicated team for corporate events.', cap: 500, items: ['Full space access', 'Buffet food', 'Premium decoration', 'Sound & projector', 'Per day plan'] },
 ]
 
 export const addons = [
@@ -73,4 +73,49 @@ export const faqs = [
   { q: 'Is there a weekend surcharge?', a: 'Fridays and Saturdays carry a 15% surcharge because of high demand. It is shown clearly before you confirm.' },
   { q: 'What is your cancellation and refund policy?', a: 'Cancel 14 or more days before the event for a full advance refund. Within 14 days the advance is kept as a booking fee. You can cancel from "My Bookings".' },
   { q: 'Can I bring my own caterer or decorator?', a: 'Yes, with prior notice. Our in-house catering and decoration are optional add-ons you can select while booking.' },
+]
+
+export const compare = [
+  { label: 'Guest capacity', v: ['300', '400', '600', '500'] },
+  { label: 'Hall access', v: ['Limited space', 'Full hall', 'Full hall', 'Full hall'] },
+  { label: 'Security', v: [true, true, true, true] },
+  { label: 'Decoration', v: ['Design only', 'Standard', 'Premium', 'Premium'] },
+  { label: 'Dedicated event team', v: [false, false, true, true] },
+  { label: 'Food arrangement', v: [false, true, true, 'Buffet'] },
+  { label: 'Sound & projector', v: [false, false, false, true] },
+  { label: 'Billing', v: ['Per day', 'Per shift', 'As per plan', 'Per day'] },
+]
+
+export const events = [
+  { slug: 'Wedding', icon: 'heart', image: 'hero-6.webp', title: 'Weddings', text: 'A complete setting for your biggest day: stage, bridal room, catering and a team that keeps the day on schedule.', pkg: 'wedding-plus', guests: '100–600 guests' },
+  { slug: 'Holud', icon: 'sparkles', image: 'hero-3.webp', title: 'Holud & Cultural', text: 'Colourful, high-energy evenings with room for dance, music and family traditions.', pkg: 'wedding-basic', guests: '80–400 guests' },
+  { slug: 'Reception', icon: 'gift', image: 'ceremony.webp', title: 'Receptions', text: 'An elegant hall, warm lighting and buffet service for the celebration with everyone you love.', pkg: 'wedding-plus', guests: '150–600 guests' },
+  { slug: 'Corporate', icon: 'mic', image: 'crowd.webp', title: 'Corporate & Seminars', text: 'Sound, projector and a professional setup for conferences, annual dinners and product launches.', pkg: 'corporate', guests: '50–500 guests' },
+  { slug: 'Milad', icon: 'moon', image: 'hero-2.webp', title: 'Milad & Family', text: 'A calm, respectful space for milad, aqiqah and family gatherings, with food arranged for you.', pkg: 'wedding-basic', guests: '40–300 guests' },
+  { slug: 'Birthday', icon: 'cake', image: 'hero-5.webp', title: 'Birthdays & Parties', text: 'Flexible morning or evening shifts with decoration and catering add-ons.', pkg: 'business-fair', guests: '30–300 guests' },
+]
+
+export const process = [
+  { icon: 'eye', title: 'Visit or enquire', text: 'Call us, WhatsApp us, or drop by to see the hall in person.' },
+  { icon: 'calendar', title: 'Pick date & shift', text: 'Check live availability and choose morning, evening or full day.' },
+  { icon: 'clipboard', title: 'Confirm online', text: 'Choose a package and extras, then submit. You get a booking ID instantly.' },
+  { icon: 'wallet', title: 'Pay the advance', text: 'Our team calls to confirm and collect the 30% advance.' },
+  { icon: 'sparkles', title: 'Celebrate', text: 'Arrive on the day — decoration, food and staff are ready.' },
+]
+
+export const values = [
+  { icon: 'shield', title: 'Clear, honest pricing', text: 'Itemised bills and a written summary, so there are no surprises on the day.' },
+  { icon: 'users', title: 'A team that cares', text: 'Dedicated coordinators and trained staff stay with your event from start to finish.' },
+  { icon: 'clipboard', title: 'Booking made simple', text: 'Live availability and instant booking IDs — no endless phone calls.' },
+  { icon: 'sparkles', title: 'Spotless, ready spaces', text: 'Cleaned, set and checked before every shift so you can just arrive.' },
+]
+
+export const nav = [
+  { to: '/', label: 'Home' },
+  { to: '/about', label: 'About' },
+  { to: '/facilities', label: 'Facilities' },
+  { to: '/events', label: 'Events' },
+  { to: '/gallery', label: 'Gallery' },
+  { to: '/packages', label: 'Packages' },
+  { to: '/contact', label: 'Contact' },
 ]

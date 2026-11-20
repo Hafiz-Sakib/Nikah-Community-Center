@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { packages, addons, eventTypes, CONTACT } from '../data'
 import { addBooking, useBookings, takenSlots, shiftFree, SHIFTS, quote, newId, money, fmtDate, toast } from '../lib/store'
 import Calendar from './Calendar'
-import Reveal from './Reveal'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { tomorrowISO } from '../lib/store'
 import { CalendarIcon, CheckIcon, MinusIcon, PlusIcon, ArrowRight, ChevronLeft, DownloadIcon, ChatIcon } from './Icons'
 
 const STEPS = ['Event', 'Date & shift', 'Details', 'Confirm']
@@ -85,7 +86,10 @@ function Success({ b, pkg, onNew, onManage }) {
   )
 }
 
-export default function Booking({ prefill, onManage }) {
+export default function Booking() {
+  const navigate = useNavigate()
+  const onManage = () => navigate('/my-bookings')
+  const [sp] = useSearchParams()
   const bookings = useBookings()
   const [step, setStep] = useState(0)
   const [dir, setDir] = useState(1)
@@ -94,7 +98,13 @@ export default function Booking({ prefill, onManage }) {
   const [f, setF] = useState({ packageId: 'wedding-plus', eventType: 'Wedding', guests: 200, date: '', shift: '', addons: [], name: '', phone: '', email: '', notes: '' })
   const set = (p) => setF((x) => ({ ...x, ...p }))
 
-  useEffect(() => { if (prefill) { setDone(null); setStep(prefill.date ? 1 : 0); setF((x) => ({ ...x, ...prefill.data })) } }, [prefill])
+  useEffect(() => {
+    const ev = sp.get('event'), pk = sp.get('package'), d = sp.get('date'), g = parseInt(sp.get('guests'), 10)
+    if (!ev && !pk && !d && !g) return
+    const okDate = d && /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= tomorrowISO()
+    setDone(null); setStep(okDate ? 1 : 0)
+    setF((x) => ({ ...x, ...(ev && eventTypes.includes(ev) ? { eventType: ev } : {}), ...(pk && packages.some((p) => p.id === pk) ? { packageId: pk } : {}), ...(okDate ? { date: d, shift: '' } : {}), ...(g ? { guests: Math.max(20, Math.min(600, g)) } : {}) }))
+  }, [sp])
 
   const pkg = packages.find((p) => p.id === f.packageId)
   const shift = SHIFTS.find((s) => s.id === f.shift)
@@ -123,12 +133,9 @@ export default function Booking({ prefill, onManage }) {
   const slide = { enter: (d) => ({ opacity: 0, x: d * 40 }), center: { opacity: 1, x: 0 }, exit: (d) => ({ opacity: 0, x: d * -40 }) }
 
   return (
-    <section id="booking" className="relative py-16 sm:py-24">
+    <section id="booking" className="relative py-12 sm:py-16">
       <div className="container-x">
-        <Reveal><h2 className="section-title">Book your date</h2></Reveal>
-        <Reveal delay={0.08}><p className="mx-auto mt-3 max-w-xl text-center text-slate-500">Check live availability, pick your shift and reserve in under two minutes.</p></Reveal>
-
-        <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
           <div className="rounded-[2rem] bg-white p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
             {done ? <Success b={done} pkg={packages.find((p) => p.id === done.packageId)} onNew={reset} onManage={onManage} /> : (
               <>

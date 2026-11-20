@@ -1,15 +1,15 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { reviews, img } from '../data'
 import { Star } from './Icons'
-import Reveal from './Reveal'
+import SectionHead from './SectionHead'
 
 const stars = (n) => Array.from({ length: 5 }, (_, i) => Math.max(0, Math.min(1, n - i)))
 
 export default function Reviews() {
   return (
-    <section id="reviews" className="py-16 sm:py-24">
+    <section className="py-16 sm:py-24">
       <div className="container-x">
-        <Reveal><h2 className="section-title">Ratings &amp; Reviews</h2></Reveal>
+        <SectionHead eyebrow="Reviews" title="Loved by families and teams" text="What our guests say about their events." />
         <div className="-mx-5 mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-6 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
           {reviews.map((r, i) => (
             <motion.figure key={r.name} initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }}

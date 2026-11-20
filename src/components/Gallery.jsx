@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { gallery, img } from '../data'
 import { ChevronLeft, ChevronRight, CloseIcon } from './Icons'
-import Reveal from './Reveal'
+import SectionHead from './SectionHead'
 
 export default function Gallery() {
   const [i, setI] = useState(null)
@@ -12,9 +12,9 @@ export default function Gallery() {
     document.addEventListener('keydown', k); return () => document.removeEventListener('keydown', k)
   }, [i])
   return (
-    <section id="gallery" className="bg-slate-50 py-16 sm:py-24">
+    <section className="bg-slate-50 py-16 sm:py-24">
       <div className="container-x">
-        <Reveal><h2 className="section-title">Moments we have hosted</h2></Reveal>
+        <SectionHead eyebrow="Gallery" title="Moments we have hosted" text="A glimpse of weddings, celebrations and gatherings at our venue." />
         <div className="mt-12 grid auto-rows-[150px] grid-cols-2 gap-3 sm:auto-rows-[190px] md:grid-cols-4">
           {gallery.map((g, n) => (
             <motion.button key={g.src} type="button" onClick={() => setI(n)} aria-label={`Open: ${g.alt}`}

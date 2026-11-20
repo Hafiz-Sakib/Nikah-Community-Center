@@ -1,19 +1,20 @@
 # Nikah Community Center
-React + Vite + Tailwind CSS + Framer Motion
+React + Vite + Tailwind CSS + Motion (motion/react) + React Router (HashRouter)
 
     npm install
     npm run dev
     npm run build
 
-## Booking system (demo, runs in the browser)
-- 4-step wizard: event & package -> live calendar & shift -> extras & contact -> confirm
-- Live availability (calendar dots, shift locking, no double booking), weekend surcharge, 30% advance
-- Booking ID, Add-to-calendar (.ics), WhatsApp message
-- "My bookings" (search by ID / mobile, cancel)
-- Staff dashboard: footer "Staff login" or open `#admin` (passcode in `src/data.js`, default `admin123`): confirm / cancel / delete, CSV export
+## Pages
+/ (Home) · /about · /facilities · /events · /gallery · /packages · /booking · /my-bookings · /contact · /admin (staff)
+Booking accepts query params: /booking?event=Wedding&package=wedding-plus&date=2026-12-05&guests=200
 
-Data is stored in localStorage. Demo seed makes some dates look pre-booked (`src/lib/store.js`).
-For production, replace the functions in `src/lib/store.js` with API calls to a real backend (and real auth for staff).
+## Mobile tab bar
+`src/components/tab-bar.jsx` — Motion Brew style TabBar (variants: pill | labels | action), used in `src/App.jsx`.
 
-## Edit your real info
-`src/data.js`: CONTACT (phone, WhatsApp, email, address, passcode), packages & prices (BDT), add-ons, facilities, FAQs.
+## Booking system (demo, localStorage)
+Wizard, live availability, weekend surcharge, 30% advance, booking ID, .ics, WhatsApp, My bookings, staff dashboard (passcode in src/data.js, default admin123).
+Replace functions in `src/lib/store.js` with real API calls for production.
+
+## Your real info
+Edit `src/data.js`: CONTACT, packages/prices (BDT), add-ons, facilities, events, FAQs.

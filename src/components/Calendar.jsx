@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { ChevronLeft, ChevronRight } from './Icons'
 import { toISO, tomorrowISO, dayStatus } from '../lib/store'
 

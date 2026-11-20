@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Modal from './Modal'
+import PageHero from './PageHero'
 import StatusPill from './StatusPill'
 import { useBookings, updateBooking, removeBooking, SHIFTS, money, fmtDate, toast } from '../lib/store'
 import { CONTACT, packages } from '../data'
@@ -14,7 +14,7 @@ function csv(rows) {
   a.href = URL.createObjectURL(new Blob([[head.join(','), ...body].join('\n')], { type: 'text/csv' })); a.download = 'bookings.csv'; a.click()
 }
 
-export default function Admin({ open, onClose }) {
+export default function Admin() {
   const all = useBookings()
   const [authed, setAuthed] = useState(() => sessionStorage.getItem('ncc.admin') === '1')
   const [pass, setPass] = useState('')
@@ -25,7 +25,9 @@ export default function Admin({ open, onClose }) {
   const revenue = all.filter((b) => b.status === 'confirmed').reduce((s, b) => s + b.total, 0)
 
   return (
-    <Modal open={open} onClose={onClose} title="Staff dashboard" wide>
+    <>
+      <PageHero title="Staff dashboard" text="Manage booking requests." image="hero-3.webp" />
+      <section className="py-12 sm:py-16"><div className="container-x max-w-4xl"><div className="rounded-[2rem] bg-white p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
       {!authed ? (
         <form onSubmit={login} className="mx-auto max-w-sm space-y-4 py-6 text-center">
           <p className="text-sm text-slate-500">Enter the staff passcode to manage bookings.</p>
@@ -66,6 +68,7 @@ export default function Admin({ open, onClose }) {
           )}
         </>
       )}
-    </Modal>
+      </div></div></section>
+    </>
   )
 }

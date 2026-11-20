@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 export default function Reveal({ children, delay = 0, y = 28, className = '', as = 'div' }) {
   const M = motion[as]
   return (

@@ -13,5 +13,11 @@
 @layer components {
   .container-x { @apply mx-auto w-full max-w-6xl px-5 sm:px-8; }
   .section-title { @apply text-center text-2xl font-semibold tracking-tight text-ink sm:text-3xl md:text-4xl; }
-  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:bg-brand-dark active:scale-95; }
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:bg-brand-dark active:scale-95; }
 }
+
+@keyframes hero-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.hero-progress { transform-origin: left; animation: hero-progress 6s linear forwards; }
+[data-paused="true"] .hero-progress { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .hero-progress { animation: none; transform: scaleX(1); } }
+@keyframes spin-slow { to { transform: rotate(360deg); } }

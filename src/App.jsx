@@ -1,61 +1,78 @@
-import { useCallback, useEffect, useState } from 'react'
-import Navbar, { NAV } from './components/Navbar'
-import TabBar from './components/TabBar'
-import Hero from './components/Hero'
-import AvailabilityBar from './components/AvailabilityBar'
-import Marquee from './components/Marquee'
-import Ceremony from './components/Ceremony'
-import Facilities from './components/Facilities'
-import Gallery from './components/Gallery'
-import Packages from './components/Packages'
-import Booking from './components/Booking'
-import Reviews from './components/Reviews'
-import Faq from './components/Faq'
-import Contact from './components/Contact'
+import { useEffect } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { TabBar } from '@/components/tab-bar'
+import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import Toaster from './components/Toaster'
 import MyBookings from './components/MyBookings'
 import Admin from './components/Admin'
-import Toaster from './components/Toaster'
-import useActiveSection from './components/useActiveSection'
+import Home from './pages/Home'
+import About from './pages/About'
+import FacilitiesPage from './pages/FacilitiesPage'
+import EventsPage from './pages/EventsPage'
+import GalleryPage from './pages/GalleryPage'
+import PackagesPage from './pages/PackagesPage'
+import BookingPage from './pages/BookingPage'
+import ContactPage from './pages/ContactPage'
+import NotFound from './pages/NotFound'
 import { useBookings } from './lib/store'
 
-const IDS = NAV.map((n) => n.id)
+const pathOf = { home: '/', explore: '/events', packages: '/packages', 'my-bookings': '/my-bookings', booking: '/booking' }
+const tabFor = (p) => {
+  if (p === '/') return 'home'
+  if (['/events', '/facilities', '/gallery', '/about'].includes(p)) return 'explore'
+  if (p === '/packages') return 'packages'
+  if (p === '/my-bookings') return 'my-bookings'
+  if (p === '/booking') return 'booking'
+  return ''
+}
+
+function Page({ children }) {
+  return <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.28 }}>{children}</motion.div>
+}
 
 export default function App() {
-  const active = useActiveSection(IDS)
+  const location = useLocation()
+  const navigate = useNavigate()
   const bookings = useBookings()
-  const [modal, setModal] = useState(null)
-  const [prefill, setPrefill] = useState(null)
   const count = bookings.filter((b) => b.status !== 'cancelled').length
+  useEffect(() => { window.scrollTo(0, 0) }, [location.pathname])
 
-  useEffect(() => {
-    const h = () => { if (location.hash === '#admin') setModal('admin') }
-    h(); window.addEventListener('hashchange', h); return () => window.removeEventListener('hashchange', h)
-  }, [])
-  const close = useCallback(() => { setModal(null); if (location.hash === '#admin') history.replaceState(null, '', location.pathname + location.search) }, [])
-  const check = (p) => { setPrefill({ ...p, n: Date.now() }); document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' }) }
-  const toBooking = () => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })
+  const tabs = [
+    { id: 'home', label: 'Home', icon: 'home' },
+    { id: 'explore', label: 'Explore', icon: 'search' },
+    { id: 'packages', label: 'Packages', icon: 'chart' },
+    { id: 'my-bookings', label: 'Bookings', icon: 'history', badge: count },
+    { id: 'booking', label: 'Book', icon: 'profile' },
+  ]
 
   return (
     <>
-      <Navbar active={active} count={count} onMyBookings={() => setModal('mine')} />
-      <main>
-        <Hero />
-        <AvailabilityBar onCheck={check} />
-        <div className="mt-16"><Marquee /></div>
-        <Ceremony />
-        <Facilities />
-        <Gallery />
-        <Packages onChoose={(id) => setPrefill({ data: { packageId: id }, n: Date.now() })} />
-        <Booking prefill={prefill} onManage={() => setModal('mine')} />
-        <Reviews />
-        <Faq />
-        <Contact />
-      </main>
-      <Footer onAdmin={() => setModal('admin')} />
-      <TabBar active={active} modalOpen={modal === 'mine'} count={count} onMyBookings={() => setModal('mine')} />
-      <MyBookings open={modal === 'mine'} onClose={close} onBook={toBooking} />
-      <Admin open={modal === 'admin'} onClose={close} />
+      <Navbar count={count} />
+      <AnimatePresence mode="wait" initial={false}>
+        <main key={location.pathname}>
+          <Page>
+            <Routes location={location}>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/facilities" element={<FacilitiesPage />} />
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/gallery" element={<GalleryPage />} />
+              <Route path="/packages" element={<PackagesPage />} />
+              <Route path="/booking" element={<BookingPage />} />
+              <Route path="/my-bookings" element={<MyBookings />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Page>
+        </main>
+      </AnimatePresence>
+      <Footer />
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 lg:hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
+        <TabBar className="pointer-events-auto" tabs={tabs} value={tabFor(location.pathname)} onChange={(id) => navigate(pathOf[id])} />
+      </div>
       <Toaster />
     </>
   )

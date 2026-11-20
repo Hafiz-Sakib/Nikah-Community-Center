@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import Modal from './Modal'
+import { AnimatePresence, motion } from 'motion/react'
+import { useNavigate } from 'react-router-dom'
+import PageHero from './PageHero'
 import StatusPill from './StatusPill'
 import { useBookings, updateBooking, SHIFTS, money, fmtDate, toast } from '../lib/store'
 import { packages } from '../data'
 import { SearchIcon } from './Icons'
 
-export default function MyBookings({ open, onClose, onBook }) {
+export default function MyBookings() {
+  const navigate = useNavigate()
   const all = useBookings()
   const [q, setQ] = useState('')
   const [confirmId, setConfirmId] = useState(null)
@@ -15,7 +17,9 @@ export default function MyBookings({ open, onClose, onBook }) {
   const cancel = (id) => { updateBooking(id, { status: 'cancelled' }); setConfirmId(null); toast('Booking cancelled') }
 
   return (
-    <Modal open={open} onClose={onClose} title="My bookings">
+    <>
+      <PageHero title="My bookings" text="Look up, review or cancel your reservations." image="hero-2.webp" />
+      <section className="py-12 sm:py-16"><div className="container-x max-w-3xl"><div className="rounded-[2rem] bg-white p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
       <div className="relative mb-5">
         <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" width={18} height={18} />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by booking ID or mobile number" className="w-full rounded-full border border-slate-200 py-3 pl-11 pr-4 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/15" />
@@ -24,7 +28,7 @@ export default function MyBookings({ open, onClose, onBook }) {
         <div className="py-10 text-center">
           <p className="font-medium text-ink">{all.length ? 'No match found' : 'No bookings yet'}</p>
           <p className="mt-1 text-sm text-slate-500">{all.length ? 'Check the ID or number and try again.' : 'Reserve your first date in just a couple of minutes.'}</p>
-          {!all.length && <button onClick={() => { onClose(); onBook() }} className="btn-primary mt-5">Book now</button>}
+          {!all.length && <button onClick={() => navigate('/booking')} className="btn-primary mt-5">Book now</button>}
         </div>
       ) : (
         <ul className="space-y-3">
@@ -57,6 +61,7 @@ export default function MyBookings({ open, onClose, onBook }) {
         </ul>
       )}
       <p className="mt-5 text-center text-xs text-slate-400">Bookings are stored on this device in this demo.</p>
-    </Modal>
+      </div></div></section>
+    </>
   )
 }

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { useToasts } from '../lib/store'
 import { CheckIcon, CloseIcon } from './Icons'
 export default function Toaster() {
