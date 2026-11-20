@@ -17,8 +17,8 @@ export default function Faq({ bg = true }) {
               const on = open === i
               return (
                 <Reveal key={f.q} delay={i * 0.05}>
-                  <div className={`overflow-hidden rounded-2xl bg-white ring-1 transition-shadow ${on ? 'shadow-dock ring-brand/30' : 'ring-slate-200/80'}`}>
-                    <button onClick={() => setOpen(on ? -1 : i)} aria-expanded={on} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-medium text-ink">
+                  <div className={`overflow-hidden rounded-2xl bg-surface ring-1 transition-shadow ${on ? 'shadow-dock ring-brand/30' : 'ring-slate-200/80'}`}>
+                    <button onClick={() => setOpen(on ? -1 : i)} aria-expanded={on} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-medium text-fg">
                       <span>{f.q}</span>
                       <motion.span animate={{ rotate: on ? 180 : 0 }} className="shrink-0 text-brand"><ChevronDown /></motion.span>
                     </button>

@@ -25,7 +25,7 @@ export function StatsBand() {
 function Spot({ children, className = '' }) {
   const move = (e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty('--x', `${e.clientX - r.left}px`); e.currentTarget.style.setProperty('--y', `${e.clientY - r.top}px`) }
   return (
-    <div onMouseMove={move} className={`group relative overflow-hidden rounded-3xl bg-white p-6 ring-1 ring-slate-200/80 ${className}`}>
+    <div onMouseMove={move} className={`group relative overflow-hidden rounded-3xl bg-surface p-6 ring-1 ring-slate-200/80 ${className}`}>
       <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: 'radial-gradient(260px circle at var(--x) var(--y), rgba(63,135,245,.14), transparent 70%)' }} />
       <div className="relative">{children}</div>
     </div>
@@ -42,7 +42,7 @@ export function FacilitiesGrid({ limit }) {
           <motion.div key={f.title} variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0 } }}>
             <Spot className="h-full transition-shadow hover:shadow-dock">
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft text-brand"><Ico /></span>
-              <h3 className="mt-4 font-semibold text-ink">{f.title}</h3>
+              <h3 className="mt-4 font-semibold text-fg">{f.title}</h3>
               <p className="mt-1 text-sm leading-relaxed text-slate-500">{f.text}</p>
             </Spot>
           </motion.div>

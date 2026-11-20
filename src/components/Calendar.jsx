@@ -26,7 +26,7 @@ export default function Calendar({ value, onChange, bookings }) {
       <div className="mb-3 flex items-center justify-between">
         <button type="button" onClick={() => nav(-1)} disabled={!canPrev} aria-label="Previous month" className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition enabled:hover:bg-slate-200 enabled:active:scale-90 disabled:opacity-30"><ChevronLeft width={18} height={18} /></button>
         <AnimatePresence mode="wait" initial={false}>
-          <motion.p key={`${y}-${m}`} initial={{ opacity: 0, y: dir * 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: dir * -10 }} transition={{ duration: 0.15 }} className="font-semibold text-ink">
+          <motion.p key={`${y}-${m}`} initial={{ opacity: 0, y: dir * 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: dir * -10 }} transition={{ duration: 0.15 }} className="font-semibold text-fg">
             {view.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
           </motion.p>
         </AnimatePresence>

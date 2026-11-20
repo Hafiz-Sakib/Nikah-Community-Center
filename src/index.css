@@ -1,23 +1,78 @@
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-500.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ---------- theme tokens (space-separated RGB so Tailwind can add opacity) ---------- */
+:root {
+  color-scheme: light;
+  --page: 255 255 255; --surface: 255 255 255; --fg: 11 13 23;
+  --s50: 248 250 252; --s100: 241 245 249; --s200: 226 232 240; --s300: 203 213 225; --s400: 148 163 184;
+  --s500: 100 116 139; --s600: 71 85 105; --s700: 51 65 85; --s800: 30 41 59; --s900: 15 23 42;
+  --brand-soft: 234 242 255; --brand-ink: 37 99 214;
+  --shadow-dock: 0 10px 40px -8px rgba(15,23,42,.28), 0 2px 6px rgba(15,23,42,.08);
+  --shadow-card: 0 1px 2px rgba(15,23,42,.04), 0 14px 40px -14px rgba(15,23,42,.14);
+}
+/* night: deep navy with the same blue accent, so it feels like the same venue after dark */
+:root.dark {
+  color-scheme: dark;
+  --page: 10 14 28; --surface: 18 25 46; --fg: 235 240 250;
+  --s50: 14 20 38; --s100: 25 33 56; --s200: 38 48 74; --s300: 62 74 102; --s400: 124 138 166;
+  --s500: 150 164 190; --s600: 178 190 212; --s700: 205 214 231; --s800: 226 232 244; --s900: 241 245 252;
+  --brand-soft: 25 43 78; --brand-ink: 138 184 255;
+  --shadow-dock: 0 10px 40px -8px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06);
+  --shadow-card: 0 1px 2px rgba(0,0,0,.4), 0 18px 48px -16px rgba(0,0,0,.7);
+}
+
 @layer base {
   html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
-  body { @apply bg-white font-sans text-slate-700 antialiased overflow-x-hidden; }
-  section[id] { scroll-margin-top: 5rem; }
+  body { @apply bg-page font-sans text-slate-700 antialiased overflow-x-hidden; }
   :focus-visible { @apply outline-2 outline-offset-2 outline-brand; }
+  ::selection { background: rgb(63 135 245 / .3); }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 }
 
 @layer components {
   .container-x { @apply mx-auto w-full max-w-6xl px-5 sm:px-8; }
-  .section-title { @apply text-center text-2xl font-semibold tracking-tight text-ink sm:text-3xl md:text-4xl; }
+  .container-wide { @apply mx-auto w-full max-w-7xl px-4 sm:px-6; }
+  .section-title { @apply text-center text-2xl font-semibold tracking-tight text-fg sm:text-3xl md:text-4xl; }
   .btn-primary { @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:bg-brand-dark active:scale-95; }
 }
 
+/* a quiet glow behind the page at night */
+:root.dark body::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(60rem 38rem at 10% -8%, rgba(63,135,245,.16), transparent 60%), radial-gradient(48rem 32rem at 100% 105%, rgba(99,102,241,.10), transparent 60%);
+}
+:root.dark img:not([data-keep]) { filter: brightness(.92) contrast(1.02); }
+
+/* soft status colours at night */
+.dark .bg-emerald-100 { background: rgba(16,185,129,.16); } .dark .text-emerald-700, .dark .text-emerald-600 { color: #6ee7b7; }
+.dark .bg-amber-50, .dark .bg-amber-100 { background: rgba(245,158,11,.14); } .dark .text-amber-700 { color: #fcd34d; }
+.dark .bg-red-50 { background: rgba(239,68,68,.12); }
+
+/* ---------- hero carousel progress ---------- */
 @keyframes hero-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .hero-progress { transform-origin: left; animation: hero-progress 6s linear forwards; }
 [data-paused="true"] .hero-progress { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .hero-progress { animation: none; transform: scaleX(1); } }
 @keyframes spin-slow { to { transform: rotate(360deg); } }
+
+/* ---------- day / night switch: the new theme grows out of the toggle button ---------- */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-old(root) { z-index: 1; } ::view-transition-new(root) { z-index: 2; }
+:root[data-theme-switch]::view-transition-old(root) { z-index: 2; }
+:root[data-theme-switch]::view-transition-new(root) { z-index: 1; }
+@property --vt-r { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@keyframes vt-hole { from { --vt-r: 0px; } to { --vt-r: var(--vt-reach); } }
+:root[data-theme-switch="to-dark"]::view-transition-old(root) {
+  -webkit-mask-image: radial-gradient(circle at var(--vt-x) var(--vt-y), transparent var(--vt-r), #000 calc(var(--vt-r) + 1.5px));
+  mask-image: radial-gradient(circle at var(--vt-x) var(--vt-y), transparent var(--vt-r), #000 calc(var(--vt-r) + 1.5px));
+  animation: vt-hole var(--vt-ms) var(--vt-ease) both;
+}
+@keyframes vt-close { from { clip-path: circle(var(--vt-reach) at var(--vt-x) var(--vt-y)); } to { clip-path: circle(0px at var(--vt-x) var(--vt-y)); } }
+:root[data-theme-switch="to-light"]::view-transition-old(root) { animation: vt-close var(--vt-ms) var(--vt-ease) both; }
+.theme-fade, .theme-fade *, .theme-fade *::before, .theme-fade *::after { transition: background-color 1s ease, color 1s ease, border-color 1s ease, box-shadow 1s ease !important; }

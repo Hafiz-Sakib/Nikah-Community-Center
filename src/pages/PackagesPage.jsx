@@ -11,7 +11,7 @@ export default function PackagesPage() {
   return (
     <>
       <PageHero title="Packages" text="Transparent pricing for every kind of event." image="hero-2.webp" />
-      <section className="py-16 sm:py-24"><div className="container-x"><PackageGrid /></div></section>
+      <section className="py-16 sm:py-24"><div className="container-wide"><PackageGrid /></div></section>
       <section className="bg-slate-50 py-16 sm:py-24"><div className="container-x">
         <SectionHead eyebrow="Compare" title="Find the right fit" />
         <div className="mt-12"><CompareTable /></div>
@@ -20,9 +20,9 @@ export default function PackagesPage() {
         <SectionHead eyebrow="Add-ons" title="Make it yours" text="Add any of these while booking." />
         <motion.ul initial="hidden" whileInView="show" viewport={{ once: true }} variants={{ show: { transition: { staggerChildren: 0.07 } } }} className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {addons.map((a) => (
-            <motion.li key={a.id} variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }} className="rounded-3xl bg-white p-5 ring-1 ring-slate-200/80">
-              <p className="font-semibold text-ink">{a.label}</p><p className="mt-1 text-sm text-slate-500">{a.hint}</p>
-              <p className="mt-3 text-lg font-bold text-brand-dark">{money(a.price)}<span className="text-xs font-normal text-slate-400">{a.perGuest ? ' / guest' : ''}</span></p>
+            <motion.li key={a.id} variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }} className="rounded-3xl bg-surface p-5 ring-1 ring-slate-200/80">
+              <p className="font-semibold text-fg">{a.label}</p><p className="mt-1 text-sm text-slate-500">{a.hint}</p>
+              <p className="mt-3 text-lg font-bold text-brand-ink">{money(a.price)}<span className="text-xs font-normal text-slate-400">{a.perGuest ? ' / guest' : ''}</span></p>
             </motion.li>
           ))}
         </motion.ul>

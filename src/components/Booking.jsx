@@ -10,12 +10,12 @@ import { CalendarIcon, CheckIcon, MinusIcon, PlusIcon, ArrowRight, ChevronLeft, 
 const STEPS = ['Event', 'Date & shift', 'Details', 'Confirm']
 const phoneOk = (p) => /^(?:\+?88)?01[3-9]\d{8}$/.test(p.replace(/[\s-]/g, ''))
 const emailOk = (e) => !e || /^\S+@\S+\.\S+$/.test(e)
-const input = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15'
+const input = 'w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm text-fg outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15'
 
 function Field({ label, error, children }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-ink">{label}</span>
+      <span className="mb-1.5 block text-sm font-medium text-fg">{label}</span>
       {children}
       <AnimatePresence>{error && <motion.span initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-1 block text-xs text-red-500">{error}</motion.span>}</AnimatePresence>
     </label>
@@ -23,7 +23,7 @@ function Field({ label, error, children }) {
 }
 
 function Row({ k, v, strong }) {
-  return <div className={`flex items-start justify-between gap-4 py-1.5 text-sm ${strong ? 'font-semibold text-ink' : 'text-slate-600'}`}><span>{k}</span><span className="text-right">{v}</span></div>
+  return <div className={`flex items-start justify-between gap-4 py-1.5 text-sm ${strong ? 'font-semibold text-fg' : 'text-slate-600'}`}><span>{k}</span><span className="text-right">{v}</span></div>
 }
 
 function Summary({ f, q, pkg, shift }) {
@@ -65,10 +65,10 @@ function Success({ b, pkg, onNew, onManage }) {
       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
         <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><motion.path d="m5 12 5 5 9-10" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.25, duration: 0.5 }} /></svg>
       </motion.div>
-      <h3 className="mt-5 text-2xl font-semibold text-ink">Request received!</h3>
+      <h3 className="mt-5 text-2xl font-semibold text-fg">Request received!</h3>
       <p className="mt-2 text-sm text-slate-500">Your date is held. Our team will call <b>{b.phone}</b> to confirm and collect the advance.</p>
       <div className="mt-6 rounded-3xl bg-slate-50 p-5 text-left ring-1 ring-slate-200/70">
-        <div className="mb-2 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Booking ID</span><span className="rounded-full bg-brand-soft px-3 py-1 font-mono text-sm font-semibold text-brand-dark">{b.id}</span></div>
+        <div className="mb-2 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Booking ID</span><span className="rounded-full bg-brand-soft px-3 py-1 font-mono text-sm font-semibold text-brand-ink">{b.id}</span></div>
         <Row k="Event" v={`${b.eventType} · ${pkg.name}`} />
         <Row k="Date" v={fmtDate(b.date)} />
         <Row k="Time" v={`${s.label} (${s.time})`} />
@@ -76,7 +76,7 @@ function Success({ b, pkg, onNew, onManage }) {
         <Row k="Advance due" v={money(b.advance)} strong />
       </div>
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <button onClick={() => ics(b, pkg)} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-ink transition hover:bg-slate-200 active:scale-95"><DownloadIcon width={18} height={18} />Add to calendar</button>
+        <button onClick={() => ics(b, pkg)} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-fg transition hover:bg-slate-200 active:scale-95"><DownloadIcon width={18} height={18} />Add to calendar</button>
         <a href={`https://wa.me/${CONTACT.whatsapp}?text=${msg}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 active:scale-95"><ChatIcon width={18} height={18} />WhatsApp us</a>
       </div>
       <div className="mt-4 flex justify-center gap-5 text-sm font-medium text-brand">
@@ -136,17 +136,17 @@ export default function Booking() {
     <section id="booking" className="relative py-12 sm:py-16">
       <div className="container-x">
         <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-          <div className="rounded-[2rem] bg-white p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
+          <div className="rounded-[2rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
             {done ? <Success b={done} pkg={packages.find((p) => p.id === done.packageId)} onNew={reset} onManage={onManage} /> : (
               <>
                 <ol className="mb-8 flex items-center" aria-label="Progress">
                   {STEPS.map((s, i) => (
                     <li key={s} className="flex flex-1 items-center last:flex-none">
                       <div className="flex items-center gap-2">
-                        <motion.span animate={{ backgroundColor: i <= step ? '#3f87f5' : '#e2e8f0', color: i <= step ? '#fff' : '#64748b' }} className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold">
+                        <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-colors duration-300 ${i <= step ? 'bg-brand text-white' : 'bg-slate-200 text-slate-500'}`}>
                           {i < step ? <CheckIcon width={16} height={16} /> : i + 1}
-                        </motion.span>
-                        <span className={`hidden text-sm font-medium sm:block ${i === step ? 'text-ink' : 'text-slate-400'}`}>{s}</span>
+                        </span>
+                        <span className={`hidden text-sm font-medium sm:block ${i === step ? 'text-fg' : 'text-slate-400'}`}>{s}</span>
                       </div>
                       {i < STEPS.length - 1 && <div className="mx-2 h-0.5 flex-1 overflow-hidden rounded-full bg-slate-200 sm:mx-3"><motion.div className="h-full bg-brand" animate={{ width: i < step ? '100%' : '0%' }} transition={{ duration: 0.4 }} /></div>}
                     </li>
@@ -158,7 +158,7 @@ export default function Booking() {
                     {step === 0 && (
                       <div className="space-y-6">
                         <div>
-                          <p className="mb-2 text-sm font-medium text-ink">Event type</p>
+                          <p className="mb-2 text-sm font-medium text-fg">Event type</p>
                           <div className="flex flex-wrap gap-2">
                             {eventTypes.map((t) => (
                               <button key={t} type="button" onClick={() => set({ eventType: t })} className={`relative rounded-full px-4 py-2 text-sm font-medium transition ${f.eventType === t ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
@@ -169,24 +169,24 @@ export default function Booking() {
                           </div>
                         </div>
                         <div>
-                          <p className="mb-2 text-sm font-medium text-ink">Package</p>
+                          <p className="mb-2 text-sm font-medium text-fg">Package</p>
                           <div className="grid gap-3 sm:grid-cols-2">
                             {packages.map((p) => (
                               <button key={p.id} type="button" onClick={() => set({ packageId: p.id })} aria-pressed={f.packageId === p.id}
-                                className={`relative rounded-2xl p-4 text-left ring-1 transition ${f.packageId === p.id ? 'bg-brand-soft ring-2 ring-brand' : 'bg-white ring-slate-200 hover:ring-brand/40'}`}>
-                                <span className="flex items-center justify-between"><b className="text-ink">{p.name}</b>{p.popular && <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">Popular</span>}</span>
-                                <span className="mt-1 block text-sm text-brand-dark">{money(p.price)} <span className="text-slate-400">/ shift</span></span>
+                                className={`relative rounded-2xl p-4 text-left ring-1 transition ${f.packageId === p.id ? 'bg-brand-soft ring-2 ring-brand' : 'bg-surface ring-slate-200 hover:ring-brand/40'}`}>
+                                <span className="flex items-center justify-between"><b className="text-fg">{p.name}</b>{p.popular && <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">Popular</span>}</span>
+                                <span className="mt-1 block text-sm text-brand-ink">{money(p.price)} <span className="text-slate-400">/ shift</span></span>
                                 <span className="mt-1 block text-xs text-slate-500">Up to {p.cap} guests</span>
                               </button>
                             ))}
                           </div>
                         </div>
                         <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
-                          <div><p className="text-sm font-medium text-ink">Expected guests</p><p className="text-xs text-slate-500">Max {cap} for this package</p></div>
+                          <div><p className="text-sm font-medium text-fg">Expected guests</p><p className="text-xs text-slate-500">Max {cap} for this package</p></div>
                           <div className="flex items-center gap-3">
-                            <button type="button" aria-label="Fewer guests" onClick={() => set({ guests: Math.max(20, f.guests - 10) })} className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200 active:scale-90"><MinusIcon width={18} height={18} /></button>
-                            <motion.span key={f.guests} initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-12 text-center text-lg font-semibold tabular-nums text-ink">{f.guests}</motion.span>
-                            <button type="button" aria-label="More guests" onClick={() => set({ guests: Math.min(cap, f.guests + 10) })} className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200 active:scale-90"><PlusIcon width={18} height={18} /></button>
+                            <button type="button" aria-label="Fewer guests" onClick={() => set({ guests: Math.max(20, f.guests - 10) })} className="flex h-10 w-10 items-center justify-center rounded-full bg-surface shadow-sm ring-1 ring-slate-200 active:scale-90"><MinusIcon width={18} height={18} /></button>
+                            <motion.span key={f.guests} initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-12 text-center text-lg font-semibold tabular-nums text-fg">{f.guests}</motion.span>
+                            <button type="button" aria-label="More guests" onClick={() => set({ guests: Math.min(cap, f.guests + 10) })} className="flex h-10 w-10 items-center justify-center rounded-full bg-surface shadow-sm ring-1 ring-slate-200 active:scale-90"><PlusIcon width={18} height={18} /></button>
                           </div>
                         </div>
                       </div>
@@ -196,16 +196,16 @@ export default function Booking() {
                       <div className="grid gap-8 md:grid-cols-2">
                         <Calendar value={f.date} onChange={(d) => set({ date: d })} bookings={bookings} />
                         <div>
-                          <p className="mb-2 text-sm font-medium text-ink">{f.date ? fmtDate(f.date, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Select a date first'}</p>
+                          <p className="mb-2 text-sm font-medium text-fg">{f.date ? fmtDate(f.date, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Select a date first'}</p>
                           <div className="space-y-2.5">
                             {SHIFTS.map((s) => {
                               const free = taken ? shiftFree(s.id, taken) : false
                               const on = f.shift === s.id
                               return (
                                 <button key={s.id} type="button" disabled={!f.date || !free} onClick={() => set({ shift: s.id })} aria-pressed={on}
-                                  className={`relative flex w-full items-center justify-between rounded-2xl p-4 text-left ring-1 transition ${on ? 'bg-brand-soft ring-2 ring-brand' : 'bg-white ring-slate-200 enabled:hover:ring-brand/40'} disabled:cursor-not-allowed disabled:opacity-50`}>
-                                  <span><b className="block text-ink">{s.label}</b><span className="text-xs text-slate-500">{s.time}</span></span>
-                                  <span className="text-right text-sm">{f.date && !free ? <span className="font-medium text-red-500">Booked</span> : <span className="font-semibold text-brand-dark">{money(pkg.price * s.mult * (f.date && [5, 6].includes(new Date(f.date + 'T00:00').getDay()) ? 1.15 : 1))}</span>}</span>
+                                  className={`relative flex w-full items-center justify-between rounded-2xl p-4 text-left ring-1 transition ${on ? 'bg-brand-soft ring-2 ring-brand' : 'bg-surface ring-slate-200 enabled:hover:ring-brand/40'} disabled:cursor-not-allowed disabled:opacity-50`}>
+                                  <span><b className="block text-fg">{s.label}</b><span className="text-xs text-slate-500">{s.time}</span></span>
+                                  <span className="text-right text-sm">{f.date && !free ? <span className="font-medium text-red-500">Booked</span> : <span className="font-semibold text-brand-ink">{money(pkg.price * s.mult * (f.date && [5, 6].includes(new Date(f.date + 'T00:00').getDay()) ? 1.15 : 1))}</span>}</span>
                                 </button>
                               )
                             })}
@@ -219,15 +219,15 @@ export default function Booking() {
                     {step === 2 && (
                       <div className="space-y-6">
                         <div>
-                          <p className="mb-2 text-sm font-medium text-ink">Optional extras</p>
+                          <p className="mb-2 text-sm font-medium text-fg">Optional extras</p>
                           <div className="grid gap-2.5 sm:grid-cols-2">
                             {addons.map((a) => {
                               const on = f.addons.includes(a.id)
                               return (
                                 <button key={a.id} type="button" aria-pressed={on} onClick={() => set({ addons: on ? f.addons.filter((x) => x !== a.id) : [...f.addons, a.id] })}
-                                  className={`flex items-start gap-3 rounded-2xl p-3.5 text-left ring-1 transition ${on ? 'bg-brand-soft ring-2 ring-brand' : 'bg-white ring-slate-200 hover:ring-brand/40'}`}>
-                                  <motion.span animate={{ scale: on ? 1 : 0.9, backgroundColor: on ? '#3f87f5' : '#f1f5f9' }} className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white">{on && <CheckIcon width={14} height={14} />}</motion.span>
-                                  <span><b className="block text-sm text-ink">{a.label}</b><span className="text-xs text-slate-500">{a.hint}</span><span className="mt-0.5 block text-xs font-semibold text-brand-dark">{money(a.price)}{a.perGuest ? ' / guest' : ''}</span></span>
+                                  className={`flex items-start gap-3 rounded-2xl p-3.5 text-left ring-1 transition ${on ? 'bg-brand-soft ring-2 ring-brand' : 'bg-surface ring-slate-200 hover:ring-brand/40'}`}>
+                                  <motion.span animate={{ scale: on ? 1 : 0.9 }} className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white transition-colors ${on ? 'bg-brand' : 'bg-slate-100'}`}>{on && <CheckIcon width={14} height={14} />}</motion.span>
+                                  <span><b className="block text-sm text-fg">{a.label}</b><span className="text-xs text-slate-500">{a.hint}</span><span className="mt-0.5 block text-xs font-semibold text-brand-ink">{money(a.price)}{a.perGuest ? ' / guest' : ''}</span></span>
                                 </button>
                               )
                             })}
@@ -257,7 +257,7 @@ export default function Booking() {
                 <div className="mt-8 flex items-center justify-between gap-3">
                   <button type="button" onClick={() => go(-1)} disabled={step === 0} className="inline-flex items-center gap-1 rounded-full px-4 py-3 text-sm font-semibold text-slate-600 transition enabled:hover:bg-slate-100 disabled:invisible"><ChevronLeft width={18} height={18} />Back</button>
                   <div className="flex items-center gap-4">
-                    <span className="hidden text-sm text-slate-500 sm:block">Total <b className="text-ink">{money(q.total)}</b></span>
+                    <span className="hidden text-sm text-slate-500 sm:block">Total <b className="text-fg">{money(q.total)}</b></span>
                     {step < 3 ? <button type="button" onClick={() => go(1)} className="btn-primary">Continue <ArrowRight /></button>
                       : <button type="button" onClick={confirm} className="btn-primary !bg-emerald-500 !shadow-emerald-500/30 hover:!bg-emerald-600"><CheckIcon width={18} height={18} />Confirm booking</button>}
                   </div>

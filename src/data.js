@@ -21,10 +21,24 @@ export const eventTypes = ['Wedding', 'Reception', 'Holud', 'Corporate', 'Birthd
 export const marquee = ['Weddings', 'Holud', 'Receptions', 'Aqiqah', 'Milad', 'Corporate Events', 'Seminars', 'Birthdays', 'Engagements', 'Book Fairs']
 
 export const packages = [
-  { id: 'business-fair', icon: 'briefcase', tag: 'Fairs & expos', price: 30000, name: 'Business Fair', desc: 'Book fairs, craft fairs and expos.', cap: 300, items: ['Limited space access', 'Security facility', 'Event support', 'Decoration design', 'Per day bill'] },
-  { id: 'wedding-basic', icon: 'heart', tag: 'Simple & elegant', price: 55000, name: 'Wedding Basic', desc: 'Weddings with a basic plan and limited items.', cap: 400, items: ['Full space access', 'Food arrangement', 'Management support', 'Decoration design', 'Billed per shift'] },
-  { id: 'wedding-plus', icon: 'sparkles', tag: 'Most booked', price: 85000, name: 'Wedding Plus', desc: 'Most weddings with premium plans.', cap: 600, popular: true, items: ['Full space access', 'Security facility', 'Dedicated team', 'Premium decoration', 'Pay as per plan'] },
-  { id: 'corporate', icon: 'building', tag: 'Teams & brands', price: 120000, name: 'Corporate Event', desc: 'Dedicated team for corporate events.', cap: 500, items: ['Full space access', 'Buffet food', 'Premium decoration', 'Sound & projector', 'Per day plan'] },
+  { id: 'wedding-basic', icon: 'heart', tag: 'Simple & elegant', ideal: 'Ideal for simple weddings', price: 55000, name: 'Wedding Basic', desc: 'Weddings with a basic plan and limited items.', cap: 400, items: [
+    { icon: 'building', title: 'Full space access', text: 'The entire hall and entrance' },
+    { icon: 'utensils', title: 'Food arrangement', text: 'Menus arranged with our kitchen' },
+    { icon: 'users', title: 'Management support', text: 'On-the-day coordination' },
+    { icon: 'sparkles', title: 'Decoration design', text: 'Standard stage and seating' },
+    { icon: 'wallet', title: 'Billed per shift', text: 'Morning or evening' } ] },
+  { id: 'wedding-plus', icon: 'sparkles', tag: 'Most booked', ideal: 'Ideal for grand weddings', price: 85000, name: 'Wedding Plus', desc: 'Most weddings with premium plans.', cap: 600, popular: true, items: [
+    { icon: 'building', title: 'Full space access', text: 'The entire hall, entrance and rooms' },
+    { icon: 'shield', title: 'Security facility', text: 'Guards and parking attendants' },
+    { icon: 'users', title: 'Dedicated team', text: 'A coordinator for your event' },
+    { icon: 'crown', title: 'Premium decoration', text: 'Themed stage, entrance and seating' },
+    { icon: 'wallet', title: 'Pay as per plan', text: 'A flexible payment schedule' } ] },
+  { id: 'corporate', icon: 'building', tag: 'Teams & brands', ideal: 'Ideal for corporate events', price: 120000, name: 'Corporate Event', desc: 'Dedicated team for corporate events.', cap: 500, items: [
+    { icon: 'building', title: 'Full space access', text: 'Hall, lobby and breakout areas' },
+    { icon: 'utensils', title: 'Buffet food', text: 'Served by trained staff' },
+    { icon: 'crown', title: 'Premium decoration', text: 'Branding-friendly stage setup' },
+    { icon: 'mic', title: 'Sound & projector', text: 'Mic, LED wall and AV support' },
+    { icon: 'wallet', title: 'Per day plan', text: 'Billed per day' } ] },
 ]
 
 export const addons = [
@@ -76,14 +90,14 @@ export const faqs = [
 ]
 
 export const compare = [
-  { label: 'Guest capacity', v: ['300', '400', '600', '500'] },
-  { label: 'Hall access', v: ['Limited space', 'Full hall', 'Full hall', 'Full hall'] },
-  { label: 'Security', v: [true, true, true, true] },
-  { label: 'Decoration', v: ['Design only', 'Standard', 'Premium', 'Premium'] },
-  { label: 'Dedicated event team', v: [false, false, true, true] },
-  { label: 'Food arrangement', v: [false, true, true, 'Buffet'] },
-  { label: 'Sound & projector', v: [false, false, false, true] },
-  { label: 'Billing', v: ['Per day', 'Per shift', 'As per plan', 'Per day'] },
+  { label: 'Guest capacity', v: ['400', '600', '500'] },
+  { label: 'Hall access', v: ['Full hall', 'Full hall', 'Full hall'] },
+  { label: 'Security', v: [true, true, true] },
+  { label: 'Decoration', v: ['Standard', 'Premium', 'Premium'] },
+  { label: 'Dedicated event team', v: [false, true, true] },
+  { label: 'Food arrangement', v: [true, true, 'Buffet'] },
+  { label: 'Sound & projector', v: [false, false, true] },
+  { label: 'Billing', v: ['Per shift', 'As per plan', 'Per day'] },
 ]
 
 export const events = [
@@ -92,7 +106,7 @@ export const events = [
   { slug: 'Reception', icon: 'gift', image: 'ceremony.webp', title: 'Receptions', text: 'An elegant hall, warm lighting and buffet service for the celebration with everyone you love.', pkg: 'wedding-plus', guests: '150–600 guests' },
   { slug: 'Corporate', icon: 'mic', image: 'crowd.webp', title: 'Corporate & Seminars', text: 'Sound, projector and a professional setup for conferences, annual dinners and product launches.', pkg: 'corporate', guests: '50–500 guests' },
   { slug: 'Milad', icon: 'moon', image: 'hero-2.webp', title: 'Milad & Family', text: 'A calm, respectful space for milad, aqiqah and family gatherings, with food arranged for you.', pkg: 'wedding-basic', guests: '40–300 guests' },
-  { slug: 'Birthday', icon: 'cake', image: 'hero-5.webp', title: 'Birthdays & Parties', text: 'Flexible morning or evening shifts with decoration and catering add-ons.', pkg: 'business-fair', guests: '30–300 guests' },
+  { slug: 'Birthday', icon: 'cake', image: 'hero-5.webp', title: 'Birthdays & Parties', text: 'Flexible morning or evening shifts with decoration and catering add-ons.', pkg: 'wedding-basic', guests: '30–300 guests' },
 ]
 
 export const process = [
@@ -112,10 +126,52 @@ export const values = [
 
 export const nav = [
   { to: '/', label: 'Home' },
-  { to: '/about', label: 'About' },
+  { to: '/about', label: 'About & Contact' },
   { to: '/facilities', label: 'Facilities' },
   { to: '/events', label: 'Events' },
+  { to: '/food', label: 'Food' },
   { to: '/gallery', label: 'Gallery' },
   { to: '/packages', label: 'Packages' },
-  { to: '/contact', label: 'Contact' },
+]
+
+/* ---------- Food menu ----------
+   `by` = which packages serve the dish, and the variation each one gets.
+   Photos: public/images/food-<id>.webp (a gradient + emoji tile shows until you add them). */
+export const foodPkgs = [
+  { id: 'wedding-basic', short: 'Basic', name: 'Wedding Basic' },
+  { id: 'wedding-plus', short: 'Plus', name: 'Wedding Plus' },
+  { id: 'corporate', short: 'Corporate', name: 'Corporate Event' },
+]
+export const foodCats = [
+  { id: 'welcome', label: 'Welcome & starters', emoji: '🥤' },
+  { id: 'rice', label: 'Polao & biryani', emoji: '🍚' },
+  { id: 'meat', label: 'Meat curries', emoji: '🍖' },
+  { id: 'fish', label: 'Fish & seafood', emoji: '🐟' },
+  { id: 'sides', label: 'Dal & sides', emoji: '🥗' },
+  { id: 'dessert', label: 'Mishti & dessert', emoji: '🍮' },
+  { id: 'drinks', label: 'Drinks', emoji: '🥛' },
+]
+export const foodItems = [
+  { id: 'sharbat', cat: 'welcome', name: 'Welcome Sharbat', bn: 'স্বাগত শরবত', by: { 'wedding-basic': 'Lemon sharbat', 'wedding-plus': 'Rooh Afza & lemon', corporate: 'Fresh juice' } },
+  { id: 'jali-kabab', cat: 'welcome', name: 'Jali Kabab', bn: 'জালি কাবাব', by: { 'wedding-plus': 'Chicken, 1 pc', corporate: 'Chicken, 1 pc' } },
+  { id: 'fish-fry', cat: 'welcome', name: 'Fish Fry', bn: 'ফিশ ফ্রাই', by: { 'wedding-plus': 'Bhetki, 1 pc' } },
+  { id: 'morog-polao', cat: 'rice', name: 'Morog Polao', bn: 'মোরগ পোলাও', by: { 'wedding-basic': 'Chicken polao', 'wedding-plus': 'Special morog polao' } },
+  { id: 'kacchi', cat: 'rice', name: 'Kacchi Biryani', bn: 'কাচ্চি বিরিয়ানি', by: { 'wedding-plus': 'Mutton kacchi', corporate: 'Chicken biryani' } },
+  { id: 'plain-polao', cat: 'rice', name: 'Plain Polao', bn: 'সাদা পোলাও', by: { 'wedding-basic': 'With every menu', 'wedding-plus': 'With every menu', corporate: 'With every menu' } },
+  { id: 'rezala', cat: 'meat', name: 'Rezala', bn: 'রেজালা', by: { 'wedding-basic': 'Beef rezala', 'wedding-plus': 'Mutton rezala' } },
+  { id: 'mezbani', cat: 'meat', name: 'Mezbani Beef', bn: 'মেজবানি গরুর মাংস', by: { 'wedding-basic': 'Beef', 'wedding-plus': 'Beef, bone-in' } },
+  { id: 'roast', cat: 'meat', name: 'Chicken Roast', bn: 'চিকেন রোস্ট', by: { 'wedding-plus': 'Leg piece', corporate: 'Regular piece' } },
+  { id: 'rui', cat: 'fish', name: 'Rui Kalia', bn: 'রুই মাছের কালিয়া', by: { 'wedding-basic': 'Rui, 1 pc', 'wedding-plus': 'Rui, 1 pc' } },
+  { id: 'ilish', cat: 'fish', name: 'Ilish Bhapa', bn: 'ইলিশ ভাপা', by: { 'wedding-plus': 'Seasonal' } },
+  { id: 'chingri', cat: 'fish', name: 'Chingri Malaikari', bn: 'চিংড়ি মালাইকারি', by: { 'wedding-plus': 'Prawn' } },
+  { id: 'dal', cat: 'sides', name: 'Dal', bn: 'ডাল', by: { 'wedding-basic': 'Moshur dal', 'wedding-plus': 'Moshur dal', corporate: 'Moshur dal' } },
+  { id: 'veg', cat: 'sides', name: 'Mixed Vegetable', bn: 'মিক্স সবজি', by: { 'wedding-basic': 'Seasonal', corporate: 'Seasonal' } },
+  { id: 'salad', cat: 'sides', name: 'Salad & Chutney', bn: 'সালাদ ও চাটনি', by: { 'wedding-basic': 'Green salad', 'wedding-plus': 'Salad & chutney', corporate: 'Green salad' } },
+  { id: 'firni', cat: 'dessert', name: 'Firni', bn: 'ফিরনি', by: { 'wedding-basic': 'Small cup' } },
+  { id: 'roshogolla', cat: 'dessert', name: 'Roshogolla', bn: 'রসগোল্লা', by: { 'wedding-basic': '1 pc', 'wedding-plus': '2 pcs' } },
+  { id: 'zorda', cat: 'dessert', name: 'Zorda', bn: 'জর্দা', by: { 'wedding-plus': 'Sweet rice' } },
+  { id: 'mishti-doi', cat: 'dessert', name: 'Mishti Doi', bn: 'মিষ্টি দই', by: { 'wedding-plus': 'Bogurar doi', corporate: 'Cup' } },
+  { id: 'borhani', cat: 'drinks', name: 'Borhani', bn: 'বোরহানি', by: { 'wedding-basic': 'Glass', 'wedding-plus': 'Glass', corporate: 'Glass' } },
+  { id: 'soft-drinks', cat: 'drinks', name: 'Soft Drinks', bn: 'কোমল পানীয়', by: { 'wedding-plus': 'Bottle', corporate: 'Bottle' } },
+  { id: 'tea-coffee', cat: 'drinks', name: 'Tea & Coffee', bn: 'চা ও কফি', by: { corporate: 'Unlimited, all day' } },
 ]

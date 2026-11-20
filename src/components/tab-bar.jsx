@@ -45,7 +45,7 @@ function Badge({ count }) {
     <AnimatePresence>
       {count > 0 && (
         <motion.span key="b" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ type: "spring", stiffness: 520, damping: 16 }}
-          className="absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white">
+          className="absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-surface">
           {count}
         </motion.span>
       )}
@@ -98,7 +98,7 @@ export function TabBar({ tabs, variant = "pill", value, defaultValue, onChange, 
 
     if (variant === "labels") {
       return (
-        <motion.button {...common} className={cn("group relative flex w-[4.25rem] flex-col items-center gap-1 rounded-2xl px-1 py-1.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-slate-900/40", on ? "text-slate-900" : "text-slate-400 hover:bg-slate-100/80")}>
+        <motion.button {...common} className={cn("group relative flex w-[4.25rem] flex-col items-center gap-1 rounded-2xl px-1 py-1.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-fg/40", on ? "text-fg" : "text-slate-400 hover:bg-slate-100/80")}>
           <span className="relative flex h-9 w-9 items-center justify-center">
             {on && <motion.span layoutId={uid + "disc"} className="absolute inset-0 rounded-full bg-slate-200/80" transition={reduce ? { duration: 0 } : SPRING} />}
             {ripple}
@@ -106,14 +106,14 @@ export function TabBar({ tabs, variant = "pill", value, defaultValue, onChange, 
             <Badge count={t.badge} />
           </span>
           <span className="text-[12px] font-medium leading-none">{t.label}</span>
-          <span className="relative h-1 w-1">{on && <motion.span layoutId={uid + "dot"} className="absolute inset-0 rounded-full bg-slate-900" transition={reduce ? { duration: 0 } : SPRING} />}</span>
+          <span className="relative h-1 w-1">{on && <motion.span layoutId={uid + "dot"} className="absolute inset-0 rounded-full bg-fg" transition={reduce ? { duration: 0 } : SPRING} />}</span>
         </motion.button>
       )
     }
 
     if (variant === "action") {
       return (
-        <motion.button {...common} className={cn("relative flex h-12 w-12 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-slate-900/40", on ? "bg-slate-200/70 text-slate-900" : "text-slate-400 hover:bg-slate-100/80")}>
+        <motion.button {...common} className={cn("relative flex h-12 w-12 items-center justify-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-fg/40", on ? "bg-slate-200/70 text-fg" : "text-slate-400 hover:bg-slate-100/80")}>
           {ripple}
           <span className="relative"><Icon name={t.icon} tick={tick} /></span>
           <Badge count={t.badge} />
@@ -124,7 +124,7 @@ export function TabBar({ tabs, variant = "pill", value, defaultValue, onChange, 
 
     return (
       <motion.button {...common} layout={!reduce} transition={reduce ? { duration: 0 } : SPRING}
-        className={cn("relative flex h-11 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-slate-900/40", on ? "px-4 text-slate-900" : "w-11 text-slate-400 hover:bg-slate-100/80")}>
+        className={cn("relative flex h-11 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-fg/40", on ? "px-4 text-fg" : "w-11 text-slate-400 hover:bg-slate-100/80")}>
         {on && <motion.span layoutId={uid + "pill"} className="absolute inset-0 rounded-full bg-slate-200/70" transition={reduce ? { duration: 0 } : SPRING} />}
         {ripple}
         <motion.span layout={reduce ? false : "position"} className="relative flex items-center gap-2">
@@ -151,8 +151,8 @@ export function TabBar({ tabs, variant = "pill", value, defaultValue, onChange, 
           <motion.button type="button" aria-label={actionLabel}
             onClick={() => { setSpin((s) => s + 90); setPulse((p) => p + 1); onAction?.() }}
             whileHover={reduce ? undefined : { y: -3 }} whileTap={reduce ? undefined : { y: 2, scale: 0.95 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}
-            className="relative flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg shadow-slate-900/30 ring-4 ring-white outline-none focus-visible:ring-slate-400">
-            {pulse > 0 && !reduce && <motion.span key={pulse} aria-hidden className="absolute inset-0 rounded-full border-2 border-slate-900" initial={{ scale: 1, opacity: 0.5 }} animate={{ scale: 1.8, opacity: 0 }} transition={{ duration: 0.6 }} />}
+            className="relative flex h-14 w-14 items-center justify-center rounded-full bg-fg text-surface shadow-lg shadow-slate-900/30 ring-4 ring-surface outline-none focus-visible:ring-slate-400">
+            {pulse > 0 && !reduce && <motion.span key={pulse} aria-hidden className="absolute inset-0 rounded-full border-2 border-fg" initial={{ scale: 1, opacity: 0.5 }} animate={{ scale: 1.8, opacity: 0 }} transition={{ duration: 0.6 }} />}
             <motion.svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" animate={{ rotate: spin }} transition={{ duration: reduce ? 0 : 0.4 }}>
               <path d="M12 5v14M5 12h14" />
             </motion.svg>
@@ -165,7 +165,7 @@ export function TabBar({ tabs, variant = "pill", value, defaultValue, onChange, 
   return (
     <motion.nav aria-label="Primary" onKeyDown={onKey}
       initial={reduce ? false : { y: 48, opacity: 0, filter: "blur(12px)" }} animate={{ y: 0, opacity: 1, filter: "blur(0px)" }} transition={{ type: "spring", stiffness: 160, damping: 20 }}
-      className={cn("inline-flex rounded-full bg-white shadow-[0_10px_40px_-8px_rgba(15,23,42,.28),0_2px_6px_rgba(15,23,42,.08)] ring-1 ring-slate-900/5", className)}>
+      className={cn("inline-flex rounded-full bg-surface shadow-dock ring-1 ring-fg/5", className)}>
       <motion.ul initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: reduce ? 0 : 0.06, delayChildren: 0.15 } } }}
         className={cn("flex items-center gap-1 p-2", variant === "labels" && "gap-0 px-3 py-1.5")}>
         {items.map(({ key, el }) => (

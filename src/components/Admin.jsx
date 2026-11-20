@@ -27,7 +27,7 @@ export default function Admin() {
   return (
     <>
       <PageHero title="Staff dashboard" text="Manage booking requests." image="hero-3.webp" />
-      <section className="py-12 sm:py-16"><div className="container-x max-w-4xl"><div className="rounded-[2rem] bg-white p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
+      <section className="py-12 sm:py-16"><div className="container-x max-w-4xl"><div className="rounded-[2rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
       {!authed ? (
         <form onSubmit={login} className="mx-auto max-w-sm space-y-4 py-6 text-center">
           <p className="text-sm text-slate-500">Enter the staff passcode to manage bookings.</p>
@@ -39,19 +39,19 @@ export default function Admin() {
         <>
           <div className="mb-5 grid grid-cols-3 gap-3 text-center">
             {[['Total', all.length], ['Pending', pending], ['Confirmed revenue', money(revenue)]].map(([k, v]) => (
-              <div key={k} className="rounded-2xl bg-slate-50 p-3"><p className="text-lg font-semibold text-ink sm:text-2xl">{v}</p><p className="text-[11px] text-slate-500 sm:text-xs">{k}</p></div>
+              <div key={k} className="rounded-2xl bg-slate-50 p-3"><p className="text-lg font-semibold text-fg sm:text-2xl">{v}</p><p className="text-[11px] text-slate-500 sm:text-xs">{k}</p></div>
             ))}
           </div>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2">{FILTERS.map((f) => <button key={f} onClick={() => setFilter(f)} className={`rounded-full px-3.5 py-1.5 text-sm font-medium capitalize transition ${filter === f ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{f}</button>)}</div>
-            <button onClick={() => csv(list)} disabled={!list.length} className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-ink hover:bg-slate-200 disabled:opacity-40"><DownloadIcon width={16} height={16} />Export CSV</button>
+            <button onClick={() => csv(list)} disabled={!list.length} className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-fg hover:bg-slate-200 disabled:opacity-40"><DownloadIcon width={16} height={16} />Export CSV</button>
           </div>
           {list.length === 0 ? <p className="py-10 text-center text-sm text-slate-500">No bookings here yet.</p> : (
             <ul className="space-y-3">
               {list.map((b) => (
                 <li key={b.id} className="rounded-2xl p-4 ring-1 ring-slate-200">
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div><p className="font-semibold text-ink">{b.name} <span className="font-normal text-slate-400">· {b.phone}</span></p>
+                    <div><p className="font-semibold text-fg">{b.name} <span className="font-normal text-slate-400">· {b.phone}</span></p>
                       <p className="text-sm text-slate-600">{b.eventType} · {fmtDate(b.date)} · {SHIFTS.find((s) => s.id === b.shift).label} · {b.guests} guests</p>
                       <p className="text-xs text-slate-400">{b.id} · {packages.find((p) => p.id === b.packageId)?.name} · {money(b.total)} (advance {money(b.advance)})</p></div>
                     <StatusPill status={b.status} />
@@ -59,7 +59,7 @@ export default function Admin() {
                   <div className="mt-3 flex flex-wrap gap-2 text-sm font-medium">
                     {b.status !== 'confirmed' && <button onClick={() => { updateBooking(b.id, { status: 'confirmed' }); toast('Booking confirmed') }} className="rounded-full bg-emerald-500 px-3.5 py-1.5 text-white">Confirm</button>}
                     {b.status !== 'cancelled' && <button onClick={() => { updateBooking(b.id, { status: 'cancelled' }); toast('Booking cancelled') }} className="rounded-full bg-slate-100 px-3.5 py-1.5 text-slate-700">Cancel</button>}
-                    <a href={`tel:${b.phone}`} className="rounded-full bg-brand-soft px-3.5 py-1.5 text-brand-dark">Call</a>
+                    <a href={`tel:${b.phone}`} className="rounded-full bg-brand-soft px-3.5 py-1.5 text-brand-ink">Call</a>
                     <button onClick={() => { if (confirm('Delete permanently?')) removeBooking(b.id) }} className="rounded-full px-3.5 py-1.5 text-red-500 hover:bg-red-50">Delete</button>
                   </div>
                 </li>

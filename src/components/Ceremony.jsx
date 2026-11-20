@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { img } from '../data'
 import { ArrowRight } from './Icons'
 import Reveal from './Reveal'
+import { Underline } from './ui'
 
 export default function Ceremony() {
   return (
@@ -15,8 +16,8 @@ export default function Ceremony() {
             whileHover={{ scale: 1.05 }} transition={{ duration: 0.6 }} className="aspect-[4/3] w-full object-cover" />
         </motion.div>
         <div>
-          <Reveal as="h2" className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl md:text-4xl"><span id="ceremony-h">A marriage ceremony is special to us</span></Reveal>
-          <Reveal delay={0.1}><p className="mt-3 text-lg font-medium text-brand">Where there is love, there is life!</p></Reveal>
+          <Reveal as="h2" className="text-2xl font-semibold tracking-tight text-fg sm:text-3xl md:text-4xl"><span id="ceremony-h">A marriage ceremony is special to us</span></Reveal>
+          <Reveal delay={0.1}><p className="mt-3 text-lg font-medium text-brand">Where there is love, there is <Underline>life</Underline>!</p></Reveal>
           <Reveal delay={0.2}><p className="mt-4 leading-relaxed text-slate-600">A wedding ceremony is a joyous occasion through which a couple starts their married life. It is not merely an obligation, but a socially and culturally important event — and we treat every one that way.</p></Reveal>
           <Reveal delay={0.3}>
             <motion.div whileHover="hover" className="mt-7"><Link to="/gallery" className="btn-primary w-full sm:w-auto">

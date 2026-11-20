@@ -14,14 +14,15 @@ import EventsPage from './pages/EventsPage'
 import GalleryPage from './pages/GalleryPage'
 import PackagesPage from './pages/PackagesPage'
 import BookingPage from './pages/BookingPage'
-import ContactPage from './pages/ContactPage'
+import FoodPage from './pages/FoodPage'
 import NotFound from './pages/NotFound'
-import { useBookings } from './lib/store'
+import { InstallBanner } from './components/Install'
+import { useBookings, toast } from './lib/store'
 
 const pathOf = { home: '/', explore: '/events', packages: '/packages', 'my-bookings': '/my-bookings', booking: '/booking' }
 const tabFor = (p) => {
   if (p === '/') return 'home'
-  if (['/events', '/facilities', '/gallery', '/about'].includes(p)) return 'explore'
+  if (['/events', '/facilities', '/gallery', '/about', '/contact', '/food'].includes(p)) return 'explore'
   if (p === '/packages') return 'packages'
   if (p === '/my-bookings') return 'my-bookings'
   if (p === '/booking') return 'booking'
@@ -38,6 +39,11 @@ export default function App() {
   const bookings = useBookings()
   const count = bookings.filter((b) => b.status !== 'cancelled').length
   useEffect(() => { window.scrollTo(0, 0) }, [location.pathname])
+  useEffect(() => {
+    const off = () => toast('You’re offline — saved pages still work', 'error'), on = () => toast('Back online')
+    window.addEventListener('offline', off); window.addEventListener('online', on)
+    return () => { window.removeEventListener('offline', off); window.removeEventListener('online', on) }
+  }, [])
 
   const tabs = [
     { id: 'home', label: 'Home', icon: 'home' },
@@ -62,7 +68,8 @@ export default function App() {
               <Route path="/packages" element={<PackagesPage />} />
               <Route path="/booking" element={<BookingPage />} />
               <Route path="/my-bookings" element={<MyBookings />} />
-              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/contact" element={<About scrollTo="contact" />} />
+              <Route path="/food" element={<FoodPage />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
@@ -73,6 +80,7 @@ export default function App() {
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 lg:hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
         <TabBar className="pointer-events-auto" tabs={tabs} value={tabFor(location.pathname)} onChange={(id) => navigate(pathOf[id])} />
       </div>
+      <InstallBanner />
       <Toaster />
     </>
   )

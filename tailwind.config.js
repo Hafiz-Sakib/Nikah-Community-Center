@@ -1,19 +1,29 @@
+const v = (name) => `rgb(var(--${name}) / <alpha-value>)`
+const slate = Object.fromEntries([50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((n) => [n, v(`s${n}`)]))
+
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       fontFamily: { sans: ['Poppins', 'system-ui', 'sans-serif'] },
       colors: {
-        brand: { DEFAULT: '#3f87f5', dark: '#2563d6', soft: '#eaf2ff' },
+        // every neutral flips with the theme (see index.css), so existing classes work in day and night
+        slate,
+        page: v('page'),
+        surface: v('surface'),
+        fg: v('fg'),
+        brand: { DEFAULT: '#3f87f5', dark: '#2563d6', soft: v('brand-soft'), ink: v('brand-ink') },
         ink: '#0b0d17',
       },
-      keyframes: { marquee: { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(-50%)' } } },
-      animation: { marquee: 'marquee 32s linear infinite' },
-      boxShadow: {
-        glow: '0 30px 50px -20px rgba(63,135,245,.45)',
-        dock: '0 10px 40px -8px rgba(15,23,42,.28), 0 2px 6px rgba(15,23,42,.08)',
+      keyframes: {
+        marquee: { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(-50%)' } },
+        drift: { '0%,100%': { transform: 'translate3d(-8%,-6%,0) scale(1)' }, '50%': { transform: 'translate3d(8%,6%,0) scale(1.15)' } },
+        'ping-soft': { '0%': { transform: 'scale(1)', opacity: '.5' }, '100%': { transform: 'scale(2.2)', opacity: '0' } },
       },
+      animation: { marquee: 'marquee 32s linear infinite', drift: 'drift 9s ease-in-out infinite' },
+      boxShadow: { glow: '0 30px 50px -20px rgba(63,135,245,.45)', dock: 'var(--shadow-dock)', card: 'var(--shadow-card)' },
     },
   },
   plugins: [],

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { slides, img } from '../data'
 import { ChevronLeft, ChevronRight, ArrowRight } from './Icons'
+import { Magnetic } from './ui'
 
 const N = slides.length
 const pad = (n) => String(n + 1).padStart(2, '0')
@@ -56,7 +57,7 @@ export default function Hero() {
                 </h1>
                 <motion.p variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }} className="mt-5 max-w-lg text-sm leading-relaxed text-white/80 sm:text-base">{s.text}</motion.p>
                 <motion.div variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }} className="pointer-events-auto mt-7 flex flex-wrap gap-3">
-                  <Link to="/booking" className="btn-primary">Book now <ArrowRight /></Link>
+                  <Magnetic><Link to="/booking" className="btn-primary">Book now <ArrowRight /></Link></Magnetic>
                   <Link to="/packages" className="inline-flex items-center rounded-full bg-white/15 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/25 active:scale-95">View packages</Link>
                 </motion.div>
               </motion.div>
