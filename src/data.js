@@ -132,7 +132,7 @@ export const reviews = [
 
 export const faqs = [
   { q: 'How do I book the hall?', a: 'Use the online booking form: pick your package, choose a date and shift, add any extras and confirm. You will get a booking ID instantly and our team will call to confirm.' },
-  { q: 'How much advance is required?', a: 'A 30% advance secures your date. Pay it within 3 days of booking — unpaid bookings are cancelled automatically and the date is released. The balance is due before the event.' },
+  { q: 'How much advance is required?', a: 'A 30% advance secures your date. Pay it within 48 hours of booking — unpaid bookings are cancelled automatically and the date is released. Once you submit a payment it counts as paid for now and our team verifies it. The balance is due before the event.' },
   { q: 'What are the shift timings?', a: 'Morning is 10:00 AM – 3:00 PM, Evening is 5:00 PM – 10:30 PM, or book the Full Day for both shifts at a combined rate.' },
   { q: 'Is there a weekend surcharge?', a: 'Fridays and Saturdays carry a 15% surcharge because of high demand. It is shown clearly before you confirm.' },
   { q: 'What is your cancellation and refund policy?', a: 'Cancel 14 or more days before the event for a full advance refund. Within 14 days the advance is kept as a booking fee. You can cancel from "My Bookings".' },

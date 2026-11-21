@@ -4,7 +4,7 @@ import { ClockIcon, ArrowRight, CheckCircle } from './Icons'
 import Button from './brew/Button'
 import { useNow, holdOf, parts, pad, short, sweepOnce } from '../lib/countdown'
 
-/* Pay-within-3-days warning. The server cancels an unpaid pending booking when its hold runs out;
+/* Pay-within-48-hours warning. The server cancels an unpaid pending booking when its hold runs out;
    these pieces make that deadline visible and get the screen to refresh the moment it passes. */
 const LOOK = {
   calm:     { box: 'bg-amber-50 ring-amber-300 text-amber-900', bar: 'bg-amber-500', icon: 'bg-amber-500', title: 'Pay the advance to keep your date' },
@@ -43,7 +43,7 @@ export function HoldWarning({ b, onPay, onExpire, hideCta = false, className = '
     return (
       <div className={`mt-3 flex items-start gap-3 rounded-2xl bg-sky-50 p-3.5 text-sm text-sky-900 ring-1 ring-sky-300 ${DARK} ${className}`}>
         <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-500 text-white"><CheckCircle width={18} height={18} /></span>
-        <p><b>Payment submitted.</b> Staff are verifying it, so your date stays held. Your booking confirms as soon as it is verified.</p>
+        <p><b>Payment submitted.</b> It counts as paid for now and the 48-hour timer is paused while our team verifies it. Your booking confirms as soon as it is verified.</p>
       </div>
     )
   }
@@ -57,7 +57,7 @@ export function HoldWarning({ b, onPay, onExpire, hideCta = false, className = '
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">{look.title}</p>
           <div className="mt-0.5 text-fg"><Clock left={Math.max(0, h.left)} /></div>
-          <p className="mt-1 text-xs opacity-80">Unpaid bookings are cancelled automatically after {h.days} days and the date goes back on sale.</p>
+          <p className="mt-1 text-xs opacity-80">Unpaid bookings are cancelled automatically after {h.hours} hours and the date goes back on sale.</p>
         </div>
         {!hideCta && onPay && h.level !== 'over' && <Button size="sm" onClick={onPay} className="hidden sm:inline-flex">Pay now<ArrowRight width={14} height={14} /></Button>}
       </div>
@@ -76,7 +76,7 @@ export function HoldChip({ b, onExpire, className = '' }) {
   useExpiry(h, onExpire)
   if (!h || h.paid) return null
   const base = 'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset dark:!bg-white/10 dark:!text-fg dark:!ring-white/20'
-  if (h.review) return <span className={`${base} bg-sky-100 text-sky-800 ring-sky-300 ${className}`}>Hold paused · payment in review</span>
+  if (h.review) return <span className={`${base} bg-sky-100 text-sky-800 ring-sky-300 ${className}`}>Timer paused · payment to verify</span>
   const tone = { calm: 'bg-amber-100 text-amber-800 ring-amber-300', urgent: 'bg-orange-100 text-orange-800 ring-orange-300', critical: 'bg-red-100 text-red-700 ring-red-300', over: 'bg-red-100 text-red-700 ring-red-300' }[h.level]
   return (
     <span title="Unpaid booking: cancelled automatically when this runs out" className={`${base} ${tone} ${className}`}>

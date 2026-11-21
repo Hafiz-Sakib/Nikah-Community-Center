@@ -4,7 +4,7 @@ import { PAYMENT, CONTACT } from '../data'
 import { fmtDate, money, toast } from '../lib/store'
 import { billRows, waText, paidOf } from '../lib/invoice'
 import { api } from '../lib/api'
-import { useMyBookings } from '../lib/bookings'
+import { useMyBookings, shownStatus } from '../lib/bookings'
 import StatusPill from './StatusPill'
 import { HoldWarning, useHoldText } from './HoldTimer'
 import Odometer from './Odometer'
@@ -50,6 +50,8 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
   const balance = q.total - paid
   const dueNow = advanceDue > 0 ? Math.max(0, advanceDue - waiting) : Math.max(0, balance - waiting)   // what is left to pay after pending payments
   const active = b.status === 'pending' || b.status === 'confirmed'
+  const inReview = b.status === 'pending' && waiting > 0
+  const advanceCovered = advanceDue > 0 && dueNow === 0   // advance fully submitted, only staff verification is left
   const refresh = async () => { try { setB(await api(`/bookings/${b.id}`)) } catch {} reloadMine() }
   useEffect(() => { if (!fresh) refresh() }, []) // eslint-disable-line
   useEffect(() => { if (stage === 0) { const t = setTimeout(() => setStage(1), 1500); return () => clearTimeout(t) } }, [stage])
@@ -57,12 +59,12 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
   /* A payment is only a request until staff verify it (checked against the bKash/Nagad/bank statement). */
   const submitPayment = async (body) => {
     setBusy(true)
-    try { await api(`/bookings/${b.id}/payments`, { method: 'POST', body }); toast('Payment submitted — waiting for verification'); setTrx(''); await refresh() }
+    try { await api(`/bookings/${b.id}/payments`, { method: 'POST', body }); toast('Payment submitted — counted as paid, staff will verify it'); setTrx(''); await refresh() }
     catch (e) { toast(e.message, 'error') }
     finally { setBusy(false) }
   }
   const submitManual = () => {
-    if (method !== 'office' && trx.trim().length < 4) { toast('Enter the transaction ID', 'error'); return }
+    if (method !== 'office' && !trx.trim()) { toast('Enter the transaction ID', 'error'); return }
     submitPayment({ amount: dueNow, method, ...(trx.trim() ? { reference: trx.trim() } : {}) })
   }
 
@@ -84,7 +86,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"><CheckIcon width={32} height={32} strokeWidth={3} /></motion.div>
         <h3 className="mt-4 text-2xl font-semibold text-fg">{fresh ? `Request received, ${b.name.split(' ')[0]}!` : `Billing · ${b.eventType}`}</h3>
         </>)}
-        <p className={`flex flex-wrap items-center justify-center gap-2 text-sm text-slate-500 ${fresh ? 'mt-1' : ''}`}><StatusPill status={b.status} />{b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : null}</p>
+        <p className={`flex flex-wrap items-center justify-center gap-2 text-sm text-slate-500 ${fresh ? 'mt-1' : ''}`}><StatusPill status={shownStatus(b)} />{inReview ? null : b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : null}</p>
         <button onClick={() => copy(b.id, 'Booking ID')} className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-soft px-4 py-1.5 font-mono text-sm font-semibold text-brand-ink transition active:scale-95" aria-label={`Copy booking ID ${b.id}`}>{b.id}<ClipboardIcon width={15} height={15} /></button>
         {b.status === 'pending' && <div className="mx-auto mt-4 max-w-xl text-left"><HoldWarning b={b} hideCta onExpire={refresh} className="!mt-0" /></div>}
       </div>
@@ -103,12 +105,12 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
             {/* totals */}
             <div className="rounded-3xl bg-gradient-to-br from-[#6f0202] to-[#9b1c1c] p-5 text-white shadow-lg sm:p-6">
               <div className="flex flex-wrap items-end justify-between gap-4">
-                <div><p className="text-xs uppercase tracking-widest text-white/70">Total bill</p><Odometer value={perGuest ? Math.round(q.total / b.guests) : q.total} prefix="৳" className="text-4xl font-semibold sm:text-5xl" /><p className="mt-1 text-xs text-white/70">{perGuest ? `per guest · ${b.guests} guests` : `${b.eventType} · ${fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })} · ${q.shiftLabel}`}</p></div>
+                <div><p className="text-xs uppercase tracking-widest text-white/70">Total bill</p><Odometer value={perGuest ? Math.round(q.total / b.guests) : q.total} prefix="৳" className="text-[2rem] font-semibold sm:text-5xl" /><p className="mt-1 text-xs text-white/70">{perGuest ? `per guest · ${b.guests} guests` : `${b.eventType} · ${fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })} · ${q.shiftLabel}`}</p></div>
                 <button onClick={() => setPerGuest((v) => !v)} aria-pressed={perGuest} className="rounded-full bg-white/15 px-4 py-2 text-xs font-semibold backdrop-blur transition hover:bg-white/25 active:scale-95">{perGuest ? 'Show total' : 'Show per guest'}</button>
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/70">{advanceDue > 0 ? 'Advance due now (30%)' : 'Advance (30%) received'}</p><p className="mt-1 text-2xl font-semibold"><AnimatedNumber value={advanceDue > 0 ? advanceDue : q.advance} prefix="৳" /></p></div>
-                <div className="rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/70">{b.status === 'pending' && b.holdExpiresAt ? 'Date held for' : 'Paid so far'}</p><p className="mt-1 font-mono text-2xl font-semibold tabular-nums">{b.status === 'pending' && b.holdExpiresAt ? timer : money(paid)}</p></div>
+                <div className="min-w-0 rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/70">{advanceCovered ? 'Advance (30%) submitted' : advanceDue > 0 ? 'Advance due now (30%)' : 'Advance (30%) received'}</p><p className="mt-1 text-xl font-semibold sm:text-2xl"><AnimatedNumber value={advanceCovered ? q.advance : advanceDue > 0 ? dueNow : q.advance} prefix="৳" /></p></div>
+                <div className="min-w-0 rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/70">{inReview ? 'Paid · staff verifying' : b.status === 'pending' && b.holdExpiresAt ? 'Pay within (48 h hold)' : 'Paid so far'}</p><p className="mt-1 font-mono text-xl font-semibold tabular-nums sm:text-2xl">{inReview ? money(paid + waiting) : b.status === 'pending' && b.holdExpiresAt ? timer : money(paid)}</p></div>
               </div>
             </div>
 
@@ -139,13 +141,13 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Payments</p>
                 <ul className="divide-y divide-slate-100">
                   {payments.map((p) => (
-                    <li key={p.id} className="flex items-center gap-3 py-2.5 text-sm">
-                      <span className="min-w-0 flex-1"><span className="block font-medium capitalize text-fg">{p.method}{p.reference ? <span className="font-mono text-xs font-normal text-slate-500"> · {p.reference}</span> : null}</span><span className="block text-xs text-slate-500">{fmtDate(p.createdAt.slice(0, 10))}</span></span>
-                      <StatusPill status={p.status} /><b className="w-24 text-right text-fg">{money(p.amount)}</b>
+                    <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2.5 text-sm">
+                      <span className="min-w-0 flex-1 basis-40"><span className="block font-medium capitalize text-fg">{p.method}{p.reference ? <span className="break-all font-mono text-xs font-normal text-slate-500"> · {p.reference}</span> : null}</span><span className="block text-xs text-slate-500">{fmtDate(p.createdAt.slice(0, 10))}</span></span>
+                      <StatusPill status={p.status === 'pending' ? 'in review' : p.status} /><b className="ml-auto min-w-[5.5rem] text-right text-fg">{money(p.amount)}</b>
                     </li>
                   ))}
                 </ul>
-                {waiting > 0 && <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-700">{money(waiting)} is waiting for admin verification. Your booking confirms once the advance is verified.</p>}
+                {waiting > 0 && <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-700">{money(waiting)} is counted as paid for now and sent to our staff to verify. Your date stays held and the booking confirms once the advance is verified.</p>}
               </div>
             )}
 
@@ -155,7 +157,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
               <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand/30 blur-3xl" />
               <div className="relative flex flex-wrap items-center justify-between gap-4">
                 <div><p className="text-xs font-semibold uppercase tracking-widest text-white/60">Fastest way</p><p className="mt-1 text-lg font-semibold">Pay {advanceDue > 0 ? 'the advance' : 'the balance'} by card</p><p className="mt-0.5 text-sm text-white/60">Visa, Mastercard, Amex · {money(dueNow)} now</p></div>
-                <button onClick={() => setShowPay(true)} disabled={busy} className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-slate-100 active:scale-95 disabled:opacity-60">Pay {money(dueNow)}</button>
+                <button onClick={() => setShowPay(true)} disabled={busy} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-slate-100 active:scale-95 disabled:opacity-60 sm:w-auto">Pay {money(dueNow)}</button>
               </div>
             </div>
 
@@ -177,10 +179,10 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
                 </motion.div>
               </AnimatePresence>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                {method !== 'office' && <input value={trx} onChange={(e) => setTrx(e.target.value)} maxLength={60} placeholder="Transaction ID (TrxID)" className="min-w-0 flex-1 rounded-full border border-slate-200 bg-surface px-4 py-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/15" />}
+                {method !== 'office' && <input value={trx} onChange={(e) => setTrx(e.target.value)} maxLength={60} placeholder="Transaction ID (TrxID)" enterKeyHint="send" autoCapitalize="characters" autoCorrect="off" className="min-w-0 flex-1 rounded-full border border-slate-200 bg-surface px-4 py-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/15" />}
                 <button onClick={submitManual} disabled={busy} className="btn-primary disabled:opacity-60">{busy ? 'Submitting…' : method === 'office' ? 'I will pay at the office' : 'Submit payment'}</button>
               </div>
-              <p className="mt-2 text-xs text-slate-500">Staff verify the payment against our account, then your booking is confirmed.</p>
+              <p className="mt-2 text-xs text-slate-500">Any transaction ID is accepted for now and your date stays held. Staff verify it against our account, then your booking is confirmed.</p>
             </div>
             </>)}
           </motion.div>
@@ -189,7 +191,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
         )}
       </AnimatePresence>
 
-      <div className="mt-5 grid gap-2.5 sm:grid-cols-3 sm:gap-3">
+      <div className="mt-5 grid gap-2.5 sm:grid-cols-3 sm:gap-3 pb-[env(safe-area-inset-bottom)]">
         <a href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(waText(b, pay.label))}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 active:scale-95"><ChatIcon width={18} height={18} />Send payment proof</a>
         <button onClick={ics} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-fg transition hover:bg-slate-200 active:scale-95"><DownloadIcon width={18} height={18} />Add to calendar</button>
         <button onClick={() => setTab('invoice')} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-fg transition hover:bg-slate-200 active:scale-95"><ClipboardIcon width={18} height={18} />View invoice</button>

@@ -91,3 +91,87 @@
 .nf-caret { animation: caret 1s steps(1) infinite; }
 .shimmer-text { background: linear-gradient(100deg, #fff 20%, #8fbcff 40%, #ffe9a8 50%, #8fbcff 60%, #fff 80%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 4.5s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .nf-bulb, .nf-string, .nf-dust, .nf-caret, .shimmer-text { animation: none; } .nf-dust { display: none; } }
+
+/* ---------- invoice paper ----------
+   Fixed colours on purpose (same in day/night and in the PDF). Base rules = the 794 px A4 layout;
+   the container queries below re-flow it for tablets and phones. */
+.inv-wrap { container-type: inline-size; container-name: inv; width: 100%; }
+.inv { position: relative; box-sizing: border-box; width: 100%; max-width: 794px; margin-inline: auto; overflow: hidden; background: #fff; color: #0f172a; font-family: Poppins, system-ui, sans-serif; border-radius: 14px; box-shadow: 0 1px 2px rgba(15,23,42,.06), 0 18px 40px -22px rgba(15,23,42,.35); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.inv-pdf { max-width: none; border-radius: 0; box-shadow: none; min-height: 1123px; display: flex; flex-direction: column; }
+.inv-pdf .inv-foot-grid { margin-bottom: 28px; }
+.inv-pdf .inv-end { margin-top: auto; }
+.inv-bar { height: 10px; background: linear-gradient(90deg, #6f0202, #b3261e 60%, #d4a017); }
+.inv-head { display: flex; justify-content: space-between; gap: 24px; padding: 36px 48px 0; }
+.inv-brand { display: flex; gap: 14px; align-items: center; min-width: 0; }
+.inv-logo { display: block; flex: none; }
+.inv-name { font-size: 20px; font-weight: 700; color: #6f0202; line-height: 1.15; }
+.inv-addr { font-size: 11px; color: #64748b; margin-top: 4px; line-height: 1.5; overflow-wrap: anywhere; }
+.inv-meta { text-align: right; flex: none; }
+.inv-title { font-size: 30px; font-weight: 700; letter-spacing: .08em; line-height: 1; }
+.inv-line { font-size: 12px; color: #64748b; margin-top: 2px; }
+.inv-title + .inv-line { margin-top: 8px; }
+.inv-line b { color: #0f172a; }
+.inv-chip { display: inline-block; margin-top: 8px; padding: 4px 12px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: .1em; white-space: nowrap; }
+.inv-info { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 28px 48px 0; }
+.inv-box { background: #fdf4f4; border-radius: 16px; padding: 16px 18px; min-width: 0; }
+.inv-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #64748b; font-weight: 600; }
+.inv-big { font-size: 16px; font-weight: 600; margin-top: 6px; overflow-wrap: anywhere; }
+.inv-sub { font-size: 12px; color: #64748b; margin-top: 2px; line-height: 1.6; overflow-wrap: anywhere; }
+.inv-table { width: calc(100% - 96px); margin: 26px 48px 0; border-collapse: collapse; }
+.inv-table th { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #64748b; font-weight: 600; padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+.inv-table td { padding: 12px; font-size: 13px; border-bottom: 1px solid #e2e8f0; vertical-align: top; overflow-wrap: anywhere; }
+.inv-table .inv-num { width: 36px; }
+.inv-table th.inv-right, .inv-table td.inv-right { text-align: right; }
+.inv-strong { font-weight: 600; }
+.inv-note { font-size: 11px; color: #64748b; margin-top: 2px; }
+.inv-mute { color: #64748b; }
+.inv-nowrap { white-space: nowrap; }
+.inv-totals-row { display: flex; justify-content: flex-end; margin: 18px 48px 0; }
+.inv-tot { width: 320px; max-width: 100%; }
+.inv-trow { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; font-size: 13px; }
+.inv-prow { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 11px; color: #64748b; }
+.inv-prow span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.inv-adv { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 14px; background: #6f0202; color: #fff; font-size: 14px; font-weight: 600; }
+.inv-bal { display: flex; justify-content: space-between; gap: 12px; padding: 10px 4px 0; font-size: 12px; color: #64748b; }
+.inv-bal b { color: #0f172a; white-space: nowrap; }
+.inv-foot-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: end; margin: 24px 48px 0; }
+.inv-terms { list-style: disc; margin: 8px 0 0; padding: 0 0 0 16px; font-size: 11px; color: #64748b; line-height: 1.7; }
+.inv-code { text-align: center; min-width: 0; }
+.inv-codeid { font-family: ui-monospace, Menlo, monospace; font-size: 13px; letter-spacing: .2em; margin-top: 6px; font-weight: 600; overflow-wrap: anywhere; }
+.inv-codehint { font-size: 10px; color: #64748b; margin-top: 2px; }
+.inv-end { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; padding: 14px 48px; background: #fdf4f4; font-size: 11px; color: #64748b; }
+
+/* tablet / small laptop window */
+@container inv (max-width: 700px) {
+  .inv-head { padding: 28px 28px 0; }
+  .inv-info, .inv-totals-row, .inv-foot-grid { margin-inline: 28px; }
+  .inv-table { width: calc(100% - 56px); margin-inline: 28px; }
+  .inv-end { padding-inline: 28px; }
+}
+/* phones: single column, no side-scrolling */
+@container inv (max-width: 560px) {
+  .inv-head { flex-direction: column; gap: 16px; padding: 22px 18px 0; }
+  .inv-meta { text-align: left; }
+  .inv-title { font-size: 24px; }
+  .inv-name { font-size: 18px; }
+  .inv-logo { width: 52px; height: 52px; }
+  .inv-info { grid-template-columns: 1fr; gap: 10px; margin: 20px 18px 0; }
+  .inv-box { padding: 14px 16px; }
+  .inv-big { font-size: 15px; }
+  .inv-table { width: calc(100% - 36px); margin: 20px 18px 0; }
+  .inv-table .inv-num { display: none; }
+  .inv-table th, .inv-table td { padding: 10px 6px; }
+  .inv-table td { font-size: 12.5px; }
+  .inv-totals-row { margin: 14px 18px 0; }
+  .inv-tot { width: 100%; }
+  .inv-foot-grid { grid-template-columns: 1fr; gap: 18px; margin: 20px 18px 0; }
+  .inv-code { max-width: 280px; margin-inline: auto; width: 100%; }
+  .inv-end { flex-direction: column; gap: 4px; padding: 14px 18px; margin-top: 22px; }
+}
+/* very large screens (TV / 4K): let the paper breathe a little more */
+@media (min-width: 1920px) { .inv:not(.inv-pdf) { max-width: 900px; } }
+
+/* iPhone / iPad Safari zooms the page when a text field is under 16 px: keep fields at 16 px on touch Apple devices */
+@supports (-webkit-touch-callout: none) {
+  input:not([type='checkbox']):not([type='radio']), select, textarea { font-size: 16px !important; }
+}

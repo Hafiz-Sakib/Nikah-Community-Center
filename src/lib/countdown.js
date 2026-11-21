@@ -44,15 +44,15 @@ export function sweepOnce(fn, gap = 20_000) {
   fn()
 }
 
-/* Payment hold of a pending booking. Mirrors the server rule: auto-cancel only when nothing is paid
+/* Payment hold of a pending booking (48 h). Mirrors the server rule: auto-cancel only when nothing is paid
    and no payment is waiting for staff to verify. */
 export function holdOf(b, nowMs) {
   if (!b || b.status !== 'pending' || !b.holdExpiresAt) return null
   const end = new Date(b.holdExpiresAt).getTime()
-  const windowMs = (b.holdHours ?? 72) * HOUR
+  const windowMs = (b.holdHours ?? 48) * HOUR
   const left = end - nowMs
   const review = !!b.payments?.some((p) => p.status === 'pending')
   const paid = (b.paidAmount ?? 0) > 0
   const level = left <= 0 ? 'over' : left <= 6 * HOUR ? 'critical' : left <= 24 * HOUR ? 'urgent' : 'calm'
-  return { end, left, windowMs, review, paid, level, days: Math.round(windowMs / DAY), progress: Math.min(1, Math.max(0, left / windowMs)) }
+  return { end, left, windowMs, review, paid, level, days: Math.round(windowMs / DAY), hours: Math.round(windowMs / HOUR), progress: Math.min(1, Math.max(0, left / windowMs)) }
 }

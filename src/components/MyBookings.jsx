@@ -13,7 +13,7 @@ import { SHIFTS, money, fmtDate, toast, toISO } from '../lib/store'
 import { packages } from '../data'
 import { api } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
-import { useMyBookings, isActive } from '../lib/bookings'
+import { useMyBookings, isActive, shownStatus } from '../lib/bookings'
 import { useAvailability } from '../lib/useAvailability'
 import Modal from './Modal'
 import ActionButton from './brew/ActionButton'
@@ -47,7 +47,7 @@ export default function MyBookings() {
   return (
     <>
       <PageHero title="My bookings" text="Review, edit, pay or cancel your reservations." image="hero-13.webp" />
-      <section className="py-12 sm:py-16"><div className="container-x max-w-3xl"><div className="rounded-[2rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
+      <section className="py-12 sm:py-16"><div className="container-x max-w-3xl 2xl:max-w-4xl"><div className="rounded-[2rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
       <div className="mb-5 flex items-center gap-3">
         <Avatar user={user} size={48} />
         <div className="min-w-0"><p className="truncate text-lg font-semibold text-fg">Hi, {user?.name}</p><p className="truncate text-sm text-slate-500">{user?.email}</p></div>
@@ -74,14 +74,14 @@ export default function MyBookings() {
                 <motion.li key={b.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-2xl p-4 ring-1 ring-slate-200">
                   <div className="flex items-start justify-between gap-3">
                     <div><p className="font-semibold text-fg">{b.eventType} · {fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })}</p><p className="text-xs text-slate-500">{s.label} · {s.time}</p><EventTimer b={b} className="mt-2" /></div>
-                    <StatusPill status={b.status} />
+                    <StatusPill status={shownStatus(b)} />
                   </div>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-slate-600">
                     <span className="font-mono text-xs">{b.id}</span><span>{p?.name} · {b.guests} guests</span><b className="text-fg">{money(b.total)}</b>
                   </div>
-                  {isActive(b) && <p className="mt-1 text-xs text-slate-500">Paid {money(b.paidAmount)} · Balance {money(due)}{b.payments?.some((x) => x.status === 'pending') ? ' · payment awaiting verification' : ''}</p>}
+                  {isActive(b) && <p className="mt-1 text-xs text-slate-500">Paid {money(b.paidAmount)} · Balance {money(due)}{b.payments?.some((x) => x.status === 'pending') ? ' · payment submitted, staff are verifying it' : ''}</p>}
                   {b.status === 'pending' && <HoldWarning b={b} onPay={() => setBill(b)} onExpire={() => { toast('An unpaid booking was cancelled automatically', 'error'); reload(); reloadMap() }} />}
-                  {b.status === 'expired' && <p className="mt-2 rounded-xl bg-orange-50 p-3 text-xs text-orange-700 ring-1 ring-orange-200 dark:!bg-white/5 dark:!text-fg dark:!ring-white/15">This booking was cancelled automatically because the advance was not paid within {Math.round((b.holdHours ?? 72) / 24)} days. The date is free again — you can book it again if it is still available.</p>}
+                  {b.status === 'expired' && <p className="mt-2 rounded-xl bg-orange-50 p-3 text-xs text-orange-700 ring-1 ring-orange-200 dark:!bg-white/5 dark:!text-fg dark:!ring-white/15">This booking was cancelled automatically because the advance was not paid within {b.holdHours ?? 48} hours. The date is free again — you can book it again if it is still available.</p>}
                   <AnimatePresence mode="wait" initial={false}>
                     {confirmId === b.id ? (
                       <motion.div key="confirm" role="alertdialog" aria-label="Confirm cancellation" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}
@@ -111,7 +111,7 @@ export default function MyBookings() {
       )}
       <AnimatePresence>
         {inv && <Modal key="inv" size="lg" title={`Invoice ${inv.invoiceNo}`} onClose={() => setInv(null)}><InvoiceView b={inv} /></Modal>}
-        {bill && <Modal key="bill" size="md" title={`Billing · ${bill.id}`} onClose={() => { setBill(null); reload() }}><Billing b={bill} /></Modal>}
+        {bill && <Modal key="bill" size="lg" title={`Billing · ${bill.id}`} onClose={() => { setBill(null); reload() }}><Billing b={bill} /></Modal>}
         {edit && <EditBooking key="edit" booking={edit} map={map} onClose={() => setEdit(null)} onSaved={() => { reload(); reloadMap() }} />}
       </AnimatePresence>
       <p className="mt-5 text-center text-xs text-slate-400">Refunds for cancelled bookings are handled by our team. Call us if you need help.</p>

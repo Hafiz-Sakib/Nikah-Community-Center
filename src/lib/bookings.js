@@ -26,3 +26,9 @@ export function BookingsProvider({ children }) {
 }
 
 export const isActive = (b) => b.status === 'pending' || b.status === 'confirmed'
+
+/* A payment the customer has submitted (any transaction ID) is counted as paid for now and waits for staff to verify it. */
+export const hasReview = (b) => !!b.payments?.some((p) => p.status === 'pending')
+export const reviewAmount = (b) => (b.payments || []).filter((p) => p.status === 'pending').reduce((s, p) => s + p.amount, 0)
+/* Status to show people: a pending booking whose payment is in review reads "in review", not "pending". */
+export const shownStatus = (b) => (b.status === 'pending' && hasReview(b) ? 'in review' : b.status)

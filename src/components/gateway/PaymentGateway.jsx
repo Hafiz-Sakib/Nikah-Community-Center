@@ -152,11 +152,11 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => phase !== 'loading' && onClose()} aria-hidden />
           <motion.div role="dialog" aria-modal="true" aria-labelledby={`${uid}-title`}
             initial={still ? false : { y: 48, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 32, opacity: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-            className="relative grid max-h-[100svh] w-full max-w-4xl overflow-y-auto rounded-t-[2rem] bg-surface shadow-2xl sm:max-h-[92svh] sm:rounded-[2rem] lg:grid-cols-[1.02fr_1fr]">
+            className="relative grid max-h-[100dvh] w-full max-w-4xl overflow-y-auto overscroll-contain rounded-t-[2rem] bg-surface pb-[env(safe-area-inset-bottom)] shadow-2xl sm:max-h-[92dvh] sm:rounded-[2rem] lg:grid-cols-[1.02fr_1fr] 2xl:max-w-5xl">
             <button onClick={onClose} disabled={phase === 'loading'} aria-label="Close checkout" className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 disabled:opacity-40 lg:bg-slate-100 lg:text-fg lg:hover:bg-slate-200"><CloseIcon /></button>
 
             {/* left: summary + live card */}
-            <div className="relative overflow-hidden bg-ink p-6 text-white sm:p-8">
+            <div className="relative overflow-hidden bg-ink p-5 pt-6 text-white sm:p-8">
               <div aria-hidden className="pointer-events-none absolute -left-20 -top-24 h-72 w-72 rounded-full bg-brand/30 blur-3xl" />
               <div aria-hidden className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-[#9b1c1c]/40 blur-3xl" />
               <div className="relative">
@@ -173,7 +173,7 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
             </div>
 
             {/* right: form or receipt */}
-            <div className="relative min-h-[460px] p-6 sm:p-8">
+            <div className="relative min-h-[420px] p-5 sm:min-h-[460px] sm:p-8">
               <AnimatePresence mode="wait" initial={false}>
                 {phase !== 'done' ? (
                   <motion.form key="form" onSubmit={submit} noValidate exit={{ opacity: 0, scale: 0.97, filter: 'blur(6px)', transition: { duration: 0.25 } }} initial={still ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: GLIDE }}>
@@ -215,8 +215,8 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
                   <motion.div key="done" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: GLIDE, delay: still ? 0 : 0.1 }} className="flex h-full flex-col" role="status">
                     <div className="flex flex-1 flex-col items-center justify-center text-center">
                       <Seal still={still} />
-                      <h3 className="mt-3 text-xl font-semibold tracking-tight text-fg">Payment received</h3>
-                      <p className="mt-1 text-sm text-slate-500">Thank you{payer ? `, ${payer.split(' ')[0]}` : ''}. Our team will confirm your date shortly.</p>
+                      <h3 className="mt-3 text-xl font-semibold tracking-tight text-fg">Payment submitted</h3>
+                      <p className="mt-1 text-sm text-slate-500">Thank you{payer ? `, ${payer.split(' ')[0]}` : ''}. It counts as paid for now and your date stays held while our team verifies it.</p>
                       <dl className="mt-6 w-full max-w-sm divide-y divide-slate-100 rounded-2xl bg-slate-50 px-4 text-left text-sm">
                         {[['Amount', money(res.amount)], ['Booking', res.bookingId], ['Reference', res.ref], ['Card', `${res.brand || 'Card'} •••• ${res.last4}`], ['Date', fmtWhen(res.paidAt)]].map(([k, val]) => (
                           <div key={k} className="flex items-center justify-between gap-4 py-2.5"><dt className="text-slate-500">{k}</dt><dd className="font-semibold tabular-nums text-fg">{val}</dd></div>
