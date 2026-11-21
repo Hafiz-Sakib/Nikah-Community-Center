@@ -1,18 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import PageHero from './PageHero'
 import StatusPill from './StatusPill'
 import EditBooking from './EditBooking'
 import InvoiceView from './InvoiceView'
+import Odometer from './Odometer'
+import Button from './brew/Button'
+import HoldToConfirm from './brew/HoldToConfirm'
+import { PillTabs } from './brew/PillTabs'
 import { SHIFTS, money, fmtDate, toast } from '../lib/store'
-import { packages } from '../data'
+import { packages, img } from '../data'
 import { api } from '../lib/api'
 import { useAvailability } from '../lib/useAvailability'
-import { DownloadIcon, CloseIcon } from './Icons'
+import { DownloadIcon, CloseIcon, SearchIcon, PlusIcon, PhoneIcon, CheckIcon, ChevronDown, ChevronLeft, ChevronRight, ClipboardIcon, CalendarIcon, WalletIcon, UsersIcon } from './Icons'
 
 const FILTERS = ['all', 'pending', 'confirmed', 'cancelled', 'expired', 'completed']
+const TABS = FILTERS.map((f) => ({ id: f, label: f[0].toUpperCase() + f.slice(1) }))
 const METHODS = ['office', 'bkash', 'nagad', 'bank', 'card']
 const PAGE = 20
+const field = 'h-11 rounded-full border border-slate-300 bg-surface px-4 text-sm text-fg outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15'
 
 function csv(rows) {
   const head = ['ID', 'Status', 'Event', 'Package', 'Date', 'Shift', 'Guests', 'Name', 'Phone', 'Email', 'Total', 'Advance', 'Paid']
@@ -29,28 +34,41 @@ function PaymentsPanel({ b, onChanged }) {
   const run = async (fn, msg) => { setBusy(true); try { await fn(); toast(msg); onChanged() } catch (e) { toast(e.message, 'error') } finally { setBusy(false) } }
   const review = (id, status) => run(() => api(`/admin/payments/${id}`, { method: 'PATCH', body: { status } }), `Payment ${status}`)
   const add = () => run(() => api(`/admin/bookings/${b.id}/payments`, { method: 'POST', body: { amount: +amount, method, ...(ref.trim() ? { reference: ref.trim() } : {}) } }), 'Payment recorded')
-  const inp = 'rounded-xl border border-slate-200 bg-surface px-3 py-2 text-sm outline-none focus:border-brand'
+  const inp = 'h-10 rounded-xl border border-slate-300 bg-surface px-3 text-sm text-fg outline-none focus:border-brand focus:ring-4 focus:ring-brand/15'
   return (
-    <div className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm">
-      {b.payments?.length ? (
-        <ul className="divide-y divide-slate-200">
-          {b.payments.map((p) => (
-            <li key={p.id} className="flex flex-wrap items-center gap-2 py-2">
-              <span className="min-w-0 flex-1"><b className="capitalize text-fg">{p.method}</b> {money(p.amount)}{p.reference && <span className="font-mono text-xs text-slate-500"> · {p.reference}</span>}</span>
-              <StatusPill status={p.status} />
-              {p.status !== 'verified' && <button disabled={busy} onClick={() => review(p.id, 'verified')} className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white disabled:opacity-60">Verify</button>}
-              {p.status === 'pending' && <button disabled={busy} onClick={() => review(p.id, 'rejected')} className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 disabled:opacity-60">Reject</button>}
-            </li>
-          ))}
-        </ul>
-      ) : <p className="text-xs text-slate-500">No payments yet.</p>}
-      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
-        <span className="text-xs font-semibold text-slate-500">Record payment</span>
-        <input className={`${inp} w-28`} type="number" min={1} value={amount} onChange={(e) => setAmount(e.target.value)} aria-label="Amount" />
-        <select className={inp} value={method} onChange={(e) => setMethod(e.target.value)} aria-label="Method">{METHODS.map((m) => <option key={m}>{m}</option>)}</select>
-        <input className={`${inp} w-36`} placeholder="Reference" value={ref} onChange={(e) => setRef(e.target.value)} />
-        <button disabled={busy || !(+amount > 0)} onClick={add} className="rounded-full bg-brand px-4 py-2 text-xs font-semibold text-white disabled:opacity-60">Add (verified)</button>
+    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+      <div className="mt-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+        <p className="mb-2 text-sm font-semibold text-fg">Payments</p>
+        {b.payments?.length ? (
+          <ul className="divide-y divide-slate-200">
+            {b.payments.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center gap-2 py-2.5">
+                <span className="min-w-0 flex-1 text-sm text-slate-600"><b className="capitalize text-fg">{p.method}</b> · {money(p.amount)}{p.reference && <span className="ml-1 font-mono text-xs text-slate-500">· {p.reference}</span>}</span>
+                <StatusPill status={p.status} />
+                {p.status !== 'verified' && <Button size="sm" variant="success" disabled={busy} onClick={() => review(p.id, 'verified')}><CheckIcon width={14} height={14} />Verify</Button>}
+                {p.status === 'pending' && <Button size="sm" variant="danger" disabled={busy} onClick={() => review(p.id, 'rejected')}>Reject</Button>}
+              </li>
+            ))}
+          </ul>
+        ) : <p className="text-sm text-slate-500">No payments yet.</p>}
+        <div className="mt-3 flex flex-wrap items-end gap-3 border-t border-slate-200 pt-3">
+          <label className="text-xs font-medium text-slate-500">Amount<input className={`${inp} mt-1 block w-32`} type="number" min={1} value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
+          <label className="text-xs font-medium text-slate-500">Method<select className={`${inp} mt-1 block`} value={method} onChange={(e) => setMethod(e.target.value)}>{METHODS.map((m) => <option key={m}>{m}</option>)}</select></label>
+          <label className="min-w-[8rem] flex-1 text-xs font-medium text-slate-500">Reference<input className={`${inp} mt-1 block w-full`} placeholder="Txn ID (optional)" value={ref} onChange={(e) => setRef(e.target.value)} /></label>
+          <Button disabled={busy || !(+amount > 0)} onClick={add}><PlusIcon width={16} height={16} />Record payment</Button>
+        </div>
       </div>
+    </motion.div>
+  )
+}
+
+function Stat({ icon: Icon, label, children, tone = 'brand' }) {
+  const tones = { brand: 'bg-brand-soft text-brand-ink', amber: 'bg-amber-100 text-amber-800', emerald: 'bg-emerald-100 text-emerald-800', sky: 'bg-sky-100 text-sky-800' }
+  return (
+    <div className="rounded-3xl bg-surface p-4 shadow-card ring-1 ring-slate-200 sm:p-5">
+      <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${tones[tone]} dark:!bg-white/10 dark:!text-fg`}><Icon width={20} height={20} /></span>
+      <div className="mt-4 text-2xl font-semibold text-fg sm:text-3xl">{children}</div>
+      <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">{label}</p>
     </div>
   )
 }
@@ -89,63 +107,121 @@ export default function Admin() {
   const changed = () => { load(); reloadMap() }
   const act = async (fn, msg) => { try { await fn(); toast(msg); changed() } catch (e) { toast(e.message, 'error') } }
   const setStatus = (b, status) => act(() => api(`/admin/bookings/${b.id}`, { method: 'PATCH', body: { status } }), `Booking ${status}`)
-  const remove = (b) => { if (confirm(`Delete ${b.id} permanently? Its payments are deleted too.`)) act(() => api(`/admin/bookings/${b.id}`, { method: 'DELETE' }), 'Booking deleted') }
+  const remove = (b) => act(() => api(`/admin/bookings/${b.id}`, { method: 'DELETE' }), 'Booking deleted')   // guarded by hold-to-confirm
   const openInvoice = (b) => setInv({ ...b, invoiceNo: 'INV-' + b.id.replace(/^NCC-/, '') })   // list rows already carry snapshot + payments
   const pages = Math.max(1, Math.ceil(data.total / PAGE))
-  const pill = (on) => `rounded-full px-3.5 py-1.5 text-sm font-medium capitalize transition ${on ? 'bg-brand text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
+  const filtered = filter !== 'all' || q || from || to
 
   return (
     <>
-      <PageHero title="Staff dashboard" text="Manage bookings and payments." image="hero-14.webp" />
-      <section className="py-12 sm:py-16"><div className="container-x max-w-4xl"><div className="rounded-[2rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
-        <div className="mb-5 grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
-          {[['Total', stats?.total ?? '–'], ['Pending', stats?.pending ?? '–'], ['Confirmed revenue', stats ? money(stats.revenue) : '–'], ['Upcoming 30 days', stats?.upcoming ?? '–']].map(([k, v]) => (
-            <div key={k} className="rounded-2xl bg-slate-50 p-3"><p className="text-lg font-semibold text-fg sm:text-2xl">{v}</p><p className="text-[11px] text-slate-500 sm:text-xs">{k}</p></div>
-          ))}
+      {/* header */}
+      <section className="pt-16">
+        <div className="relative overflow-hidden bg-ink">
+          <img src={img('hero-14.webp')} alt="" data-keep className="absolute inset-0 h-full w-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/40" />
+          <div className="container-x relative flex flex-wrap items-end justify-between gap-4 py-10 text-white sm:py-14">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white ring-1 ring-white/25"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />Staff only</p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Staff dashboard</h1>
+              <p className="mt-1.5 max-w-md text-sm text-white/80">Confirm bookings, verify payments and print invoices.</p>
+            </div>
+            <Button variant="white" size="lg" onClick={() => setEdit('new')}><PlusIcon width={18} height={18} />Walk-in booking</Button>
+          </div>
         </div>
+      </section>
 
-        <div className="mb-3 flex flex-wrap gap-2">{FILTERS.map((f) => <button key={f} onClick={() => { setFilter(f); setPage(1) }} className={pill(filter === f)}>{f}</button>)}</div>
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <input value={qInput} onChange={(e) => setQInput(e.target.value)} placeholder="Search code, name or phone" className="min-w-0 flex-1 rounded-full border border-slate-200 bg-surface px-4 py-2.5 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/15" />
-          <input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1) }} aria-label="From date" className="rounded-full border border-slate-200 bg-surface px-3 py-2 text-sm" />
-          <input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPage(1) }} aria-label="To date" className="rounded-full border border-slate-200 bg-surface px-3 py-2 text-sm" />
-          <button onClick={() => csv(data.items)} disabled={!data.items.length} className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-fg hover:bg-slate-200 disabled:opacity-40"><DownloadIcon width={16} height={16} />CSV</button>
-          <button onClick={() => setEdit('new')} className="btn-primary !py-2.5">+ Walk-in booking</button>
-        </div>
+      <section className="pb-16 pt-8 sm:pb-24">
+        <div className="container-x">
+          {/* stats */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            <Stat icon={ClipboardIcon} label="Total bookings">{stats ? <Odometer value={stats.total} /> : '–'}</Stat>
+            <Stat icon={UsersIcon} tone="amber" label="Waiting for action">{stats ? <Odometer value={stats.pending} /> : '–'}</Stat>
+            <Stat icon={WalletIcon} tone="emerald" label="Confirmed revenue">{stats ? <Odometer value={stats.revenue} prefix="৳" /> : '–'}</Stat>
+            <Stat icon={CalendarIcon} tone="sky" label="Events in next 30 days">{stats ? <Odometer value={stats.upcoming} /> : '–'}</Stat>
+          </div>
 
-        {loading && !data.items.length ? <p className="py-10 text-center text-sm text-slate-500">Loading…</p>
-        : data.items.length === 0 ? <p className="py-10 text-center text-sm text-slate-500">No bookings match.</p> : (
-          <ul className={`space-y-3 transition-opacity ${loading ? 'opacity-60' : ''}`}>
-            {data.items.map((b) => (
-              <li key={b.id} className="rounded-2xl p-4 ring-1 ring-slate-200">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div><p className="font-semibold text-fg">{b.name} <span className="font-normal text-slate-400">· {b.phone}</span></p>
-                    <p className="text-sm text-slate-600">{b.eventType} · {fmtDate(b.date)} · {SHIFTS.find((s) => s.id === b.shift)?.label} · {b.guests} guests</p>
-                    <p className="text-xs text-slate-400">{b.id} · {packages.find((p) => p.id === b.packageId)?.name} · {money(b.total)} (advance {money(b.advance)}) · paid {money(b.paidAmount)}{b.payments?.some((p) => p.status === 'pending') && <b className="text-amber-600"> · payment to verify</b>}</p></div>
-                  <StatusPill status={b.status} />
+          {/* controls */}
+          <div className="mt-6 rounded-[2rem] bg-surface p-4 shadow-dock ring-1 ring-slate-200 sm:p-6">
+            <div className="-mx-1 overflow-x-auto px-1 pb-1"><PillTabs tabs={TABS} value={filter} onValueChange={(f) => { setFilter(f); setPage(1) }} label="Booking status" /></div>
+            <div className="mt-4 flex flex-wrap items-center gap-2.5">
+              <div className="relative min-w-[14rem] flex-1">
+                <SearchIcon width={18} height={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input value={qInput} onChange={(e) => setQInput(e.target.value)} placeholder="Search code, name or phone" aria-label="Search bookings" className={`${field} w-full pl-11`} />
+              </div>
+              <div className="grid w-full grid-cols-2 gap-2.5 sm:contents">
+                <input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1) }} aria-label="From date" className={`${field} w-full`} />
+                <input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPage(1) }} aria-label="To date" className={`${field} w-full`} />
+              </div>
+              <Button variant="outline" onClick={() => csv(data.items)} disabled={!data.items.length}><DownloadIcon width={16} height={16} />Export CSV</Button>
+            </div>
+
+            {/* list */}
+            <div className="mt-5">
+              {loading && !data.items.length ? <div className="space-y-3" aria-label="Loading">{[0, 1, 2].map((i) => <div key={i} className="h-36 animate-pulse rounded-3xl bg-slate-100" />)}</div>
+              : data.items.length === 0 ? (
+                <div className="rounded-3xl border border-dashed border-slate-300 py-14 text-center">
+                  <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft text-brand-ink"><ClipboardIcon width={22} height={22} /></span>
+                  <p className="mt-3 font-semibold text-fg">{filtered ? 'No bookings match these filters' : 'No bookings yet'}</p>
+                  <p className="mt-1 text-sm text-slate-500">{filtered ? 'Try another status or clear the search.' : 'Walk-in and online bookings will show up here.'}</p>
+                  {filtered && <Button className="mt-4" variant="outline" onClick={() => { setFilter('all'); setQInput(''); setFrom(''); setTo('') }}>Clear filters</Button>}
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-sm font-medium">
-                  {b.status !== 'confirmed' && <button onClick={() => setStatus(b, 'confirmed')} className="rounded-full bg-emerald-500 px-3.5 py-1.5 text-white">Confirm</button>}
-                  {b.status !== 'cancelled' && <button onClick={() => setStatus(b, 'cancelled')} className="rounded-full bg-slate-100 px-3.5 py-1.5 text-slate-700">Cancel</button>}
-                  <button onClick={() => setEdit(b)} className="rounded-full bg-slate-100 px-3.5 py-1.5 text-slate-700">Edit</button>
-                  <button onClick={() => setOpen(open === b.id ? null : b.id)} className="rounded-full bg-slate-100 px-3.5 py-1.5 text-slate-700">Payments ({b.payments?.length ?? 0})</button>
-                  <button onClick={() => openInvoice(b)} className="rounded-full bg-slate-100 px-3.5 py-1.5 text-slate-700">Invoice</button>
-                  <a href={`tel:${b.phone}`} className="rounded-full bg-brand-soft px-3.5 py-1.5 text-brand-ink">Call</a>
-                  <button onClick={() => remove(b)} className="rounded-full px-3.5 py-1.5 text-red-500 hover:bg-red-50">Delete</button>
-                </div>
-                {open === b.id && <PaymentsPanel b={b} onChanged={changed} />}
-              </li>
-            ))}
-          </ul>
-        )}
+              ) : (
+                <ul className={`space-y-4 transition-opacity ${loading ? 'opacity-60' : ''}`}>
+                  {data.items.map((b) => {
+                    const toVerify = b.payments?.some((p) => p.status === 'pending')
+                    return (
+                      <li key={b.id} className="rounded-3xl bg-surface p-4 ring-1 ring-slate-200 transition hover:ring-brand/40 sm:p-5">
+                        <div className="flex gap-4">
+                          <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-brand-soft text-brand-ink">
+                            <span className="text-2xl font-semibold leading-none">{fmtDate(b.date, { day: 'numeric' })}</span>
+                            <span className="mt-1 text-xs font-medium">{fmtDate(b.date, { month: 'short' })}</span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="truncate font-semibold text-fg">{b.name}</p>
+                                <p className="text-sm text-slate-500">{b.phone}</p>
+                              </div>
+                              <StatusPill status={b.status} />
+                            </div>
+                            <p className="mt-1.5 text-sm text-slate-600">{b.eventType} · {SHIFTS.find((s) => s.id === b.shift)?.label} · {b.guests} guests · {packages.find((p) => p.id === b.packageId)?.name}</p>
+                            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                              <span className="text-slate-500">Total <b className="text-fg">{money(b.total)}</b></span>
+                              <span className="text-slate-500">Advance <b className="text-fg">{money(b.advance)}</b></span>
+                              <span className="text-slate-500">Paid <b className={b.paidAmount >= b.advance ? 'text-emerald-600 dark:text-emerald-300' : 'text-fg'}>{money(b.paidAmount)}</b></span>
+                              <span className="font-mono text-xs text-slate-400">{b.id}</span>
+                            </div>
+                            {toVerify && <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-300 dark:!bg-amber-500/15 dark:!text-amber-200 dark:!ring-amber-400/40"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />Payment waiting to be verified</p>}
+                          </div>
+                        </div>
 
-        <div className="mt-5 flex items-center justify-between text-sm text-slate-500">
-          <span>{data.total} booking{data.total === 1 ? '' : 's'}</span>
-          <span className="flex items-center gap-2">
-            <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="rounded-full bg-slate-100 px-3.5 py-1.5 font-medium text-slate-700 disabled:opacity-40">Prev</button>
-            <span>Page {page} / {pages}</span>
-            <button disabled={page >= pages} onClick={() => setPage((p) => p + 1)} className="rounded-full bg-slate-100 px-3.5 py-1.5 font-medium text-slate-700 disabled:opacity-40">Next</button>
-          </span>
+                        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
+                          {b.status !== 'confirmed' && <Button size="sm" variant="success" onClick={() => setStatus(b, 'confirmed')}><CheckIcon width={14} height={14} />Confirm</Button>}
+                          {b.status !== 'cancelled' && <Button size="sm" variant="outline" onClick={() => setStatus(b, 'cancelled')}>Cancel booking</Button>}
+                          <Button size="sm" variant="outline" onClick={() => setEdit(b)}>Edit</Button>
+                          <Button size="sm" variant={open === b.id ? 'primary' : 'soft'} aria-expanded={open === b.id} onClick={() => setOpen(open === b.id ? null : b.id)}>Payments ({b.payments?.length ?? 0})<ChevronDown width={14} height={14} className={`transition-transform ${open === b.id ? 'rotate-180' : ''}`} /></Button>
+                          <Button size="sm" variant="outline" onClick={() => openInvoice(b)}>Invoice</Button>
+                          <Button as="a" size="sm" variant="soft" href={`tel:${b.phone}`}><PhoneIcon width={14} height={14} />Call</Button>
+                          <HoldToConfirm className="ml-auto" label="Hold to delete" onConfirm={() => remove(b)} />
+                        </div>
+                        <AnimatePresence initial={false}>{open === b.id && <PaymentsPanel key="p" b={b} onChanged={changed} />}</AnimatePresence>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </div>
+
+            {/* pagination */}
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
+              <span><b className="text-fg">{data.total}</b> booking{data.total === 1 ? '' : 's'}</span>
+              <span className="flex items-center gap-2">
+                <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}><ChevronLeft width={14} height={14} />Prev</Button>
+                <span className="px-1">Page {page} of {pages}</span>
+                <Button size="sm" variant="outline" disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>Next<ChevronRight width={14} height={14} /></Button>
+              </span>
+            </div>
+          </div>
         </div>
 
         <AnimatePresence>
@@ -153,14 +229,14 @@ export default function Admin() {
           {inv && (
             <motion.div key="inv" className="fixed inset-0 z-[75] flex items-start justify-center overflow-y-auto bg-black/70 p-3 sm:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setInv(null)}>
               <motion.div onClick={(e) => e.stopPropagation()} initial={{ y: 30 }} animate={{ y: 0 }} className="relative mt-14 w-full max-w-[860px] rounded-3xl bg-surface p-3 sm:p-5">
-                <button onClick={() => setInv(null)} aria-label="Close" className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-fg"><CloseIcon /></button>
+                <Button variant="outline" size="icon" onClick={() => setInv(null)} aria-label="Close invoice" className="absolute right-3 top-3 z-10"><CloseIcon width={18} height={18} /></Button>
                 <p className="mb-3 pr-12 text-lg font-semibold text-fg">Invoice {inv.invoiceNo}</p>
                 <InvoiceView b={inv} />
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
-      </div></div></section>
+      </section>
     </>
   )
 }
