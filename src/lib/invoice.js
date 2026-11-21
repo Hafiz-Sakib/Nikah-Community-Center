@@ -17,6 +17,9 @@ export function moneyOf(b) {
   const advance = b.priceSnapshot?.advance ?? b.advance ?? 0
   const paid = paidOf(b)
   const waiting = (b.payments || []).filter((p) => p.status === 'pending').reduce((s, p) => s + p.amount, 0)
+  // A cancelled / expired booking owes nothing and takes no payments: every taka already verified is to be refunded, never shown as "Fully paid".
+  const closed = b.status === 'cancelled' || b.status === 'expired'
+  if (closed) return { total, advance, paid, waiting, balance: 0, room: 0, needAdvance: 0, advanceReceived: false, paidInFull: false, closed: true, overpaid: paid > 0, refundDue: paid }
   return {
     total, advance, paid, waiting,
     balance: Math.max(0, total - paid),
@@ -24,6 +27,7 @@ export function moneyOf(b) {
     needAdvance: Math.max(0, advance - paid - waiting),
     advanceReceived: paid >= advance,
     paidInFull: total > 0 && paid >= total,
+    closed: false,
     overpaid: paid > total,
     refundDue: Math.max(0, paid - total),   // total fell below what was paid: staff refund the difference
   }

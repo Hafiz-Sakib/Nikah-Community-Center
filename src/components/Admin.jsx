@@ -71,7 +71,7 @@ export function PaymentsPanel({ b, onChanged }) {
                 <PayLogo id={p.method} size="sm" />
                 <span className="min-w-0 flex-1 basis-44 text-sm text-slate-600"><b className="text-fg">{label(p.method)}</b> · <b className="tabular-nums text-fg">{money(p.amount)}</b>{p.reference && <span className="ml-1 break-all tabular-nums text-xs text-slate-500">· {p.reference}</span>}<span className="block text-xs text-slate-500">{fmtWhen(p.createdAt)}{p.note ? ` · ${p.note}` : ''}</span></span>
                 <StatusPill status={p.status} />
-                {p.status !== 'verified' && <Button size="sm" variant="success" disabled={busy} onClick={() => review(p.id, 'verified')}><CheckIcon width={14} height={14} />Verify</Button>}
+                {p.status !== 'verified' && !closed && <Button size="sm" variant="success" disabled={busy} onClick={() => review(p.id, 'verified')}><CheckIcon width={14} height={14} />Verify</Button>}
                 {p.status === 'pending' && <Button size="sm" variant="danger" disabled={busy} onClick={() => review(p.id, 'rejected')}>Reject</Button>}
               </li>
             ))}
@@ -80,7 +80,7 @@ export function PaymentsPanel({ b, onChanged }) {
 
         <div className="mt-3 border-t border-slate-200 pt-3">
           <p className="text-sm font-semibold text-fg">Record a payment</p>
-          {closed ? <p className="mt-1.5 text-sm text-slate-500">This booking is cancelled. Re-open it before recording a payment.</p>
+          {closed ? <p className="mt-1.5 text-sm text-slate-500">This booking is cancelled, so it cannot take payments. Any money already received is shown as a refund due.</p>
           : m.room === 0 ? <p className="mt-1.5 text-sm text-slate-500">{m.paidInFull ? 'Fully paid. Nothing left to collect.' : `Payments waiting to verify (${money(m.waiting)}) already cover the balance. Verify or reject them first.`}</p>
           : (<>
             <p className="mt-1 text-xs text-slate-500">Cash at the office or a transfer you saw arrive. It is recorded as received straight away. Up to {money(m.room)} can still be added{m.waiting > 0 ? ` (${money(m.waiting)} more is waiting to verify)` : ''}.</p>
@@ -120,9 +120,11 @@ export function PaymentsPanel({ b, onChanged }) {
 function VerifyBox({ b, busy, onReview }) {
   const pend = (b.payments || []).filter((p) => p.status === 'pending')
   if (!pend.length) return null
+  const closed = b.status === 'cancelled' || b.status === 'expired'
+  const paid = moneyOf(b).paid
   return (
     <div className="mt-3 rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-300 dark:!bg-amber-500/10 dark:!ring-amber-400/40 sm:p-4">
-      <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-amber-800 dark:!text-amber-200"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />Payment to verify · timer paused</p>
+      <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-amber-800 dark:!text-amber-200"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />{closed ? 'Payment on a cancelled booking · cannot be verified' : 'Payment to verify · timer paused'}</p>
       <ul className="mt-2 divide-y divide-amber-200 dark:divide-white/10">
         {pend.map((p) => (
           <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5 first:pt-1 last:pb-0">
@@ -131,7 +133,7 @@ function VerifyBox({ b, busy, onReview }) {
               <span className="mt-0.5 block text-xs text-slate-500">{p.reference ? <>TrxID <span className="break-all tabular-nums text-fg">{p.reference}</span></> : 'No reference'} · {fmtWhen(p.createdAt)}</span>
             </span>
             <span className="flex w-full gap-2 sm:w-auto">
-              <Button size="sm" variant="success" disabled={busy} className="flex-1 sm:flex-none" onClick={() => onReview(p.id, 'verified')}><CheckIcon width={14} height={14} />Verify</Button>
+              {!closed && <Button size="sm" variant="success" disabled={busy} className="flex-1 sm:flex-none" onClick={() => onReview(p.id, 'verified')}><CheckIcon width={14} height={14} />{b.status === 'pending' && paid + p.amount >= b.advance ? 'Verify & confirm' : 'Verify'}</Button>}
               <Button size="sm" variant="danger" disabled={busy} className="flex-1 sm:flex-none" onClick={() => onReview(p.id, 'rejected')}>Reject</Button>
             </span>
           </li>
@@ -283,7 +285,7 @@ export default function Admin() {
                               <span className="text-slate-500">Total <b className="text-fg">{money(b.total)}</b></span>
                               <span className="text-slate-500">Advance <b className="text-fg">{money(b.advance)}</b></span>
                               <span className="text-slate-500">Paid <b className={b.paidAmount >= b.advance ? 'text-emerald-600 dark:text-emerald-300' : 'text-fg'}>{money(b.paidAmount)}</b></span>
-                              {moneyOf(b).overpaid ? <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:!bg-red-500/15 dark:!text-red-200">Refund due {money(moneyOf(b).refundDue)}</span> : moneyOf(b).paidInFull ? <StatusPill status="fully paid" /> : <span className="text-slate-500">Due <b className={b.status === 'completed' ? 'text-red-600 dark:text-red-300' : 'text-fg'}>{money(moneyOf(b).balance)}</b></span>}
+                              {moneyOf(b).overpaid ? <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:!bg-red-500/15 dark:!text-red-200">Refund due {money(moneyOf(b).refundDue)}</span> : moneyOf(b).paidInFull ? <StatusPill status="fully paid" /> : moneyOf(b).closed ? null : <span className="text-slate-500">Due <b className={b.status === 'completed' ? 'text-red-600 dark:text-red-300' : 'text-fg'}>{money(moneyOf(b).balance)}</b></span>}
                               <span className="tabular-nums text-xs text-slate-400">{b.id}</span>
                             </div>
                             <div className="mt-2.5"><EventTimer b={b} /></div>
@@ -292,10 +294,10 @@ export default function Admin() {
                             </div>
                         </div>
                         <VerifyBox b={b} busy={reviewing} onReview={review} />
+                        {b.status === 'pending' && !(b.payments || []).some((p) => p.status === 'pending') && <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-500 ring-1 ring-slate-200">Not confirmed yet. It is confirmed automatically once a payment of at least {money(Math.max(0, b.advance - moneyOf(b).paid))} is verified.</p>}
 
                         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
-                          {b.status !== 'confirmed' && <Button size="sm" variant="success" onClick={() => setStatus(b, 'confirmed')}><CheckIcon width={14} height={14} />Confirm</Button>}
-                          {b.status !== 'cancelled' && b.status !== 'expired' && <Button size="sm" variant="danger" onClick={() => setStatus(b, 'cancelled')}>Cancel booking</Button>}
+                          {['pending', 'confirmed'].includes(b.status) && <Button size="sm" variant="danger" onClick={() => setStatus(b, 'cancelled')}>Cancel booking</Button>}
                           <Button size="sm" variant="outline" onClick={() => setEdit(b)}>Edit</Button>
                           <Button size="sm" variant={open === b.id ? 'primary' : 'soft'} aria-expanded={open === b.id} onClick={() => setOpen(open === b.id ? null : b.id)}>Payments ({b.payments?.length ?? 0})<ChevronDown width={14} height={14} className={`transition-transform ${open === b.id ? 'rotate-180' : ''}`} /></Button>
                           <Button size="sm" variant="info" onClick={() => openInvoice(b)}>Invoice</Button>

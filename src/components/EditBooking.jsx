@@ -9,7 +9,6 @@ import { CloseIcon } from './Icons'
 import Button from './brew/Button'
 import Modal from './Modal'
 
-const STATUSES = ['pending', 'confirmed', 'cancelled', 'expired', 'completed']
 const phoneOk = (p) => /^(?:\+?88)?01[3-9]\d{8}$/.test(p.replace(/[\s-]/g, ''))
 const inp = 'w-full rounded-xl border border-slate-300 bg-surface px-3 py-2.5 text-sm text-fg outline-none focus:border-brand focus:ring-4 focus:ring-brand/15'
 const lab = 'mb-1 block text-xs font-medium text-slate-500'
@@ -22,7 +21,7 @@ export default function EditBooking({ booking, map, admin = false, onClose, onSa
     eventType: booking.eventType, packageId: booking.packageId, date: booking.date, shift: booking.shift, guests: booking.guests,
     addons: booking.addons || [], catering: booking.catering, menu: booking.menu || booking.packageId,
     name: booking.name, phone: booking.phone, email: booking.email || '', notes: booking.notes || '', status: booking.status,
-  } : { eventType: 'Wedding', packageId: 'wedding-plus', date: '', shift: '', guests: 200, addons: [], catering: 'own', menu: 'wedding-plus', name: '', phone: '', email: '', notes: '', status: 'confirmed' })
+  } : { eventType: 'Wedding', packageId: 'wedding-plus', date: '', shift: '', guests: 200, addons: [], catering: 'own', menu: 'wedding-plus', name: '', phone: '', email: '', notes: '', status: 'pending' })
   const [busy, setBusy] = useState(false)
   const set = (p) => setF((x) => ({ ...x, ...p }))
   const pkg = packages.find((p) => p.id === f.packageId)
@@ -54,7 +53,7 @@ export default function EditBooking({ booking, map, admin = false, onClose, onSa
       if (create) out = await api('/admin/bookings', { method: 'POST', body })
       else if (admin) out = await api(`/admin/bookings/${booking.id}`, { method: 'PATCH', body: { ...body, status } })
       else out = await api(`/bookings/${booking.id}`, { method: 'PATCH', body })
-      toast(create ? 'Booking created' : 'Booking updated'); onSaved?.(out); onClose()
+      toast(create ? 'Walk-in booking created. Record the advance payment to confirm it.' : 'Booking updated'); onSaved?.(out); onClose()
     } catch (e) { toast(e.message, 'error'); if (e.status === 409) set({ shift: '' }); onSaved?.(null, true) }
     finally { setBusy(false) }
   }
@@ -102,7 +101,7 @@ export default function EditBooking({ booking, map, admin = false, onClose, onSa
           <label><span className={lab}>Name</span><input className={inp} value={f.name} onChange={(e) => set({ name: e.target.value })} /></label>
           <label><span className={lab}>Mobile</span><input className={inp} value={f.phone} inputMode="tel" onChange={(e) => set({ phone: e.target.value })} /></label>
           <label><span className={lab}>Email</span><input className={inp} value={f.email} inputMode="email" onChange={(e) => set({ email: e.target.value })} /></label>
-          {admin && !create && <label><span className={lab}>Status</span><select className={inp} value={f.status} onChange={(e) => set({ status: e.target.value })}>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select></label>}
+          {admin && !create && <label><span className={lab}>Status</span><select className={inp} value={f.status} disabled={['cancelled', 'expired', 'completed'].includes(booking.status)} onChange={(e) => set({ status: e.target.value })}>{(['pending', 'confirmed'].includes(booking.status) ? [booking.status, 'cancelled'] : [booking.status]).map((s) => <option key={s}>{s}</option>)}</select><span className="mt-1 block text-xs text-slate-500">{booking.status === 'pending' ? 'Confirmed automatically once the advance payment is verified.' : ['cancelled', 'expired'].includes(booking.status) ? 'A cancelled booking cannot be re-opened. Make a new booking.' : ''}</span></label>}
           <label className="sm:col-span-2"><span className={lab}>Notes</span><textarea className={inp} rows={2} maxLength={500} value={f.notes} onChange={(e) => set({ notes: e.target.value })} /></label>
         </div>
 
