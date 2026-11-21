@@ -5,16 +5,29 @@ import { ArrowRight } from './Icons'
 import Reveal from './Reveal'
 import { Underline } from './ui'
 
+/* Text set on a circle, spinning around an arrow badge (motion-brew “Rotating text”) */
+function SpinBadge() {
+  return (
+    <Link to="/booking" aria-label="Book your date" className="group absolute -bottom-6 right-4 z-10 flex h-28 w-28 items-center justify-center rounded-full bg-brand text-white shadow-glow transition active:scale-95 sm:right-8 sm:h-32 sm:w-32">
+      <svg viewBox="0 0 120 120" aria-hidden className="absolute inset-0 animate-[spin-slow_14s_linear_infinite] motion-reduce:animate-none">
+        <defs><path id="ring" d="M60 60 m-44 0 a44 44 0 1 1 88 0 a44 44 0 1 1 -88 0" /></defs>
+        <text fontSize="11.5" fontWeight="600" letterSpacing="3.2" fill="currentColor"><textPath href="#ring">BOOK YOUR DATE • BOOK YOUR DATE • </textPath></text>
+      </svg>
+      <ArrowRight width={26} height={26} className="-rotate-45 transition-transform group-hover:rotate-0" />
+    </Link>
+  )
+}
+
 export default function Ceremony() {
   return (
     <section className="py-16 sm:py-24" aria-labelledby="ceremony-h">
       <div className="container-x grid items-center gap-10 md:grid-cols-2 md:gap-14">
-        <motion.div initial={{ clipPath: 'inset(0 100% 0 0 round 24px)' }} whileInView={{ clipPath: 'inset(0 0% 0 0 round 24px)' }}
+        <div className="relative"><motion.div initial={{ clipPath: 'inset(0 100% 0 0 round 24px)' }} whileInView={{ clipPath: 'inset(0 0% 0 0 round 24px)' }}
           viewport={{ once: true, margin: '-80px' }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="overflow-hidden rounded-3xl shadow-dock">
-          <motion.img src={img('ceremony.webp')} alt="Couple at a wedding ceremony surrounded by family" loading="lazy"
+          <motion.img src={img('ceremony.webp')} alt="Family standing together on a decorated wedding stage" loading="lazy"
             whileHover={{ scale: 1.05 }} transition={{ duration: 0.6 }} className="aspect-[4/3] w-full object-cover" />
-        </motion.div>
+        </motion.div><SpinBadge /></div>
         <div>
           <Reveal as="h2" className="text-2xl font-semibold tracking-tight text-fg sm:text-3xl md:text-4xl"><span id="ceremony-h">A marriage ceremony is special to us</span></Reveal>
           <Reveal delay={0.1}><p className="mt-3 text-lg font-medium text-brand">Where there is love, there is <Underline>life</Underline>!</p></Reveal>

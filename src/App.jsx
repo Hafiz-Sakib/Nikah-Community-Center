@@ -8,6 +8,7 @@ import MyBookings from './components/MyBookings'
 import Admin from './components/Admin'
 import Home from './pages/Home'
 import About from './pages/About'
+import ContactPage from './pages/ContactPage'
 import FacilitiesPage from './pages/FacilitiesPage'
 import EventsPage from './pages/EventsPage'
 import GalleryPage from './pages/GalleryPage'
@@ -48,7 +49,7 @@ export default function App() {
               <Route path="/packages" element={<PackagesPage />} />
               <Route path="/booking" element={<BookingPage />} />
               <Route path="/my-bookings" element={<MyBookings />} />
-              <Route path="/contact" element={<About scrollTo="contact" />} />
+              <Route path="/contact" element={<ContactPage />} />
               <Route path="/food" element={<FoodPage />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />

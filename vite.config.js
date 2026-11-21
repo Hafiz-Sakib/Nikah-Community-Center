@@ -52,6 +52,13 @@ export default defineConfig({
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        // The photo gallery (~12 MB) is cached as it is viewed instead of being downloaded up front.
+        globIgnores: ['images/gallery/**'],
+        runtimeCaching: [{
+          urlPattern: ({ url }) => url.pathname.includes('/images/gallery/'),
+          handler: 'CacheFirst',
+          options: { cacheName: 'gallery-photos', expiration: { maxEntries: 260, maxAgeSeconds: 60 * 60 * 24 * 90 }, cacheableResponse: { statuses: [0, 200] } },
+        }],
       },
     }),
   ],

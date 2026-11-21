@@ -45,7 +45,7 @@ export default function ContactInfo() {
             <div className="mt-6 space-y-4">
               <input className={input} placeholder="Your name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoComplete="name" />
               <input className={input} placeholder="Mobile number (optional)" inputMode="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} autoComplete="tel" />
-              <textarea className={input} rows={5} placeholder="How can we help? Date, event type, number of guests…" value={f.msg} onChange={(e) => setF({ ...f, msg: e.target.value })} />
+              <textarea className={`${input} resize-none`} rows={5} placeholder="How can we help? Date, event type, number of guests…" value={f.msg} onChange={(e) => setF({ ...f, msg: e.target.value })} />
             </div>
             <motion.button whileTap={{ scale: 0.97 }} disabled={!ok} className="btn-primary mt-6 w-full disabled:opacity-50"><SendIcon width={18} height={18} />Send via WhatsApp</motion.button>
           </form>

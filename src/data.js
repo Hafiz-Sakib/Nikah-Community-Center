@@ -1,12 +1,19 @@
 export const CONTACT = {
-  phone: '+880 1700-000000',
-  whatsapp: '8801700000000',
+  phone: '+880 1516-195904',
+  whatsapp: '8801516195904',
   email: 'info@nikahcommunitycenter.com',
   address: 'Nikah Community Center, Chattogram, Bangladesh',
   hours: 'Daily, 9:00 AM – 9:00 PM',
   mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Community+Center+Chattogram',
   adminPass: 'admin123',
 }
+/* Advance-payment details shown on the billing screen & invoice. Replace the placeholders with your real numbers. */
+export const PAYMENT = [
+  { id: 'bkash', label: 'bKash', kind: 'Send Money (personal)', value: '01700-000000', color: '#e2136e' },
+  { id: 'nagad', label: 'Nagad', kind: 'Send Money (personal)', value: '01700-000000', color: '#f6921e' },
+  { id: 'bank', label: 'Bank', kind: 'Bank transfer / deposit', value: 'A/C 0000000000000 · Nikah Community Center · Your Bank, Chattogram', color: '#0f766e' },
+  { id: 'office', label: 'At office', kind: 'Pay in cash or card', value: 'Nikah Community Center, Chattogram · Daily 9 AM – 9 PM', color: '#475569' },
+]
 export const img = (n) => `${import.meta.env.BASE_URL}images/${n}`
 
 export const slides = [
@@ -73,16 +80,41 @@ export const gallery = [
   { src: 'g-bride-white.webp', alt: 'Bride among candle-lit pillars', span: '' },
   { src: 'g-hall.webp', alt: 'Our air-conditioned hall, set for an event', span: 'md:col-span-2' },
   { src: 'g-holud-play.webp', alt: 'Holud celebration with family and friends', span: '' },
+  { src: 'n-hug.webp', alt: 'A warm embrace on the wedding stage', span: '' },
+  { src: 'ceremony.webp', alt: 'Family together at a Nikah ceremony', span: '' },
+  { src: 'n-family.webp', alt: 'Family greeting each other at the reception', span: 'md:col-span-2' },
   { src: 'party.webp', alt: 'Sunflower and rose engagement stage', span: '' },
   { src: 'g-bride-lamps.webp', alt: 'Bride in a red lehenga among lamps', span: '' },
-  { src: 'corporate.webp', alt: 'Stage and screen set up for a corporate event', span: 'md:col-span-2' },
+  { src: 'n-three-girls.webp', alt: 'Holud sisters in marigold colours', span: '' },
   { src: 'g-veil.webp', alt: 'Bride in a long veil at sunset', span: '' },
+  { src: 'n-drone.webp', alt: 'Couple resting on the lawn, seen from above', span: '' },
+]
+
+/* Home “Moments” 3D carousel (portrait photos) */
+export const moments = [
+  { src: 'm-1.webp', alt: 'Couple on a wooden bridge', tag: 'Couple portraits' },
+  { src: 'm-2.webp', alt: 'A quiet moment under the trees', tag: 'Nikah day' },
+  { src: 'm-3.webp', alt: 'Walking together', tag: 'First steps' },
+  { src: 'm-4.webp', alt: 'Bride with gold jewellery and mehendi', tag: 'Bridal details' },
+  { src: 'm-5.webp', alt: 'A kiss on the forehead', tag: 'Love stories' },
+  { src: 'm-6.webp', alt: 'Laughing together in the garden', tag: 'Joyful moments' },
+  { src: 'm-7.webp', alt: 'Bride and groom climbing the steps', tag: 'Together' },
+  { src: 'm-8.webp', alt: 'Bride in a red Banarasi saree', tag: 'Bridal portrait' },
+  { src: 'm-9.webp', alt: 'Bride and groom on a white floral stage', tag: 'Nikah day' },
+  { src: 'm-10.webp', alt: 'Couple in red and ivory wedding wear', tag: 'Wedding day' },
+  { src: 'm-11.webp', alt: 'Holud couple on the garden stairs', tag: 'Holud' },
+  { src: 'm-12.webp', alt: 'A quiet moment between bride and groom', tag: 'Engagement' },
+  { src: 'm-13.webp', alt: 'Couple walking through the garden', tag: 'Pre-wedding' },
+  { src: 'm-14.webp', alt: 'Bride and groom in white by the arches', tag: 'Couple portraits' },
 ]
 
 export const reviews = [
-  { name: 'Tanvir Ahmed', role: 'Wedding, Plus package', stars: 5, text: 'Everything from the stage to the food was handled by one team. Booking online took five minutes and the advance was easy.' },
-  { name: 'Nusrat Jahan', role: 'Corporate annual dinner', stars: 4.5, text: 'Clean hall, proper sound setup and punctual staff. Our guests kept asking where we found the venue.' },
-  { name: 'Mahmudul Hasan', role: 'Reception, Basic package', stars: 4, text: 'Fair pricing and no surprises on the day. Parking was a big help for our out-of-town guests.' },
+  { name: 'Tanvir Ahmed', role: 'Wedding, Plus package', stars: 5, photo: 'r-2.webp', text: 'Everything from the stage to the food was handled by one team. Booking online took five minutes and the advance was easy.' },
+  { name: 'Nusrat Jahan', role: 'Corporate annual dinner', stars: 4.5, photo: 'r-3.webp', text: 'Clean hall, proper sound setup and punctual staff. Our guests kept asking where we found the venue.' },
+  { name: 'Mahmudul Hasan', role: 'Reception, Basic package', stars: 4, photo: 'r-1.webp', text: 'Fair pricing and no surprises on the day. Parking was a big help for our out-of-town guests.' },
+  { name: 'Sajid Hossain', role: 'Wedding, Plus package', stars: 5, photo: 'r-4.webp', text: 'The stage décor and lighting looked even better than the photos. Our relatives from Dhaka were really impressed.' },
+  { name: 'Farzana Rahman', role: 'Holud, Basic package', stars: 4.5, photo: 'r-5.webp', text: 'The hall stayed cool and comfortable all evening, and the staff handled the holud programme smoothly without any rush.' },
+  { name: 'Imran Chowdhury', role: 'Reception, Plus package', stars: 5, photo: 'r-6.webp', text: 'The kacchi and rezala were the talk of the night. Service was quick, and the team stayed with us until the very end.' },
 ]
 
 export const faqs = [
@@ -136,7 +168,8 @@ export const nav = [
   { to: '/food', label: 'Food', icon: 'utensils', hint: 'Bengali wedding menus' },
   { to: '/gallery', label: 'Gallery', icon: 'image', hint: 'Moments we have hosted' },
   { to: '/packages', label: 'Packages', icon: 'gift', hint: 'Pricing & what is included' },
-  { to: '/about', label: 'About Us', icon: 'users', hint: 'Our story, contact & FAQ' },
+  { to: '/about', label: 'About Us', icon: 'users', hint: 'Our story, promise & how we work' },
+  { to: '/contact', label: 'Contact', icon: 'phone', hint: 'Call, WhatsApp, visit or message us' },
 ]
 
 /* ---------- Food menu ----------

@@ -26,7 +26,7 @@ export default function Admin() {
 
   return (
     <>
-      <PageHero title="Staff dashboard" text="Manage booking requests." image="hero-3.webp" />
+      <PageHero title="Staff dashboard" text="Manage booking requests." image="hero-14.webp" />
       <section className="py-12 sm:py-16"><div className="container-x max-w-4xl"><div className="rounded-[2rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
       {!authed ? (
         <form onSubmit={login} className="mx-auto max-w-sm space-y-4 py-6 text-center">

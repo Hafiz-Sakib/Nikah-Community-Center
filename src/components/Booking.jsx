@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { packages, addons, eventTypes, CONTACT, foodPkgs, foodItems } from '../data'
 import { addBooking, useBookings, takenSlots, shiftFree, SHIFTS, quote, newId, money, fmtDate, toast } from '../lib/store'
 import Calendar from './Calendar'
+import Billing from './Billing'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { tomorrowISO } from '../lib/store'
 import { CalendarIcon, CheckIcon, MinusIcon, PlusIcon, ArrowRight, ChevronLeft, DownloadIcon, ChatIcon } from './Icons'
@@ -44,47 +45,6 @@ function Summary({ f, q, pkg, shift, menu }) {
       <Row k="Total" v={money(q.total)} strong />
       <Row k="Advance (30%)" v={<span className="text-brand">{money(q.advance)}</span>} strong />
     </div>
-  )
-}
-
-function ics(b, pkg) {
-  const s = SHIFTS.find((x) => x.id === b.shift)
-  const t = { morning: ['100000', '150000'], evening: ['170000', '223000'], full: ['100000', '223000'] }[b.shift]
-  const d = b.date.replace(/-/g, '')
-  const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Nikah Community Center//EN', 'BEGIN:VEVENT', `UID:${b.id}@ncc`, `DTSTAMP:${d}T000000`,
-    `DTSTART:${d}T${t[0]}`, `DTEND:${d}T${t[1]}`, `SUMMARY:${b.eventType} at Nikah Community Center`, `LOCATION:${CONTACT.address}`,
-    `DESCRIPTION:Booking ${b.id} - ${pkg.name} - ${s.label}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n')
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(new Blob([body], { type: 'text/calendar' })); a.download = `${b.id}.ics`; a.click()
-}
-
-function Success({ b, pkg, onNew, onManage }) {
-  const s = SHIFTS.find((x) => x.id === b.shift)
-  const msg = encodeURIComponent(`Hello! I booked ${b.eventType} on ${fmtDate(b.date)} (${s.label}). Booking ID: ${b.id}. Name: ${b.name}.`)
-  return (
-    <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="mx-auto max-w-lg text-center">
-      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
-        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><motion.path d="m5 12 5 5 9-10" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.25, duration: 0.5 }} /></svg>
-      </motion.div>
-      <h3 className="mt-5 text-2xl font-semibold text-fg">Request received!</h3>
-      <p className="mt-2 text-sm text-slate-500">Your date is held. Our team will call <b>{b.phone}</b> to confirm and collect the advance.</p>
-      <div className="mt-6 rounded-3xl bg-slate-50 p-5 text-left ring-1 ring-slate-200/70">
-        <div className="mb-2 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Booking ID</span><span className="rounded-full bg-brand-soft px-3 py-1 font-mono text-sm font-semibold text-brand-ink">{b.id}</span></div>
-        <Row k="Event" v={`${b.eventType} · ${pkg.name}`} />
-        <Row k="Date" v={fmtDate(b.date)} />
-        <Row k="Time" v={`${s.label} (${s.time})`} />
-        <Row k="Food" v={b.catering === 'hall' ? `Hall catering · ${foodPkgs.find((m) => m.id === b.menu)?.name ?? ''}` : 'Own caterer'} />
-        <Row k="Total" v={money(b.total)} />
-        <Row k="Advance due" v={money(b.advance)} strong />
-      </div>
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <button onClick={() => ics(b, pkg)} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-fg transition hover:bg-slate-200 active:scale-95"><DownloadIcon width={18} height={18} />Add to calendar</button>
-        <a href={`https://wa.me/${CONTACT.whatsapp}?text=${msg}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 active:scale-95"><ChatIcon width={18} height={18} />WhatsApp us</a>
-      </div>
-      <div className="mt-4 flex justify-center gap-5 text-sm font-medium text-brand">
-        <button onClick={onManage} className="hover:underline">My bookings</button><button onClick={onNew} className="hover:underline">Book another date</button>
-      </div>
-    </motion.div>
   )
 }
 
@@ -138,9 +98,9 @@ export default function Booking() {
   return (
     <section id="booking" className="relative py-12 sm:py-16">
       <div className="container-x">
-        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        <div className={`grid gap-6 ${done ? "mx-auto max-w-3xl" : "lg:grid-cols-[1fr_340px]"}`}>
           <div className="rounded-[2rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
-            {done ? <Success b={done} pkg={packages.find((p) => p.id === done.packageId)} onNew={reset} onManage={onManage} /> : (
+            {done ? <Billing b={done} onNew={reset} onManage={onManage} /> : (
               <>
                 <ol className="mb-8 flex items-center" aria-label="Progress">
                   {STEPS.map((s, i) => (
@@ -307,7 +267,7 @@ export default function Booking() {
             )}
           </div>
 
-          <aside className="hidden lg:block"><div className="sticky top-24"><Summary f={f} q={q} pkg={pkg} shift={shift} menu={menu} />
+          <aside className={done ? "hidden" : "hidden lg:block"}><div className="sticky top-24"><Summary f={f} q={q} pkg={pkg} shift={shift} menu={menu} />
             <p className="mt-3 flex items-center gap-2 px-2 text-xs text-slate-500"><CalendarIcon width={16} height={16} />Dates are held for 24 hours until the advance is received.</p></div></aside>
         </div>
       </div>

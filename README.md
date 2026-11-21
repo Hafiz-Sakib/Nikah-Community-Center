@@ -18,6 +18,9 @@ Toggle in the navbar (circle-reveal animation). Follows system setting on first 
 ## Navigation
 Desktop: Home, Events, Food, Packages and a "Venue" dropdown (Facilities, Gallery, About). Mobile: hamburger menu only (no bottom bar).
 
+## Billing & invoice
+After booking: animated bill (count-up total, cost breakdown bar, payment-method picker, 24h hold timer) and a downloadable A4 PDF invoice with a Code 128 barcode of the booking ID (also in My bookings). Put your real bKash/Nagad/bank details in `PAYMENT` in `src/data.js`.
+
 ## Booking system (demo, localStorage)
 Wizard, live availability, weekend surcharge, 30% advance, booking ID, .ics, WhatsApp, My bookings, staff dashboard (passcode in src/data.js, default admin123).
 Replace functions in `src/lib/store.js` with real API calls for production.

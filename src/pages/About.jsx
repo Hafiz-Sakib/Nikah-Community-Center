@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { motion } from 'motion/react'
 import PageHero from '../components/PageHero'
 import SectionHead from '../components/SectionHead'
@@ -6,26 +5,15 @@ import Ceremony from '../components/Ceremony'
 import { StatsBand } from '../components/Facilities'
 import Reviews from '../components/Reviews'
 import CtaBand from '../components/CtaBand'
-import ContactInfo from '../components/ContactInfo'
 import Faq from '../components/Faq'
+import PhotoStrip from '../components/PhotoStrip'
 import { process, values } from '../data'
 import { ICONS2 } from '../components/Icons'
 
-const jump = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-
-export default function About({ scrollTo }) {
-  useEffect(() => {
-    if (!scrollTo) return
-    const t = setTimeout(() => jump(scrollTo), 500)
-    return () => clearTimeout(t)
-  }, [scrollTo])
+export default function About() {
   return (
     <>
-      <PageHero title="About Us" text="A warm, well-run community center built around your celebrations — and the easiest way to reach us." image="hero-3.webp" />
-      <div className="container-x -mb-6 mt-8 flex justify-center gap-2">
-        <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="rounded-full bg-brand-soft px-5 py-2 text-sm font-medium text-brand-ink transition active:scale-95">About us</button>
-        <button onClick={() => jump('contact')} className="rounded-full bg-slate-100 px-5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 active:scale-95">Contact us</button>
-      </div>
+      <PageHero title="About Us" text="A warm, well-run community center built around your celebrations." image="hero-10.webp" />
       <Ceremony />
       <section className="pb-16 sm:pb-24"><div className="container-x"><StatsBand /></div></section>
       <section className="bg-slate-50 py-16 sm:py-24"><div className="container-x">
@@ -48,9 +36,9 @@ export default function About({ scrollTo }) {
             </motion.li>) })}
         </ol>
       </div></section>
+      <PhotoStrip eyebrow="Our work" title="Celebrations we are proud of" text="A few of the families and couples who chose us for their big day." bg
+        items={[{ id: 'p032', cap: 'Wedding day' }, { id: 'p047', cap: 'Bengali bride' }, { id: 'p010', cap: 'Nikah with family' }, { id: 'p061', cap: 'Garlands and smiles' }]} />
       <Reviews />
-      <section id="contact" className="scroll-mt-20 pt-16 sm:pt-24"><div className="container-x"><SectionHead eyebrow="Contact" title="Get in touch" text="Questions, site visits or special requests — we’re here to help." /></div></section>
-      <ContactInfo />
       <Faq />
       <CtaBand />
     </>

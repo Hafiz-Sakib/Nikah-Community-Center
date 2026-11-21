@@ -3,12 +3,18 @@ import Hero from '../components/Hero'
 import AvailabilityBar from '../components/AvailabilityBar'
 import Marquee from '../components/Marquee'
 import Ceremony from '../components/Ceremony'
+import Statement from '../components/Statement'
+import Moments from '../components/Moments'
+import BookingSteps from '../components/BookingSteps'
+import HomeFaq from '../components/HomeFaq'
 import SectionHead from '../components/SectionHead'
 import { StatsBand, FacilitiesGrid } from '../components/Facilities'
 import Events from '../components/Events'
 import { PackageGrid } from '../components/Packages'
 import Gallery from '../components/Gallery'
 import Reviews from '../components/Reviews'
+import { EventPlanner, CostEstimator, AddonTilt } from '../components/HomeInteractive'
+import PhotoMarquee from '../components/PhotoMarquee'
 import CtaBand from '../components/CtaBand'
 import { ArrowRight } from '../components/Icons'
 
@@ -20,6 +26,7 @@ export default function Home() {
       <Hero />
       <AvailabilityBar />
       <div className="mt-16"><Marquee /></div>
+      <Statement />
       <Ceremony />
       <section className="pb-16 sm:pb-24"><div className="container-x">
         <SectionHead eyebrow="Facilities" title="Everything your event needs" text="A complete venue, so you can focus on the people who matter." />
@@ -32,13 +39,21 @@ export default function Home() {
         <div className="mt-12"><Events limit={3} /></div>
         <More to="/events">Explore all events</More>
       </div></section>
+      <EventPlanner />
+      <Moments />
       <section className="py-16 sm:py-24"><div className="container-wide">
         <SectionHead eyebrow="Packages" title="Simple, honest pricing" text="Choose a package, add extras, and see the full price before you confirm." />
         <PackageGrid />
         <More to="/packages">Compare packages</More>
       </div></section>
+      <CostEstimator />
+      <AddonTilt />
+      <BookingSteps />
       <Gallery />
       <Reviews />
+      <PhotoMarquee eyebrow="Real celebrations" title="Faces of happiness" text="Bridal portraits and happy families, photographed at our venue."
+        ids={['p014', 'p036', 'p050', 'p090', 'p038', 'p043', 'p048', 'p055', 'p066', 'p073', 'p088', 'p093']} />
+      <HomeFaq />
       <CtaBand />
     </>
   )

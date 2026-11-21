@@ -2,18 +2,19 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { nav } from '../data'
-import { MenuIcon, CloseIcon, ArrowRight, ClipboardIcon, ChevronDown, ICONS2, HomeIcon } from './Icons'
+import { MenuIcon, CloseIcon, ArrowRight, ClipboardIcon, ChevronDown, ICONS2, HomeIcon, PhoneIcon } from './Icons'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 import { InstallButton } from './Install'
 
-const NAV_ICONS = { ...ICONS2, home: HomeIcon }
-const isOn = (to, pathname, isActive) => isActive || (to === '/about' && pathname === '/contact')
+const NAV_ICONS = { ...ICONS2, home: HomeIcon, phone: PhoneIcon }
+const isOn = (to, pathname, isActive) => isActive
 
 /* Desktop: 4 direct links + one "Venue" dropdown keeps the bar short and calm. Mobile menu lists everything. */
 const DIRECT = ['/', '/events', '/food', '/packages']
 const direct = nav.filter((n) => DIRECT.includes(n.to))
-const venue = nav.filter((n) => !DIRECT.includes(n.to))
+const venue = nav.filter((n) => !DIRECT.includes(n.to) && n.to !== '/contact')
+const contact = nav.find((n) => n.to === '/contact')
 const linkCls = (on) => `relative flex items-center gap-1 rounded-full whitespace-nowrap px-3.5 py-2 text-sm font-medium transition-colors ${on ? 'text-brand-ink' : 'text-slate-600 hover:text-fg'}`
 const pill = <motion.span layoutId="desk-pill" className="absolute inset-0 -z-10 rounded-full bg-brand-soft" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />
 
@@ -82,6 +83,7 @@ export default function Navbar({ count }) {
               </li>
             ))}
             <VenueMenu pathname={pathname} />
+            <li><NavLink to={contact.to} className={({ isActive }) => linkCls(isActive)}>{({ isActive }) => (<>{isActive && pill}{contact.label}</>)}</NavLink></li>
           </ul>
           <div className="flex items-center gap-2">
             <ThemeToggle className="hidden sm:block" />

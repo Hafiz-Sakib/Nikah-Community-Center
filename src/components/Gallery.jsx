@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import { Link } from 'react-router-dom'
 import { gallery, img } from '../data'
-import { ChevronLeft, ChevronRight, CloseIcon } from './Icons'
+import { ArrowRight, ChevronLeft, ChevronRight, CloseIcon } from './Icons'
 import SectionHead from './SectionHead'
 
 export default function Gallery() {
@@ -26,6 +27,7 @@ export default function Gallery() {
             </motion.button>
           ))}
         </div>
+        <div className="mt-10 text-center"><Link to="/gallery" className="inline-flex items-center gap-2 rounded-full bg-surface px-6 py-3 text-sm font-semibold text-fg ring-1 ring-slate-200/80 transition hover:bg-brand hover:text-white active:scale-95">View all photos <ArrowRight /></Link></div>
       </div>
       <AnimatePresence>
         {i !== null && (

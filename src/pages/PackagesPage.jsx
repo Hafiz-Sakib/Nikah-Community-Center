@@ -2,7 +2,9 @@ import PageHero from '../components/PageHero'
 import SectionHead from '../components/SectionHead'
 import { PackageGrid, CompareTable } from '../components/Packages'
 import Faq from '../components/Faq'
+import { CateringPrices, BookingTerms } from '../components/PageSections'
 import CtaBand from '../components/CtaBand'
+import PhotoStrip from '../components/PhotoStrip'
 import { motion } from 'motion/react'
 import { addons } from '../data'
 import { money } from '../lib/store'
@@ -10,7 +12,7 @@ import { money } from '../lib/store'
 export default function PackagesPage() {
   return (
     <>
-      <PageHero title="Packages" text="Transparent pricing for every kind of event." image="hero-6.webp" />
+      <PageHero title="Packages" text="Transparent pricing for every kind of event." image="hero-8.webp" />
       <section className="py-16 sm:py-24"><div className="container-wide"><PackageGrid /></div></section>
       <section className="bg-slate-50 py-16 sm:py-24"><div className="container-x">
         <SectionHead eyebrow="Compare" title="Find the right fit" />
@@ -27,7 +29,9 @@ export default function PackagesPage() {
           ))}
         </motion.ul>
       </div></section>
-      <Faq />
+      <PhotoStrip eyebrow="What it looks like" title="Décor you can expect" text="Floral stages, warm lighting and a setting worth the photographs."
+        items={[{ id: 'p033', cap: 'Floral stage' }, { id: 'p039', cap: 'Stage and seating' }, { id: 'p053', cap: 'Bridal backdrop' }]} />
+      <CateringPrices /><BookingTerms /><Faq />
       <CtaBand />
     </>
   )
