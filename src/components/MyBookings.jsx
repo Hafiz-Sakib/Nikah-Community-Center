@@ -14,6 +14,7 @@ import { packages } from '../data'
 import { api } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { useMyBookings, isActive, shownStatus } from '../lib/bookings'
+import { moneyOf } from '../lib/invoice'
 import { useAvailability } from '../lib/useAvailability'
 import Modal from './Modal'
 import ActionButton from './brew/ActionButton'
@@ -68,18 +69,26 @@ export default function MyBookings() {
               const p = packages.find((x) => x.id === b.packageId)
               const canEdit = isActive(b) && b.date >= editFrom
               const canCancel = isActive(b) && b.date >= today
-              const due = b.total - b.paidAmount
+              const m = moneyOf(b)
+              const showMoney = isActive(b) || b.status === 'completed'
+              const owes = b.status === 'completed' && m.balance > 0        // event is over but money is still missing
+              const canBill = isActive(b) || owes
               const unpaid = b.status === 'pending' && b.paidAmount === 0 && !b.payments?.some((x) => x.status === 'pending')
               return (
                 <motion.li key={b.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-2xl p-4 ring-1 ring-slate-200">
                   <div className="flex items-start justify-between gap-3">
                     <div><p className="font-semibold text-fg">{b.eventType} · {fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })}</p><p className="text-xs text-slate-500">{s.label} · {s.time}</p><EventTimer b={b} className="mt-2" /></div>
-                    <StatusPill status={shownStatus(b)} />
+                    <div className="flex flex-col items-end gap-1.5"><StatusPill status={shownStatus(b)} />{m.paidInFull && !m.overpaid && showMoney && <StatusPill status="fully paid" />}</div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-slate-600">
                     <span className="font-mono text-xs">{b.id}</span><span>{p?.name} · {b.guests} guests</span><b className="text-fg">{money(b.total)}</b>
                   </div>
-                  {isActive(b) && <p className="mt-1 text-xs text-slate-500">Paid {money(b.paidAmount)} · Balance {money(due)}{b.payments?.some((x) => x.status === 'pending') ? ' · payment submitted, staff are verifying it' : ''}</p>}
+                  {showMoney && (m.overpaid
+                    ? <p className="mt-2 rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 ring-1 ring-amber-200 dark:!bg-amber-500/10 dark:!text-amber-200 dark:!ring-amber-400/30">Total changed · refund due {money(m.refundDue)} (our team will contact you)</p>
+                    : m.paidInFull
+                    ? <p className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:!bg-emerald-500/10 dark:!text-emerald-300 dark:!ring-emerald-400/30"><CheckIcon width={14} height={14} strokeWidth={3} />Full Paid · {money(m.paid)} received</p>
+                    : <p className="mt-1 text-xs text-slate-500">Paid {money(m.paid)} · Balance <b className={owes ? 'text-red-600 dark:text-red-300' : 'text-fg'}>{money(m.balance)}</b>{m.waiting > 0 ? ` · ${money(m.waiting)} submitted, staff are verifying it` : ''}</p>)}
+                  {owes && <p className="mt-2 rounded-xl bg-red-50 p-3 text-xs text-red-700 ring-1 ring-red-200 dark:!bg-red-500/10 dark:!text-red-200 dark:!ring-red-400/30">The event is over and {money(m.balance)} is still unpaid. Pay it online or at our office.</p>}
                   {b.status === 'pending' && <HoldWarning b={b} onPay={() => setBill(b)} onExpire={() => { toast('An unpaid booking was cancelled automatically', 'error'); reload(); reloadMap() }} />}
                   {b.status === 'expired' && <p className="mt-2 rounded-xl bg-orange-50 p-3 text-xs text-orange-700 ring-1 ring-orange-200 dark:!bg-white/5 dark:!text-fg dark:!ring-white/15">Cancelled — the advance was not paid within {b.holdHours ?? 48} hours, so the date was released. This record stays here for your reference; you can book the date again if it is still available.</p>}
                   <AnimatePresence mode="wait" initial={false}>
@@ -95,7 +104,7 @@ export default function MyBookings() {
                       </motion.div>
                     ) : (
                       <motion.div key="actions" exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }} className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 sm:flex sm:flex-wrap sm:items-center">
-                        {isActive(b) && <ActionButton variant="primary" icon={WalletIcon} attention={unpaid} delay={0.05} wrap="col-span-2 sm:order-2 sm:col-span-1" onClick={() => setBill(b)}>Pay / billing</ActionButton>}
+                        {canBill && <ActionButton variant={m.paidInFull ? 'info' : 'primary'} icon={m.paidInFull ? CheckIcon : WalletIcon} attention={unpaid || owes} delay={0.05} wrap="col-span-2 sm:order-2 sm:col-span-1" onClick={() => setBill(b)}>{m.paidInFull ? 'Billing · Full paid' : b.status === 'pending' ? 'Pay / billing' : 'Pay balance'}</ActionButton>}
                         <ActionButton variant="info" icon={ClipboardIcon} delay={0} wrap={`sm:order-1 ${canEdit ? '' : 'col-span-2'}`} onClick={() => openInvoice(b)}>Invoice</ActionButton>
                         {canEdit && <ActionButton variant="neutral" icon={EditIcon} delay={0.1} wrap="sm:order-3" onClick={() => setEdit(b)}>Edit</ActionButton>}
                         {isActive(b) && !canEdit && <p className="col-span-2 inline-flex items-center gap-1.5 text-xs text-slate-400 sm:order-3 sm:col-span-1"><LockIcon width={13} height={13} />Edits close {EDIT_CUTOFF_DAYS} days before the event — call us</p>}

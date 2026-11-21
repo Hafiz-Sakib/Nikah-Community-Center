@@ -11,7 +11,9 @@ import Button from './brew/Button'
 import HoldToConfirm from './brew/HoldToConfirm'
 import { PillTabs } from './brew/PillTabs'
 import { SHIFTS, money, fmtDate, toast } from '../lib/store'
-import { packages, img } from '../data'
+import { packages, img, PAYMENT } from '../data'
+import PayLogo from './PayLogo'
+import { moneyOf } from '../lib/invoice'
 import { api } from '../lib/api'
 import { useAvailability } from '../lib/useAvailability'
 import { shownStatus } from '../lib/bookings'
@@ -32,36 +34,82 @@ function csv(rows) {
   a.href = URL.createObjectURL(new Blob([[head.join(','), ...body].join('\n')], { type: 'text/csv' })); a.download = 'bookings.csv'; a.click()
 }
 
-function PaymentsPanel({ b, onChanged }) {
-  const [amount, setAmount] = useState(Math.max(0, b.total - b.paidAmount))
+export function PaymentsPanel({ b, onChanged }) {
+  const m = moneyOf(b)
+  const closed = ['cancelled', 'expired'].includes(b.status)
+  const [amount, setAmount] = useState('')
   const [method, setMethod] = useState('office')
   const [ref, setRef] = useState('')
+  const [note, setNote] = useState('')
+  const [sure, setSure] = useState(false)          // second tap: the payment is only written after this confirmation
   const [busy, setBusy] = useState(false)
-  const run = async (fn, msg) => { setBusy(true); try { await fn(); toast(msg); onChanged() } catch (e) { toast(e.message, 'error') } finally { setBusy(false) } }
+  const n = Number(amount || 0)
+  const amountOk = Number.isInteger(n) && n > 0 && n <= m.room
+  const run = async (fn, msg) => { setBusy(true); try { await fn(); toast(msg); onChanged(); return true } catch (e) { toast(e.message, 'error'); return false } finally { setBusy(false) } }
   const review = (id, status) => run(() => api(`/admin/payments/${id}`, { method: 'PATCH', body: { status } }), `Payment ${status}`)
-  const add = () => run(() => api(`/admin/bookings/${b.id}/payments`, { method: 'POST', body: { amount: +amount, method, ...(ref.trim() ? { reference: ref.trim() } : {}) } }), 'Payment recorded')
+  const add = async () => {
+    const ok = await run(() => api(`/admin/bookings/${b.id}/payments`, { method: 'POST', body: { amount: n, method, ...(ref.trim() ? { reference: ref.trim() } : {}), ...(note.trim() ? { note: note.trim() } : {}) } }), 'Payment recorded')
+    if (ok) { setAmount(''); setRef(''); setNote(''); setSure(false) }
+  }
+  const label = (id) => PAYMENT.find((x) => x.id === id)?.label ?? id
   const inp = 'h-10 rounded-xl border border-slate-300 bg-surface px-3 text-sm text-fg outline-none focus:border-brand focus:ring-4 focus:ring-brand/15'
+  const cell = (k, v, tone = 'text-fg') => <div className="min-w-0 rounded-xl bg-surface px-3 py-2 ring-1 ring-slate-200"><p className="text-[11px] text-slate-500">{k}</p><p className={`truncate text-sm font-semibold tabular-nums sm:text-base ${tone}`}>{v}</p></div>
   return (
     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
-      <div className="mt-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
-        <p className="mb-2 text-sm font-semibold text-fg">Payments</p>
+      <div className="mt-4 rounded-2xl bg-slate-50 p-3.5 ring-1 ring-slate-200 sm:p-4">
+        <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold text-fg">Payments</p>{m.paidInFull && <StatusPill status="fully paid" />}</div>
+        <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {cell('Total', money(m.total))}{cell('Received', money(m.paid), 'text-emerald-600 dark:text-emerald-300')}{cell('Waiting to verify', money(m.waiting), m.waiting ? 'text-amber-700 dark:text-amber-300' : 'text-fg')}{cell('Balance due', money(m.balance), m.balance ? 'text-fg' : 'text-emerald-600 dark:text-emerald-300')}
+        </div>
+        <div className="mt-2.5 flex h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden><span className="h-full bg-emerald-500 transition-all" style={{ width: `${Math.min(100, (m.paid / m.total) * 100)}%` }} /><span className="h-full bg-amber-400 transition-all" style={{ width: `${Math.max(0, Math.min(100 - (m.paid / m.total) * 100, (m.waiting / m.total) * 100))}%` }} /></div>
+        {m.overpaid && <p className="mt-2 rounded-xl bg-red-50 p-2.5 text-xs text-red-700 ring-1 ring-red-200 dark:!bg-red-500/10 dark:!text-red-200">Total is now lower than received: refund {money(m.refundDue)} to the customer and note it. No more payments can be added.</p>}
+
         {b.payments?.length ? (
-          <ul className="divide-y divide-slate-200">
+          <ul className="mt-3 divide-y divide-slate-200">
             {b.payments.map((p) => (
-              <li key={p.id} className="flex flex-wrap items-center gap-2 py-2.5">
-                <span className="min-w-0 flex-1 text-sm text-slate-600"><b className="capitalize text-fg">{p.method}</b> · {money(p.amount)}{p.reference && <span className="ml-1 break-all font-mono text-xs text-slate-500">· {p.reference}</span>}</span>
+              <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5">
+                <PayLogo id={p.method} size="sm" />
+                <span className="min-w-0 flex-1 basis-44 text-sm text-slate-600"><b className="text-fg">{label(p.method)}</b> · <b className="tabular-nums text-fg">{money(p.amount)}</b>{p.reference && <span className="ml-1 break-all font-mono text-xs text-slate-500">· {p.reference}</span>}<span className="block text-xs text-slate-500">{fmtWhen(p.createdAt)}{p.note ? ` · ${p.note}` : ''}</span></span>
                 <StatusPill status={p.status} />
                 {p.status !== 'verified' && <Button size="sm" variant="success" disabled={busy} onClick={() => review(p.id, 'verified')}><CheckIcon width={14} height={14} />Verify</Button>}
                 {p.status === 'pending' && <Button size="sm" variant="danger" disabled={busy} onClick={() => review(p.id, 'rejected')}>Reject</Button>}
               </li>
             ))}
           </ul>
-        ) : <p className="text-sm text-slate-500">No payments yet.</p>}
-        <div className="mt-3 flex flex-wrap items-end gap-3 border-t border-slate-200 pt-3">
-          <label className="text-xs font-medium text-slate-500">Amount<input className={`${inp} mt-1 block w-32`} type="number" min={1} value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
-          <label className="text-xs font-medium text-slate-500">Method<select className={`${inp} mt-1 block`} value={method} onChange={(e) => setMethod(e.target.value)}>{METHODS.map((m) => <option key={m}>{m}</option>)}</select></label>
-          <label className="min-w-[8rem] flex-1 text-xs font-medium text-slate-500">Reference<input className={`${inp} mt-1 block w-full`} placeholder="Txn ID (optional)" value={ref} onChange={(e) => setRef(e.target.value)} /></label>
-          <Button disabled={busy || !(+amount > 0)} onClick={add}><PlusIcon width={16} height={16} />Record payment</Button>
+        ) : <p className="mt-3 text-sm text-slate-500">No payments yet.</p>}
+
+        <div className="mt-3 border-t border-slate-200 pt-3">
+          <p className="text-sm font-semibold text-fg">Record a payment</p>
+          {closed ? <p className="mt-1.5 text-sm text-slate-500">This booking is cancelled. Re-open it before recording a payment.</p>
+          : m.room === 0 ? <p className="mt-1.5 text-sm text-slate-500">{m.paidInFull ? 'Fully paid. Nothing left to collect.' : `Payments waiting to verify (${money(m.waiting)}) already cover the balance. Verify or reject them first.`}</p>
+          : (<>
+            <p className="mt-1 text-xs text-slate-500">Cash at the office or a transfer you saw arrive. It is recorded as received straight away. Up to {money(m.room)} can still be added{m.waiting > 0 ? ` (${money(m.waiting)} more is waiting to verify)` : ''}.</p>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              <Button size="sm" variant="soft" onClick={() => { setAmount(String(m.room)); setSure(false) }}>Whole balance {money(m.room)}</Button>
+              {m.needAdvance > 0 && <Button size="sm" variant="outline" onClick={() => { setAmount(String(m.needAdvance)); setSure(false) }}>Advance {money(m.needAdvance)}</Button>}
+            </div>
+            <div role="radiogroup" aria-label="Method" className="mt-2.5 flex flex-wrap gap-2">
+              {METHODS.map((id) => (
+                <button key={id} type="button" role="radio" aria-checked={method === id} onClick={() => { setMethod(id); setSure(false) }} className={`inline-flex h-10 items-center gap-2 rounded-full pl-1.5 pr-3.5 text-sm font-semibold ring-1 transition ${method === id ? 'bg-brand-soft text-brand-ink ring-brand' : 'bg-surface text-slate-600 ring-slate-300 hover:ring-slate-400'}`}><PayLogo id={id} size="sm" className="!h-7 !w-11 !rounded-md" />{label(id)}</button>
+              ))}
+            </div>
+            <div className="mt-2.5 flex flex-wrap items-end gap-3">
+              <label className="w-full text-xs font-medium text-slate-500 sm:w-auto">Amount (৳)<input className={`${inp} mt-1 block w-full tabular-nums sm:w-36 ${amount !== '' && !amountOk ? '!border-red-400' : ''}`} inputMode="numeric" value={amount} onChange={(e) => { setAmount(e.target.value.replace(/\D/g, '').slice(0, 9)); setSure(false) }} placeholder={`max ${m.room}`} /></label>
+              <label className="w-full min-w-[8rem] flex-1 text-xs font-medium text-slate-500 sm:w-auto">Reference<input className={`${inp} mt-1 block w-full`} placeholder="Txn ID (optional)" value={ref} onChange={(e) => setRef(e.target.value)} maxLength={60} /></label>
+              <label className="w-full min-w-[8rem] flex-1 text-xs font-medium text-slate-500 sm:w-auto">Note<input className={`${inp} mt-1 block w-full`} placeholder={method === 'office' ? 'e.g. Cash, received by Rafi' : 'optional'} value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} /></label>
+            </div>
+            {amount !== '' && !amountOk && <p className="mt-1.5 text-xs text-red-600 dark:text-red-300">Enter a whole amount between ৳1 and {money(m.room)}.</p>}
+            <AnimatePresence mode="wait" initial={false}>
+              {!sure ? (
+                <motion.div key="go" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-3"><Button disabled={busy || !amountOk} onClick={() => setSure(true)}><PlusIcon width={16} height={16} />Record payment</Button></motion.div>
+              ) : (
+                <motion.div key="sure" role="alertdialog" aria-label="Confirm payment" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-300 dark:!bg-amber-500/10 dark:!ring-amber-400/40">
+                  <p className="min-w-0 flex-1 basis-56 text-sm text-fg"><b>Received {money(n)} by {label(method)}?</b><span className="block text-xs text-slate-600">{n === m.room ? 'This clears the whole balance and marks the booking Full Paid.' : `Balance after this: ${money(m.room - n + m.waiting)}.`} It cannot be undone from here.</span></p>
+                  <span className="flex w-full gap-2 sm:w-auto"><Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => setSure(false)}>Back</Button><Button size="sm" variant="success" disabled={busy} className="flex-1 sm:flex-none" onClick={add}>{busy ? 'Saving…' : 'Yes, record it'}</Button></span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>)}
         </div>
       </div>
     </motion.div>
@@ -79,7 +127,7 @@ function VerifyBox({ b, busy, onReview }) {
         {pend.map((p) => (
           <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5 first:pt-1 last:pb-0">
             <span className="min-w-0 flex-1 basis-48 text-sm text-slate-600">
-              <b className="text-fg">{money(p.amount)}</b> · <span className="font-semibold capitalize text-fg">{p.method}</span>
+              <b className="text-fg">{money(p.amount)}</b> · <span className="font-semibold text-fg">{PAYMENT.find((x) => x.id === p.method)?.label ?? p.method}</span>
               <span className="mt-0.5 block text-xs text-slate-500">{p.reference ? <>TrxID <span className="break-all font-mono text-fg">{p.reference}</span></> : 'No reference'} · {fmtWhen(p.createdAt)}</span>
             </span>
             <span className="flex w-full gap-2 sm:w-auto">
@@ -235,10 +283,12 @@ export default function Admin() {
                               <span className="text-slate-500">Total <b className="text-fg">{money(b.total)}</b></span>
                               <span className="text-slate-500">Advance <b className="text-fg">{money(b.advance)}</b></span>
                               <span className="text-slate-500">Paid <b className={b.paidAmount >= b.advance ? 'text-emerald-600 dark:text-emerald-300' : 'text-fg'}>{money(b.paidAmount)}</b></span>
+                              {moneyOf(b).overpaid ? <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:!bg-red-500/15 dark:!text-red-200">Refund due {money(moneyOf(b).refundDue)}</span> : moneyOf(b).paidInFull ? <StatusPill status="fully paid" /> : <span className="text-slate-500">Due <b className={b.status === 'completed' ? 'text-red-600 dark:text-red-300' : 'text-fg'}>{money(moneyOf(b).balance)}</b></span>}
                               <span className="font-mono text-xs text-slate-400">{b.id}</span>
                             </div>
                             <div className="mt-2.5"><EventTimer b={b} /></div>
                             {b.status === 'expired' && <p className="mt-2 text-xs text-red-600 dark:text-red-300">Auto-cancelled: advance not paid in time</p>}
+                            {b.status === 'completed' && !moneyOf(b).paidInFull && <p className="mt-2 text-xs font-semibold text-red-600 dark:text-red-300">Event is over and {money(moneyOf(b).balance)} is unpaid. Open Payments to record it when collected.</p>}
                             </div>
                         </div>
                         <VerifyBox b={b} busy={reviewing} onReview={review} />

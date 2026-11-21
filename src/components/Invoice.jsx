@@ -13,10 +13,11 @@ const Invoice = forwardRef(function Invoice({ b, pdf = false }, ref) {
   const payList = (b.payments || []).filter((p) => p.status !== 'rejected')
   const waiting = payList.filter((p) => p.status === 'pending').reduce((s, p) => s + p.amount, 0)
   const inReview = b.status === 'pending' && waiting > 0
-  const status = b.status === 'cancelled' ? ['CANCELLED', '#b91c1c', '#fef2f2'] : b.status === 'expired' ? ['EXPIRED', '#9a3412', '#fff7ed'] : b.status === 'completed' ? ['COMPLETED', '#0369a1', '#f0f9ff'] : b.status === 'confirmed' ? ['CONFIRMED', '#047857', '#ecfdf5'] : inReview ? ['PAYMENT IN REVIEW', '#0369a1', '#f0f9ff'] : ['ADVANCE PENDING', '#b45309', '#fffbeb']
+  const full = q.total > 0 && paid >= q.total
+  const status = b.status === 'cancelled' ? ['CANCELLED', '#b91c1c', '#fef2f2'] : b.status === 'expired' ? ['EXPIRED', '#9a3412', '#fff7ed'] : full ? ['PAID IN FULL', '#047857', '#ecfdf5'] : b.status === 'completed' ? ['COMPLETED', '#0369a1', '#f0f9ff'] : b.status === 'confirmed' ? ['CONFIRMED', '#047857', '#ecfdf5'] : inReview ? ['PAYMENT IN REVIEW', '#0369a1', '#f0f9ff'] : ['ADVANCE PENDING', '#b45309', '#fffbeb']
   const advanceDue = Math.max(0, q.advance - paid)
   const advanceSubmitted = advanceDue > 0 && waiting >= advanceDue
-  const balance = q.total - paid
+  const balance = Math.max(0, q.total - paid)
   return (
     <div className="inv-wrap" style={pdf ? { width: 794 } : undefined}>
       <div ref={ref} className={`inv ${pdf ? 'inv-pdf' : ''}`}>
@@ -74,7 +75,7 @@ const Invoice = forwardRef(function Invoice({ b, pdf = false }, ref) {
             <div className="inv-trow"><span className="inv-mute">Paid (verified)</span><b style={{ color: '#047857' }}>{money(paid)}</b></div>
             {waiting > 0 && <div className="inv-trow"><span className="inv-mute">Submitted, in review</span><b style={{ color: '#0369a1' }}>{money(waiting)}</b></div>}
             <div className="inv-adv"><span>{advanceSubmitted ? 'Advance (30%) submitted' : advanceDue > 0 ? 'Advance due (30%)' : 'Advance (30%) received'}</span><span className="inv-nowrap">{money(advanceDue > 0 ? advanceDue : q.advance)}</span></div>
-            <div className="inv-bal"><span>Balance, payable before the event</span><b>{money(balance)}</b></div>
+            <div className="inv-bal"><span>{balance === 0 ? 'Balance — paid in full, thank you' : 'Balance, payable before the event'}</span><b>{money(balance)}</b></div>
           </div>
         </div>
 

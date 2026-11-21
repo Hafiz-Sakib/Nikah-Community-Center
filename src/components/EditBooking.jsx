@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { packages, addons, eventTypes, foodPkgs } from '../data'
+import { moneyOf } from '../lib/invoice'
 import { takenSlots, shiftFree, SHIFTS, quote, money, fmtDate, toast } from '../lib/store'
 import { api } from '../lib/api'
 import Calendar from './Calendar'
@@ -102,7 +103,7 @@ export default function EditBooking({ booking, map, admin = false, onClose, onSa
         </div>
 
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-          <p className="text-sm text-slate-500">New total <b className="text-fg">{money(q.total)}</b> · advance {money(q.advance)} <span className="text-xs">(final price is set by the server)</span></p>
+          <div className="min-w-0"><p className="text-sm text-slate-500">New total <b className="text-fg">{money(q.total)}</b> · advance {money(q.advance)} <span className="text-xs">(final price is set by the server)</span></p>{!create && !admin && (() => { const pd = moneyOf(booking).paid; if (!pd) return null; const d = q.total - pd; return <p className={`mt-0.5 text-xs font-semibold ${d < 0 ? 'text-amber-700 dark:text-amber-300' : d > 0 ? 'text-brand-ink' : 'text-emerald-600 dark:text-emerald-300'}`}>{d > 0 ? `You have paid ${money(pd)} · balance after this change ${money(d)}` : d < 0 ? `You have paid ${money(pd)} · refund due ${money(-d)} after this change` : `You have paid ${money(pd)} · fully covered`}</p> })()}</div>
           <div className="flex gap-2"><Button variant="outline" onClick={onClose}>Close</Button><Button onClick={save} disabled={busy}>{busy ? 'Saving…' : create ? 'Create booking' : 'Save changes'}</Button></div>
         </div>
     </Modal>

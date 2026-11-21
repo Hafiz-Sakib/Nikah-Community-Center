@@ -161,7 +161,7 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
               <div aria-hidden className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-[#9b1c1c]/40 blur-3xl" />
               <div className="relative">
                 <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/60"><svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor" aria-hidden><path d="M5 7V5.25a3 3 0 0 1 6 0V7" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" /><rect x="3.25" y="7" width="9.5" height="7" rx="1.75" /></svg>Secure checkout</p>
-                <h2 id={`${uid}-title`} className="mt-3 text-sm text-white/70">Advance payment</h2>
+                <h2 id={`${uid}-title`} className="mt-3 text-sm text-white/70">Your payment</h2>
                 <p className="mt-1 text-4xl font-semibold sm:text-5xl"><Rolling text={money(amount)} still={still} /></p>
                 <p className="mt-2 text-xs text-white/50">Booking <span className="font-mono text-white/80">{bookingId}</span></p>
                 <div className="mt-8"><MetalCard digits={shownDigits} brand={res ? res.brand : brand} holder={res ? '' : v.name.toUpperCase()} expiry={res ? '' : v.expiry} cvc={v.cvc} flipped={focused === 'cvc' && !res} /></div>

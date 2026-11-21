@@ -6,6 +6,7 @@ const map = {
   expired: ['bg-red-50 text-red-700 ring-red-200', 'bg-red-500'],
   completed: ['bg-sky-100 text-sky-800 ring-sky-300', 'bg-sky-500'],
   'in review': ['bg-sky-100 text-sky-800 ring-sky-300', 'bg-sky-500'],
+  'fully paid': ['bg-emerald-100 text-emerald-800 ring-emerald-300', 'bg-emerald-500'],
   verified: ['bg-emerald-100 text-emerald-800 ring-emerald-300', 'bg-emerald-500'],
   rejected: ['bg-red-100 text-red-700 ring-red-300', 'bg-red-500'],
 }

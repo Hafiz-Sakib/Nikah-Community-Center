@@ -7,6 +7,28 @@ export const invoiceNo = (b) => b.invoiceNo || 'INV-' + b.id.replace(/^NCC-/, ''
 export const billQuote = (b) => b.priceSnapshot
 export const paidOf = (b) => (b.payments ? b.payments.filter((p) => p.status === 'verified').reduce((s, p) => s + p.amount, 0) : b.paidAmount || 0)
 
+/* One place that answers "how much is paid / due" for every screen (client billing, My bookings, admin).
+   Amounts are whole taka. verified = confirmed by staff; waiting = submitted by the customer, not yet verified (counts as paid for now).
+   room   = the most anyone may still add (total - verified - waiting)
+   needAdvance = part of the advance not yet covered even by waiting payments.
+   Mirrors the server's standing() in services/paymentService.js; the server is the authority and re-checks every payment. */
+export function moneyOf(b) {
+  const total = b.priceSnapshot?.total ?? b.total ?? 0
+  const advance = b.priceSnapshot?.advance ?? b.advance ?? 0
+  const paid = paidOf(b)
+  const waiting = (b.payments || []).filter((p) => p.status === 'pending').reduce((s, p) => s + p.amount, 0)
+  return {
+    total, advance, paid, waiting,
+    balance: Math.max(0, total - paid),
+    room: Math.max(0, total - paid - waiting),
+    needAdvance: Math.max(0, advance - paid - waiting),
+    advanceReceived: paid >= advance,
+    paidInFull: total > 0 && paid >= total,
+    overpaid: paid > total,
+    refundDue: Math.max(0, paid - total),   // total fell below what was paid: staff refund the difference
+  }
+}
+
 /* Itemised rows shared by the bill and the invoice. `tone` colours the proportion bar. */
 export function billRows(b) {
   const q = b.priceSnapshot

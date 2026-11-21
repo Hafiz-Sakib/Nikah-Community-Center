@@ -8,10 +8,14 @@ export const CONTACT = {
 }
 /* Advance-payment details shown on the billing screen & invoice. Replace the placeholders with your real numbers. */
 export const PAYMENT = [
-  { id: 'bkash', label: 'bKash', kind: 'Send Money (personal)', value: '01700-000000', color: '#e2136e' },
-  { id: 'nagad', label: 'Nagad', kind: 'Send Money (personal)', value: '01700-000000', color: '#f6921e' },
-  { id: 'bank', label: 'Bank', kind: 'Bank transfer / deposit', value: 'A/C 0000000000000 · Nikah Community Center · Your Bank, Chattogram', color: '#0f766e' },
-  { id: 'office', label: 'At office', kind: 'Pay in cash or card', value: 'Nikah Community Center, Chattogram · Daily 9 AM – 9 PM', color: '#475569' },
+  { id: 'card', label: 'Card', kind: 'Visa, Mastercard, Amex', color: '#3f87f5', online: true },
+  { id: 'bkash', label: 'bKash', kind: 'Send Money (personal)', value: '01700-000000', color: '#e2136e', logo: { src: 'pay/bkash.svg', w: 720, h: 329 },
+    steps: ['Open the bKash app and tap Send Money.', 'Enter the number above and the amount shown.', 'Add your Booking ID as the reference and confirm with your PIN.', 'Copy the TrxID from the confirmation and paste it below.'] },
+  { id: 'nagad', label: 'Nagad', kind: 'Send Money (personal)', value: '01700-000000', color: '#ee2d24', logo: { src: 'pay/nagad.png', w: 720, h: 252 },
+    steps: ['Open the Nagad app and tap Send Money.', 'Enter the number above and the amount shown.', 'Add your Booking ID as the reference and confirm with your PIN.', 'Copy the Transaction ID from the receipt and paste it below.'] },
+  { id: 'bank', label: 'Bank', kind: 'Bank transfer / deposit', value: 'A/C 0000000000000 · Nikah Community Center · Your Bank, Chattogram', color: '#0b9a4b', logo: { src: 'pay/bangladesh-bank.png', w: 358, h: 360 },
+    steps: ['Transfer or deposit the amount to the account above.', 'Write your Booking ID in the remark or on the deposit slip.', 'Enter the transfer or slip reference number below.'] },
+  { id: 'office', label: 'At office', kind: 'Pay in cash or card', value: 'Nikah Community Center, Chattogram · Daily 9 AM – 9 PM', color: '#64748b' },
 ]
 export const img = (n) => `${import.meta.env.BASE_URL}images/${n}`
 
