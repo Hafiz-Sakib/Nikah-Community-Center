@@ -145,6 +145,7 @@ Nikah-Community-Center-Frontend/
         ├── EventTimer.jsx         # reverse timer to the event            (new)
         ├── HoldTimer.jsx          # 3-day payment warning + admin chip     (new)
         ├── HoldReminder.jsx       # floating "payment due" nudge           (new)
+        ├── Modal.jsx              # shared dialog: bottom sheet on phones, centred card on desktop
         ├── Invoice.jsx  InvoiceView.jsx  Barcode.jsx  StatusPill.jsx
         ├── Packages.jsx  Facilities.jsx  FacilityExtras.jsx  Food.jsx  Events.jsx
         ├── Gallery.jsx  GalleryAll.jsx  Lightbox.jsx  Moments.jsx  Reviews.jsx
@@ -156,6 +157,7 @@ Nikah-Community-Center-Frontend/
         ├── gateway/               # demo card payment (MetalCard, PaymentGateway, marks)
         └── brew/                  # components adapted from Motion Brew
             ├── Button.jsx  PillTabs.jsx  TiltCard.jsx
+            ├── ActionButton.jsx   # animated action pills (hover lift, icon wiggle, light sweep)
             └── AmountSlider.jsx  HoldToConfirm.jsx
 ```
 

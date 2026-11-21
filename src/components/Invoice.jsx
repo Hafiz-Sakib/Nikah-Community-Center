@@ -20,7 +20,7 @@ const Invoice = forwardRef(function Invoice({ b }, ref) {
   const advanceDue = Math.max(0, q.advance - paid)
   const balance = q.total - paid
   return (
-    <div ref={ref} style={{ width: 794, minHeight: 1123, background: C.paper, color: C.ink, fontFamily: 'Poppins, system-ui, sans-serif', position: 'relative', overflow: 'hidden', boxSizing: 'border-box' }}>
+    <div ref={ref} style={{ width: 794, background: C.paper, color: C.ink, fontFamily: 'Poppins, system-ui, sans-serif', position: 'relative', overflow: 'hidden', boxSizing: 'border-box' }}>
       <div style={{ height: 10, background: `linear-gradient(90deg, ${C.maroon}, #b3261e 60%, #d4a017)` }} />
       <div style={{ padding: '36px 48px 0', display: 'flex', justifyContent: 'space-between', gap: 24 }}>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
@@ -78,7 +78,7 @@ const Invoice = forwardRef(function Invoice({ b }, ref) {
         </div>
       </div>
 
-      <div style={{ margin: '34px 48px 0', display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 28, alignItems: 'end' }}>
+      <div style={{ margin: '24px 48px 0', display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 28, alignItems: 'end' }}>
         <div>
           <div style={S.label}>Terms</div>
           <ul style={{ margin: '8px 0 0', padding: '0 0 0 16px', fontSize: 11, color: C.mute, lineHeight: 1.7 }}>
@@ -94,7 +94,7 @@ const Invoice = forwardRef(function Invoice({ b }, ref) {
         </div>
       </div>
 
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '14px 48px', background: C.soft, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.mute }}>
+      <div style={{ marginTop: 28, padding: '14px 48px', background: C.soft, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.mute }}>
         <span>Thank you for choosing Nikah Community Center.</span><span>This is a computer-generated invoice.</span>
       </div>
     </div>

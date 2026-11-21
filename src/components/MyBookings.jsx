@@ -15,22 +15,12 @@ import { api } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { useMyBookings, isActive } from '../lib/bookings'
 import { useAvailability } from '../lib/useAvailability'
-import { ClipboardIcon, CloseIcon } from './Icons'
+import Modal from './Modal'
+import ActionButton from './brew/ActionButton'
+import { ClipboardIcon, CloseIcon, WalletIcon, EditIcon, LockIcon, CheckIcon } from './Icons'
 
 const EDIT_CUTOFF_DAYS = 3   // same as the server's EDIT_CUTOFF_DAYS
 const plusDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return toISO(d) }
-
-function Modal({ title, onClose, children }) {
-  return (
-    <motion.div className="fixed inset-0 z-[75] flex items-start justify-center overflow-y-auto bg-black/70 p-3 sm:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
-      <motion.div onClick={(e) => e.stopPropagation()} initial={{ y: 30, scale: 0.97 }} animate={{ y: 0, scale: 1 }} exit={{ y: 20, opacity: 0 }} className="relative mt-14 w-full max-w-[860px] rounded-3xl bg-surface p-3 sm:p-5">
-        <button onClick={onClose} aria-label="Close" className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-fg"><CloseIcon /></button>
-        <p className="mb-3 pr-12 text-lg font-semibold text-fg">{title}</p>
-        {children}
-      </motion.div>
-    </motion.div>
-  )
-}
 
 export default function MyBookings() {
   const navigate = useNavigate()
@@ -79,6 +69,7 @@ export default function MyBookings() {
               const canEdit = isActive(b) && b.date >= editFrom
               const canCancel = isActive(b) && b.date >= today
               const due = b.total - b.paidAmount
+              const unpaid = b.status === 'pending' && b.paidAmount === 0 && !b.payments?.some((x) => x.status === 'pending')
               return (
                 <motion.li key={b.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-2xl p-4 ring-1 ring-slate-200">
                   <div className="flex items-start justify-between gap-3">
@@ -91,21 +82,27 @@ export default function MyBookings() {
                   {isActive(b) && <p className="mt-1 text-xs text-slate-500">Paid {money(b.paidAmount)} · Balance {money(due)}{b.payments?.some((x) => x.status === 'pending') ? ' · payment awaiting verification' : ''}</p>}
                   {b.status === 'pending' && <HoldWarning b={b} onPay={() => setBill(b)} onExpire={() => { toast('An unpaid booking was cancelled automatically', 'error'); reload(); reloadMap() }} />}
                   {b.status === 'expired' && <p className="mt-2 rounded-xl bg-orange-50 p-3 text-xs text-orange-700 ring-1 ring-orange-200 dark:!bg-white/5 dark:!text-fg dark:!ring-white/15">This booking was cancelled automatically because the advance was not paid within {Math.round((b.holdHours ?? 72) / 24)} days. The date is free again — you can book it again if it is still available.</p>}
-                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-3 text-sm font-medium">
-                    <button onClick={() => openInvoice(b)} className="inline-flex items-center gap-1.5 text-brand-ink hover:underline"><ClipboardIcon width={16} height={16} />Invoice</button>
-                    {isActive(b) && <button onClick={() => setBill(b)} className="text-brand-ink hover:underline">Pay / billing</button>}
-                    {canEdit && <button onClick={() => setEdit(b)} className="text-brand-ink hover:underline">Edit</button>}
-                    {isActive(b) && !canEdit && <span className="text-xs font-normal text-slate-400">Edits close {EDIT_CUTOFF_DAYS} days before the event — call us</span>}
-                    {canCancel && (
-                      <span className="ml-auto text-right">
-                        {confirmId === b.id ? (
-                          <span className="inline-flex items-center gap-2"><span className="font-normal text-slate-500">Cancel this booking?</span>
-                            <button disabled={busy} onClick={() => cancel(b.id)} className="rounded-full bg-red-500 px-3 py-1.5 font-semibold text-white disabled:opacity-60">Yes, cancel</button>
-                            <button onClick={() => setConfirmId(null)} className="rounded-full bg-slate-100 px-3 py-1.5 font-semibold text-slate-600">Keep</button></span>
-                        ) : <button onClick={() => setConfirmId(b.id)} className="text-red-500 hover:underline">Cancel booking</button>}
-                      </span>
+                  <AnimatePresence mode="wait" initial={false}>
+                    {confirmId === b.id ? (
+                      <motion.div key="confirm" role="alertdialog" aria-label="Confirm cancellation" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}
+                        className="mt-3 flex flex-wrap items-center gap-3 rounded-2xl bg-red-50 p-3 ring-1 ring-red-200 dark:!bg-red-500/10 dark:!ring-red-400/30">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500 text-white"><CloseIcon width={16} height={16} /></span>
+                        <p className="min-w-0 flex-1 text-sm font-semibold text-fg">Cancel this booking?<span className="block text-xs font-normal text-slate-500">The date goes back on sale.</span></p>
+                        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+                          <ActionButton variant="neutral" onClick={() => setConfirmId(null)}>Keep it</ActionButton>
+                          <ActionButton variant="solidDanger" disabled={busy} onClick={() => cancel(b.id)}>{busy ? 'Cancelling…' : 'Yes, cancel'}</ActionButton>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div key="actions" exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }} className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 sm:flex sm:flex-wrap sm:items-center">
+                        {isActive(b) && <ActionButton variant="primary" icon={WalletIcon} attention={unpaid} delay={0.05} wrap="col-span-2 sm:order-2 sm:col-span-1" onClick={() => setBill(b)}>Pay / billing</ActionButton>}
+                        <ActionButton variant="soft" icon={ClipboardIcon} delay={0} wrap={`sm:order-1 ${canEdit ? '' : 'col-span-2'}`} onClick={() => openInvoice(b)}>Invoice</ActionButton>
+                        {canEdit && <ActionButton variant="neutral" icon={EditIcon} delay={0.1} wrap="sm:order-3" onClick={() => setEdit(b)}>Edit</ActionButton>}
+                        {isActive(b) && !canEdit && <p className="col-span-2 inline-flex items-center gap-1.5 text-xs text-slate-400 sm:order-3 sm:col-span-1"><LockIcon width={13} height={13} />Edits close {EDIT_CUTOFF_DAYS} days before the event — call us</p>}
+                        {canCancel && <ActionButton variant="danger" icon={CloseIcon} delay={0.15} wrap="col-span-2 sm:order-4 sm:col-span-1 sm:ml-auto" onClick={() => setConfirmId(b.id)}>Cancel booking</ActionButton>}
+                      </motion.div>
                     )}
-                  </div>
+                  </AnimatePresence>
                 </motion.li>
               )
             })}
@@ -113,8 +110,8 @@ export default function MyBookings() {
         </ul>
       )}
       <AnimatePresence>
-        {inv && <Modal key="inv" title={`Invoice ${inv.invoiceNo}`} onClose={() => setInv(null)}><InvoiceView b={inv} /></Modal>}
-        {bill && <Modal key="bill" title={`Billing · ${bill.id}`} onClose={() => { setBill(null); reload() }}><Billing b={bill} /></Modal>}
+        {inv && <Modal key="inv" size="lg" title={`Invoice ${inv.invoiceNo}`} onClose={() => setInv(null)}><InvoiceView b={inv} /></Modal>}
+        {bill && <Modal key="bill" size="md" title={`Billing · ${bill.id}`} onClose={() => { setBill(null); reload() }}><Billing b={bill} /></Modal>}
         {edit && <EditBooking key="edit" booking={edit} map={map} onClose={() => setEdit(null)} onSaved={() => { reload(); reloadMap() }} />}
       </AnimatePresence>
       <p className="mt-5 text-center text-xs text-slate-400">Refunds for cancelled bookings are handled by our team. Call us if you need help.</p>

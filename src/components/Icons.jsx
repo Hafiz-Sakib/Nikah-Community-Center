@@ -53,3 +53,6 @@ export const ImageIcon = (p) => (<svg {...base} {...p}><rect x="3" y="4" width="
 export const WifiIcon = (p) => (<svg {...base} {...p}><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 16a5 5 0 0 1 6.8 0" /><path d="M12 19.5h.01" strokeWidth="2.6" /></svg>)
 export const AccessIcon = (p) => (<svg {...base} {...p}><circle cx="12" cy="4.5" r="1.6" /><path d="M12 8v5h4.5l2.5 5.5M12 10.5H8M8 13.2a4.6 4.6 0 1 0 6.6 5" /></svg>)
 export const ICONS2 = { users: UsersIcon, snow: SnowIcon, car: CarIcon, bolt: BoltIcon, crown: CrownIcon, utensils: UtensilsIcon, briefcase: BriefcaseIcon, heart: HeartIcon, sparkles: SparklesIcon, building: BuildingIcon, shield: ShieldIcon, camera: CameraIcon, music: MusicIcon, gift: GiftIcon, mic: MicIcon, moon: MoonIcon, cake: CakeIcon, clipboard: ClipboardIcon, eye: EyeIcon, wallet: WalletIcon, calendar: CalendarIcon, phone: PhoneIcon, image: ImageIcon, wifi: WifiIcon, access: AccessIcon }
+
+export const EditIcon = (p) => (<svg {...base} {...p}><path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg>)
+export const LockIcon = (p) => (<svg {...base} {...p}><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" /><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" /></svg>)

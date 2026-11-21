@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import StatusPill from './StatusPill'
 import EventTimer from './EventTimer'
+import Modal from './Modal'
 import { HoldChip } from './HoldTimer'
 import EditBooking from './EditBooking'
 import InvoiceView from './InvoiceView'
@@ -229,15 +230,7 @@ export default function Admin() {
 
         <AnimatePresence>
           {edit && <EditBooking key={edit === 'new' ? 'new' : edit.id} booking={edit === 'new' ? null : edit} admin map={map} onClose={() => setEdit(null)} onSaved={changed} />}
-          {inv && (
-            <motion.div key="inv" className="fixed inset-0 z-[75] flex items-start justify-center overflow-y-auto bg-black/70 p-3 sm:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setInv(null)}>
-              <motion.div onClick={(e) => e.stopPropagation()} initial={{ y: 30 }} animate={{ y: 0 }} className="relative mt-14 w-full max-w-[860px] rounded-3xl bg-surface p-3 sm:p-5">
-                <Button variant="outline" size="icon" onClick={() => setInv(null)} aria-label="Close invoice" className="absolute right-3 top-3 z-10"><CloseIcon width={18} height={18} /></Button>
-                <p className="mb-3 pr-12 text-lg font-semibold text-fg">Invoice {inv.invoiceNo}</p>
-                <InvoiceView b={inv} />
-              </motion.div>
-            </motion.div>
-          )}
+          {inv && <Modal key="inv" size="lg" title={`Invoice ${inv.invoiceNo}`} onClose={() => setInv(null)}><InvoiceView b={inv} /></Modal>}
         </AnimatePresence>
       </section>
     </>

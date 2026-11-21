@@ -6,6 +6,7 @@ import { api } from '../lib/api'
 import Calendar from './Calendar'
 import { CloseIcon } from './Icons'
 import Button from './brew/Button'
+import Modal from './Modal'
 
 const STATUSES = ['pending', 'confirmed', 'cancelled', 'expired', 'completed']
 const phoneOk = (p) => /^(?:\+?88)?01[3-9]\d{8}$/.test(p.replace(/[\s-]/g, ''))
@@ -56,11 +57,7 @@ export default function EditBooking({ booking, map, admin = false, onClose, onSa
   const reconfirm = !create && !admin && booking.status === 'confirmed' && (f.date !== booking.date || f.shift !== booking.shift || f.packageId !== booking.packageId)
 
   return (
-    <motion.div className="fixed inset-0 z-[75] flex items-start justify-center overflow-y-auto bg-black/70 p-3 sm:p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
-      <motion.div onClick={(e) => e.stopPropagation()} initial={{ y: 30, scale: 0.97 }} animate={{ y: 0, scale: 1 }} exit={{ y: 20, opacity: 0 }} className="relative mt-14 w-full max-w-3xl rounded-3xl bg-surface p-4 sm:p-6">
-        <Button variant="outline" size="icon" onClick={onClose} aria-label="Close" className="absolute right-3 top-3"><CloseIcon width={18} height={18} /></Button>
-        <p className="mb-4 pr-12 text-lg font-semibold text-fg">{create ? 'New walk-in booking' : `Edit ${booking.id}`}</p>
-
+    <Modal size="lg" title={create ? 'New walk-in booking' : `Edit ${booking.id}`} onClose={onClose}>
         <div className="grid gap-4 sm:grid-cols-3">
           <label><span className={lab}>Event</span><select className={inp} value={f.eventType} onChange={(e) => set({ eventType: e.target.value })}>{eventTypes.map((t) => <option key={t}>{t}</option>)}</select></label>
           <label><span className={lab}>Package</span><select className={inp} value={f.packageId} onChange={(e) => set({ packageId: e.target.value })}>{packages.map((p) => <option key={p.id} value={p.id}>{p.name} · {money(p.price)}</option>)}</select></label>
@@ -108,7 +105,6 @@ export default function EditBooking({ booking, map, admin = false, onClose, onSa
           <p className="text-sm text-slate-500">New total <b className="text-fg">{money(q.total)}</b> · advance {money(q.advance)} <span className="text-xs">(final price is set by the server)</span></p>
           <div className="flex gap-2"><Button variant="outline" onClick={onClose}>Close</Button><Button onClick={save} disabled={busy}>{busy ? 'Saving…' : create ? 'Create booking' : 'Save changes'}</Button></div>
         </div>
-      </motion.div>
-    </motion.div>
+    </Modal>
   )
 }

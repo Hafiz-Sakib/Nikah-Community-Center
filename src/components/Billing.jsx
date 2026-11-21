@@ -80,9 +80,11 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
     <div>
       <div className="relative text-center">
         {fresh && <Confetti />}
+        {fresh && (<>
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"><CheckIcon width={32} height={32} strokeWidth={3} /></motion.div>
         <h3 className="mt-4 text-2xl font-semibold text-fg">{fresh ? `Request received, ${b.name.split(' ')[0]}!` : `Billing · ${b.eventType}`}</h3>
-        <p className="mt-1 flex flex-wrap items-center justify-center gap-2 text-sm text-slate-500"><StatusPill status={b.status} />{b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : null}</p>
+        </>)}
+        <p className={`flex flex-wrap items-center justify-center gap-2 text-sm text-slate-500 ${fresh ? 'mt-1' : ''}`}><StatusPill status={b.status} />{b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : null}</p>
         <button onClick={() => copy(b.id, 'Booking ID')} className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-soft px-4 py-1.5 font-mono text-sm font-semibold text-brand-ink transition active:scale-95" aria-label={`Copy booking ID ${b.id}`}>{b.id}<ClipboardIcon width={15} height={15} /></button>
         {b.status === 'pending' && <div className="mx-auto mt-4 max-w-xl text-left"><HoldWarning b={b} hideCta onExpire={refresh} className="!mt-0" /></div>}
       </div>
@@ -99,7 +101,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
         {tab === 'bill' ? (
           <motion.div key="bill" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="mt-6 space-y-5">
             {/* totals */}
-            <div className="rounded-3xl bg-gradient-to-br from-[#6f0202] to-[#9b1c1c] p-6 text-white shadow-lg">
+            <div className="rounded-3xl bg-gradient-to-br from-[#6f0202] to-[#9b1c1c] p-5 text-white shadow-lg sm:p-6">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div><p className="text-xs uppercase tracking-widest text-white/70">Total bill</p><Odometer value={perGuest ? Math.round(q.total / b.guests) : q.total} prefix="৳" className="text-4xl font-semibold sm:text-5xl" /><p className="mt-1 text-xs text-white/70">{perGuest ? `per guest · ${b.guests} guests` : `${b.eventType} · ${fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })} · ${q.shiftLabel}`}</p></div>
                 <button onClick={() => setPerGuest((v) => !v)} aria-pressed={perGuest} className="rounded-full bg-white/15 px-4 py-2 text-xs font-semibold backdrop-blur transition hover:bg-white/25 active:scale-95">{perGuest ? 'Show total' : 'Show per guest'}</button>
@@ -187,7 +189,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
         )}
       </AnimatePresence>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      <div className="mt-5 grid gap-2.5 sm:grid-cols-3 sm:gap-3">
         <a href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(waText(b, pay.label))}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 active:scale-95"><ChatIcon width={18} height={18} />Send payment proof</a>
         <button onClick={ics} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-fg transition hover:bg-slate-200 active:scale-95"><DownloadIcon width={18} height={18} />Add to calendar</button>
         <button onClick={() => setTab('invoice')} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-fg transition hover:bg-slate-200 active:scale-95"><ClipboardIcon width={18} height={18} />View invoice</button>
