@@ -78,3 +78,16 @@
 @keyframes vt-close { from { clip-path: circle(var(--vt-reach) at var(--vt-x) var(--vt-y)); } to { clip-path: circle(0px at var(--vt-x) var(--vt-y)); } }
 :root[data-theme-switch="to-light"]::view-transition-old(root) { animation: vt-close var(--vt-ms) var(--vt-ease) both; }
 .theme-fade, .theme-fade *, .theme-fade *::before, .theme-fade *::after { transition: background-color 1s ease, color 1s ease, border-color 1s ease, box-shadow 1s ease !important; }
+
+/* ---------- 404 page: fairy lights, gold dust, shimmer ---------- */
+@keyframes bulb-twinkle { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+@keyframes string-sway { 0%, 100% { transform: rotate(-.5deg); } 50% { transform: rotate(.5deg); } }
+@keyframes dust-rise { 0% { transform: translate3d(0, 0, 0) scale(.5); opacity: 0; } 15% { opacity: .9; } 100% { transform: translate3d(var(--dx), -110vh, 0) scale(1); opacity: 0; } }
+@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes caret { 50% { opacity: 0; } }
+.nf-bulb { animation: bulb-twinkle 2.6s ease-in-out infinite; }
+.nf-string { transform-origin: 50% 0; animation: string-sway 7s ease-in-out infinite; }
+.nf-dust { animation: dust-rise var(--dur) linear var(--delay) infinite; will-change: transform, opacity; }
+.nf-caret { animation: caret 1s steps(1) infinite; }
+.shimmer-text { background: linear-gradient(100deg, #fff 20%, #8fbcff 40%, #ffe9a8 50%, #8fbcff 60%, #fff 80%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 4.5s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .nf-bulb, .nf-string, .nf-dust, .nf-caret, .shimmer-text { animation: none; } .nf-dust { display: none; } }

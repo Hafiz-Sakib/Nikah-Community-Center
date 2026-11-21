@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import PageHero from './PageHero'
 import StatusPill from './StatusPill'
+import EventTimer from './EventTimer'
+import { HoldWarning } from './HoldTimer'
 import Avatar from './Avatar'
 import Billing from './Billing'
 import EditBooking from './EditBooking'
@@ -80,14 +82,15 @@ export default function MyBookings() {
               return (
                 <motion.li key={b.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-2xl p-4 ring-1 ring-slate-200">
                   <div className="flex items-start justify-between gap-3">
-                    <div><p className="font-semibold text-fg">{b.eventType} · {fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })}</p><p className="text-xs text-slate-500">{s.label} · {s.time}</p></div>
+                    <div><p className="font-semibold text-fg">{b.eventType} · {fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })}</p><p className="text-xs text-slate-500">{s.label} · {s.time}</p><EventTimer b={b} className="mt-2" /></div>
                     <StatusPill status={b.status} />
                   </div>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-slate-600">
                     <span className="font-mono text-xs">{b.id}</span><span>{p?.name} · {b.guests} guests</span><b className="text-fg">{money(b.total)}</b>
                   </div>
                   {isActive(b) && <p className="mt-1 text-xs text-slate-500">Paid {money(b.paidAmount)} · Balance {money(due)}{b.payments?.some((x) => x.status === 'pending') ? ' · payment awaiting verification' : ''}</p>}
-                  {b.status === 'expired' && <p className="mt-1 text-xs text-orange-600">This hold expired because no payment was received. You can book the date again if it is still free.</p>}
+                  {b.status === 'pending' && <HoldWarning b={b} onPay={() => setBill(b)} onExpire={() => { toast('An unpaid booking was cancelled automatically', 'error'); reload(); reloadMap() }} />}
+                  {b.status === 'expired' && <p className="mt-2 rounded-xl bg-orange-50 p-3 text-xs text-orange-700 ring-1 ring-orange-200 dark:!bg-white/5 dark:!text-fg dark:!ring-white/15">This booking was cancelled automatically because the advance was not paid within {Math.round((b.holdHours ?? 72) / 24)} days. The date is free again — you can book it again if it is still available.</p>}
                   <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-3 text-sm font-medium">
                     <button onClick={() => openInvoice(b)} className="inline-flex items-center gap-1.5 text-brand-ink hover:underline"><ClipboardIcon width={16} height={16} />Invoice</button>
                     {isActive(b) && <button onClick={() => setBill(b)} className="text-brand-ink hover:underline">Pay / billing</button>}

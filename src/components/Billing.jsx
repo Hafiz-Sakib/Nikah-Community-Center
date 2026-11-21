@@ -6,6 +6,7 @@ import { billRows, waText, paidOf } from '../lib/invoice'
 import { api } from '../lib/api'
 import { useMyBookings } from '../lib/bookings'
 import StatusPill from './StatusPill'
+import { HoldWarning, useHoldText } from './HoldTimer'
 import Odometer from './Odometer'
 import AnimatedNumber from './AnimatedNumber'
 import InvoiceView from './InvoiceView'
@@ -25,14 +26,6 @@ function Confetti() {
   )
 }
 
-function useCountdown(endISO) {
-  const end = endISO ? new Date(endISO).getTime() : 0
-  const [left, setLeft] = useState(Math.max(0, end - Date.now()))
-  useEffect(() => { setLeft(Math.max(0, end - Date.now())); const t = setInterval(() => setLeft(Math.max(0, end - Date.now())), 1000); return () => clearInterval(t) }, [end])
-  const p = (n) => String(n).padStart(2, '0')
-  return `${p(Math.floor(left / 3600000))}:${p(Math.floor((left % 3600000) / 60000))}:${p(Math.floor((left % 60000) / 1000))}`
-}
-
 const copy = async (text, what) => { try { await navigator.clipboard.writeText(text); toast(`${what} copied`) } catch { toast('Copy not available here', 'error') } }
 
 export default function Billing({ b: initial, fresh = false, onNew, onManage }) {
@@ -49,7 +42,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
   const [busy, setBusy] = useState(false)
   const { rows, q } = useMemo(() => billRows(b), [b])
   const pay = PAYMENT.find((m) => m.id === method)
-  const timer = useCountdown(b.holdExpiresAt)
+  const timer = useHoldText(b)
   const paid = paidOf(b)
   const payments = b.payments || []
   const waiting = payments.filter((p) => p.status === 'pending').reduce((s, p) => s + p.amount, 0)
@@ -91,6 +84,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
         <h3 className="mt-4 text-2xl font-semibold text-fg">{fresh ? `Request received, ${b.name.split(' ')[0]}!` : `Billing · ${b.eventType}`}</h3>
         <p className="mt-1 flex flex-wrap items-center justify-center gap-2 text-sm text-slate-500"><StatusPill status={b.status} />{b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : null}</p>
         <button onClick={() => copy(b.id, 'Booking ID')} className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-soft px-4 py-1.5 font-mono text-sm font-semibold text-brand-ink transition active:scale-95" aria-label={`Copy booking ID ${b.id}`}>{b.id}<ClipboardIcon width={15} height={15} /></button>
+        {b.status === 'pending' && <div className="mx-auto mt-4 max-w-xl text-left"><HoldWarning b={b} hideCta onExpire={refresh} className="!mt-0" /></div>}
       </div>
 
       <div className="mx-auto mt-6 flex w-fit rounded-full bg-slate-100 p-1" role="tablist">

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import StatusPill from './StatusPill'
+import EventTimer from './EventTimer'
+import { HoldChip } from './HoldTimer'
 import EditBooking from './EditBooking'
 import InvoiceView from './InvoiceView'
 import Odometer from './Odometer'
@@ -182,7 +184,7 @@ export default function Admin() {
                                 <p className="truncate font-semibold text-fg">{b.name}</p>
                                 <p className="text-sm text-slate-500">{b.phone}</p>
                               </div>
-                              <StatusPill status={b.status} />
+                              <div className="flex flex-col items-end gap-1.5"><StatusPill status={b.status} />{b.status === 'pending' && <HoldChip b={b} onExpire={changed} />}</div>
                             </div>
                             <p className="mt-1.5 text-sm text-slate-600">{b.eventType} · {SHIFTS.find((s) => s.id === b.shift)?.label} · {b.guests} guests · {packages.find((p) => p.id === b.packageId)?.name}</p>
                             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
@@ -191,6 +193,7 @@ export default function Admin() {
                               <span className="text-slate-500">Paid <b className={b.paidAmount >= b.advance ? 'text-emerald-600 dark:text-emerald-300' : 'text-fg'}>{money(b.paidAmount)}</b></span>
                               <span className="font-mono text-xs text-slate-400">{b.id}</span>
                             </div>
+                            <div className="mt-2.5"><EventTimer b={b} /></div>
                             {toVerify && <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-300 dark:!bg-amber-500/15 dark:!text-amber-200 dark:!ring-amber-400/40"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />Payment waiting to be verified</p>}
                           </div>
                         </div>

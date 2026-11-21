@@ -17,6 +17,7 @@ import BookingPage from './pages/BookingPage'
 import FoodPage from './pages/FoodPage'
 import NotFound from './pages/NotFound'
 import { InstallBanner } from './components/Install'
+import HoldReminder from './components/HoldReminder'
 import { toast } from './lib/store'
 import { RequireAuth } from './components/RequireAuth'
 import AuthPage from './components/AuthPage'
@@ -39,6 +40,7 @@ export default function App() {
   return (
     <>
       <Navbar />
+      <HoldReminder />
       <AnimatePresence mode="wait" initial={false}>
         <main key={location.pathname === '/signup' ? '/login' : location.pathname}>
           <Page>

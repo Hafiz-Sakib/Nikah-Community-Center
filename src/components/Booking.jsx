@@ -15,7 +15,7 @@ import { TiltCard } from './brew/TiltCard'
 import Odometer from './Odometer'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { tomorrowISO } from '../lib/store'
-import { CalendarIcon, CheckIcon, MinusIcon, PlusIcon, ArrowRight, ChevronLeft, DownloadIcon, ChatIcon } from './Icons'
+import { CalendarIcon, CheckIcon, ClockIcon, MinusIcon, PlusIcon, ArrowRight, ChevronLeft, DownloadIcon, ChatIcon } from './Icons'
 
 const STEPS = ['Event', 'Date & shift', 'Details', 'Confirm']
 const DRAFT = 'ncc.bookingDraft'
@@ -275,6 +275,10 @@ export default function Booking() {
                           <Row k="Name" v={f.name} /><Row k="Mobile" v={f.phone} />{f.email && <Row k="Email" v={f.email} />}{f.notes && <Row k="Notes" v={<span className="max-w-[16rem] break-words">{f.notes}</span>} />}
                         </div>
                         <div className="lg:hidden"><Summary f={f} q={q} pkg={pkg} shift={shift} menu={menu} /></div>
+                        <div className="flex items-start gap-3 rounded-2xl bg-amber-50 p-3.5 text-sm text-amber-900 ring-1 ring-amber-300 dark:!bg-white/5 dark:!text-fg dark:!ring-white/15">
+                          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white"><ClockIcon width={16} height={16} /></span>
+                          <p><b>Pay within 3 days.</b> Your date is held for 3 days. If the {money(q.advance)} advance is not paid by then, the booking is cancelled automatically and the date is released.</p>
+                        </div>
                         <p className="text-xs leading-relaxed text-slate-500">By confirming you agree to our cancellation policy: full advance refund if cancelled 14+ days before the event. Pay the 30% advance after booking to confirm your date.</p>
                         {!user && (
                           <div className="rounded-2xl bg-brand-soft p-4 text-center ring-1 ring-brand/20">
@@ -305,7 +309,7 @@ export default function Booking() {
           </div>
 
           <aside className={done ? "hidden" : "hidden lg:block"}><div className="sticky top-24"><Summary f={f} q={q} pkg={pkg} shift={shift} menu={menu} />
-            <p className="mt-3 flex items-center gap-2 px-2 text-xs text-slate-500"><CalendarIcon width={16} height={16} />Dates are held for 24 hours until the advance is received.</p></div></aside>
+            <p className="mt-3 flex items-center gap-2 px-2 text-xs text-slate-500"><CalendarIcon width={16} height={16} />Dates are held for 3 days. Unpaid bookings are cancelled automatically.</p></div></aside>
         </div>
       </div>
     </section>
