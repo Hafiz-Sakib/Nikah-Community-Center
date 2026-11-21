@@ -17,7 +17,6 @@ import BookingPage from './pages/BookingPage'
 import BillingPage from './pages/BillingPage'
 import FoodPage from './pages/FoodPage'
 import NotFound from './pages/NotFound'
-import { InstallBanner } from './components/Install'
 import HoldReminder from './components/HoldReminder'
 import { toast } from './lib/store'
 import { RequireAuth } from './components/RequireAuth'
@@ -68,7 +67,6 @@ export default function App() {
         </main>
       </AnimatePresence>
       <Footer />
-      <InstallBanner />
       <Toaster />
     </>
   )

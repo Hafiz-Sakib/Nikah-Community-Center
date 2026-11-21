@@ -94,7 +94,7 @@ export default function Navbar() {
           </ul>
           <div className="flex items-center gap-1.5 sm:gap-2">
             <ThemeToggle />
-            <InstallIconButton className="lg:hidden" />
+            <InstallIconButton />
             {user ? <UserMenu /> : <Link to="/login" className="hidden rounded-full px-4 py-2 text-sm font-semibold text-fg ring-1 ring-slate-300 transition hover:bg-slate-100 lg:inline-flex">Log in</Link>}
             <Link to="/booking" className="btn-primary hidden !px-5 !py-2.5 sm:inline-flex">Book Now</Link>
             <button onClick={() => setOpen((o) => !o)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-fg transition active:scale-90 lg:hidden">
