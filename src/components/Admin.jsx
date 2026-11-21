@@ -116,6 +116,46 @@ export function PaymentsPanel({ b, onChanged }) {
   )
 }
 
+/* Cancelling is final (the date goes back on sale and the booking can never be re-opened), so it needs a deliberate press-and-hold,
+   and staff are told up front how much has to be refunded. */
+function CancelDialog({ b, onClose, onDone }) {
+  const m = moneyOf(b)
+  const [reason, setReason] = useState('')
+  const go = async () => {
+    try {
+      await api(`/admin/bookings/${b.id}/cancel`, { method: 'POST', body: reason.trim() ? { reason: reason.trim() } : {} })
+      toast(m.paid > 0 ? `Booking cancelled · refund ${money(m.paid)} to the customer` : 'Booking cancelled')
+      onDone(); onClose()
+    } catch (e) { toast(e.message, 'error') }
+  }
+  return (
+    <Modal size="sm" title="Cancel this booking?" onClose={onClose}>
+      <p className="text-sm text-slate-600"><b className="text-fg">{b.name}</b> · {b.eventType} · {fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })}<span className="mt-0.5 block text-xs tabular-nums text-slate-400">{b.id}</span></p>
+      <p className="mt-2 text-sm text-slate-500">The date goes back on sale. A cancelled booking cannot be confirmed or re-opened.</p>
+
+      {m.paid > 0 ? (
+        <div role="status" className="mt-4 rounded-2xl bg-red-50 p-4 ring-1 ring-red-200 dark:!bg-red-500/10 dark:!ring-red-400/30">
+          <p className="text-xs font-semibold uppercase tracking-wider text-red-700 dark:!text-red-200">Refund to the customer</p>
+          <p className="mt-1 text-3xl font-semibold tabular-nums text-red-700 dark:!text-red-200">{money(m.paid)}</p>
+          <p className="mt-1.5 text-xs text-slate-600">The customer has paid {money(m.paid)} (verified). Pay this back after cancelling.</p>
+        </div>
+      ) : (
+        <p role="status" className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 ring-1 ring-emerald-200 dark:!bg-emerald-500/10 dark:!text-emerald-300 dark:!ring-emerald-400/30">No verified payment. Nothing to refund.</p>
+      )}
+      {m.waiting > 0 && <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-amber-200 dark:!bg-amber-500/10 dark:!text-amber-200 dark:!ring-amber-400/30"><b>{money(m.waiting)}</b> was submitted but is not verified yet. If that money really reached you, refund it too; otherwise reject it afterwards.</p>}
+
+      <label className="mt-4 block"><span className="mb-1 block text-xs font-semibold text-slate-500">Reason (optional)</span>
+        <input className={`${field} w-full !rounded-xl`} value={reason} maxLength={200} onChange={(e) => setReason(e.target.value)} placeholder="e.g. customer asked to cancel" /></label>
+
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <Button variant="outline" onClick={onClose}>Keep booking</Button>
+        <HoldToConfirm size="md" duration={1.2} confirmDelay={0.8} label="Hold to cancel booking" doneLabel="Cancelled" onConfirm={go} />
+      </div>
+      <p className="mt-2 text-center text-xs text-slate-400 sm:text-right">Press and hold the red button</p>
+    </Modal>
+  )
+}
+
 /* Payments the customer has submitted (any transaction ID). They count as paid for now; staff check the real statement, then verify or reject. */
 function VerifyBox({ b, busy, onReview }) {
   const pend = (b.payments || []).filter((p) => p.status === 'pending')
@@ -169,6 +209,7 @@ export default function Admin() {
   const [open, setOpen] = useState(null)       // booking id whose payments panel is open
   const [edit, setEdit] = useState(null)       // booking | 'new'
   const [inv, setInv] = useState(null)
+  const [cancelling, setCancelling] = useState(null)   // booking whose cancel dialog is open
 
   useEffect(() => { const t = setTimeout(() => { setQ(qInput); setPage(1) }, 350); return () => clearTimeout(t) }, [qInput])
 
@@ -197,7 +238,6 @@ export default function Admin() {
   const [reviewing, setReviewing] = useState(false)
   const review = async (id, status) => { setReviewing(true); try { await act(() => api(`/admin/payments/${id}`, { method: 'PATCH', body: { status } }), `Payment ${status}`) } finally { setReviewing(false) } }
   const act = async (fn, msg) => { try { await fn(); toast(msg); changed() } catch (e) { toast(e.message, 'error') } }
-  const setStatus = (b, status) => act(() => api(`/admin/bookings/${b.id}`, { method: 'PATCH', body: { status } }), `Booking ${status}`)
   const remove = (b) => act(() => api(`/admin/bookings/${b.id}`, { method: 'DELETE' }), 'Booking deleted')   // hold-to-confirm; the server refuses confirmed / completed / paid bookings
   const openInvoice = (b) => setInv({ ...b, invoiceNo: 'INV-' + b.id.replace(/^NCC-/, '') })   // list rows already carry snapshot + payments
   const pages = Math.max(1, Math.ceil(data.total / PAGE))
@@ -297,7 +337,7 @@ export default function Admin() {
                         {b.status === 'pending' && !(b.payments || []).some((p) => p.status === 'pending') && <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-500 ring-1 ring-slate-200">Not confirmed yet. It is confirmed automatically once a payment of at least {money(Math.max(0, b.advance - moneyOf(b).paid))} is verified.</p>}
 
                         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
-                          {['pending', 'confirmed'].includes(b.status) && <Button size="sm" variant="danger" onClick={() => setStatus(b, 'cancelled')}>Cancel booking</Button>}
+                          {['pending', 'confirmed'].includes(b.status) && <Button size="sm" variant="danger" onClick={() => setCancelling(b)}>Cancel booking</Button>}
                           <Button size="sm" variant="outline" onClick={() => setEdit(b)}>Edit</Button>
                           <Button size="sm" variant={open === b.id ? 'primary' : 'soft'} aria-expanded={open === b.id} onClick={() => setOpen(open === b.id ? null : b.id)}>Payments ({b.payments?.length ?? 0})<ChevronDown width={14} height={14} className={`transition-transform ${open === b.id ? 'rotate-180' : ''}`} /></Button>
                           <Button size="sm" variant="info" onClick={() => openInvoice(b)}>Invoice</Button>
@@ -326,6 +366,7 @@ export default function Admin() {
 
         <AnimatePresence>
           {edit && <EditBooking key={edit === 'new' ? 'new' : edit.id} booking={edit === 'new' ? null : edit} admin map={map} onClose={() => setEdit(null)} onSaved={changed} />}
+          {cancelling && <CancelDialog key="cancel" b={cancelling} onClose={() => setCancelling(null)} onDone={changed} />}
           {inv && <Modal key="inv" size="lg" title={`Invoice ${inv.invoiceNo}`} onClose={() => setInv(null)}><InvoiceView b={inv} /></Modal>}
         </AnimatePresence>
       </section>
