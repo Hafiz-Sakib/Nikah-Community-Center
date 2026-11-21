@@ -2,6 +2,11 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { api } from '../lib/api'
 
+// Where Supabase sends the user back after Google / email links. Defaults to the current origin;
+// set VITE_SITE_URL (e.g. https://nikah-convention.vercel.app) to force it. Must be in Supabase > Auth > URL Configuration > Redirect URLs.
+const SITE = (import.meta.env.VITE_SITE_URL || '').replace(/\/$/, '')
+const site = () => SITE || location.origin
+
 const Ctx = createContext(null)
 export const useAuth = () => useContext(Ctx)
 
@@ -37,10 +42,10 @@ export function AuthProvider({ children }) {
     user, session, loading, me,
     meReady: !session || me !== undefined,
     isAdmin: me?.role === 'admin',
-    signInGoogle: () => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${location.origin}/auth/callback` } }),
+    signInGoogle: () => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${site()}/auth/callback` } }),
     signInEmail: (email, password) => supabase.auth.signInWithPassword({ email, password }),
-    signUpEmail: (email, password, name) => supabase.auth.signUp({ email, password, options: { data: { full_name: name }, emailRedirectTo: `${location.origin}/auth/callback` } }),
-    resetPassword: (email) => supabase.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/reset-password` }),
+    signUpEmail: (email, password, name) => supabase.auth.signUp({ email, password, options: { data: { full_name: name }, emailRedirectTo: `${site()}/auth/callback` } }),
+    resetPassword: (email) => supabase.auth.resetPasswordForEmail(email, { redirectTo: `${site()}/reset-password` }),
     updatePassword: (password) => supabase.auth.updateUser({ password }),
     signOut: () => supabase.auth.signOut(),
   }

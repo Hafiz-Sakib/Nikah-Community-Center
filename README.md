@@ -181,6 +181,7 @@ npm run preview          # preview the production build
 |---|---|---|
 | `VITE_SUPABASE_URL` | `https://xxxx.supabase.co` | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | `eyJ…` | **anon / publishable key only**, never the `service_role` key |
+| `VITE_SITE_URL` | _(empty)_ | Optional. Public site URL used as the OAuth/email redirect; defaults to the current origin |
 | `VITE_API_URL` | `http://localhost:4000` | In production: your Render URL |
 
 Add the same three variables in Vercel → Project → Settings → Environment Variables.
