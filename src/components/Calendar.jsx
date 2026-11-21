@@ -6,7 +6,7 @@ import { toISO, tomorrowISO, dayStatus } from '../lib/store'
 const DOW = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 const dot = { free: 'bg-emerald-500', partial: 'bg-amber-400', full: 'bg-red-400' }
 
-export default function Calendar({ value, onChange, bookings }) {
+export default function Calendar({ value, onChange, map }) {
   const start = value ? new Date(value + 'T00:00') : new Date()
   const [view, setView] = useState(new Date(start.getFullYear(), start.getMonth(), 1))
   const [dir, setDir] = useState(1)
@@ -38,7 +38,7 @@ export default function Calendar({ value, onChange, bookings }) {
           if (!d) return <span key={`e${i}`} />
           const iso = toISO(new Date(y, m, d))
           const off = iso < min || iso > max
-          const st = off ? null : dayStatus(iso, bookings)
+          const st = off ? null : dayStatus(iso, map)
           const sel = value === iso
           const disabled = off || st === 'full'
           return (

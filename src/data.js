@@ -5,7 +5,6 @@ export const CONTACT = {
   address: 'Nikah Community Center, Chattogram, Bangladesh',
   hours: 'Daily, 9:00 AM – 9:00 PM',
   mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Community+Center+Chattogram',
-  adminPass: 'admin123',
 }
 /* Advance-payment details shown on the billing screen & invoice. Replace the placeholders with your real numbers. */
 export const PAYMENT = [

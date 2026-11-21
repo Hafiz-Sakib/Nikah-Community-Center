@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { PAYMENT, CONTACT } from '../data'
-import { fmtDate, money, toast, SHIFTS, updateBooking } from '../lib/store'
-import { billRows, waText } from '../lib/invoice'
+import { fmtDate, money, toast } from '../lib/store'
+import { billRows, waText, paidOf } from '../lib/invoice'
+import { api } from '../lib/api'
+import { useMyBookings } from '../lib/bookings'
+import StatusPill from './StatusPill'
 import Odometer from './Odometer'
 import AnimatedNumber from './AnimatedNumber'
 import InvoiceView from './InvoiceView'
@@ -22,32 +25,53 @@ function Confetti() {
   )
 }
 
-function useCountdown(createdAt) {
-  const end = new Date(createdAt).getTime() + 24 * 3600 * 1000
+function useCountdown(endISO) {
+  const end = endISO ? new Date(endISO).getTime() : 0
   const [left, setLeft] = useState(Math.max(0, end - Date.now()))
-  useEffect(() => { const t = setInterval(() => setLeft(Math.max(0, end - Date.now())), 1000); return () => clearInterval(t) }, [end])
+  useEffect(() => { setLeft(Math.max(0, end - Date.now())); const t = setInterval(() => setLeft(Math.max(0, end - Date.now())), 1000); return () => clearInterval(t) }, [end])
   const p = (n) => String(n).padStart(2, '0')
   return `${p(Math.floor(left / 3600000))}:${p(Math.floor((left % 3600000) / 60000))}:${p(Math.floor((left % 60000) / 1000))}`
 }
 
 const copy = async (text, what) => { try { await navigator.clipboard.writeText(text); toast(`${what} copied`) } catch { toast('Copy not available here', 'error') } }
 
-export default function Billing({ b, onNew, onManage }) {
+export default function Billing({ b: initial, fresh = false, onNew, onManage }) {
   const reduce = useReducedMotion()
-  const [stage, setStage] = useState(reduce ? 1 : 0)
+  const { reload: reloadMine } = useMyBookings()
+  const [b, setB] = useState(initial)
+  const [stage, setStage] = useState(reduce || !fresh ? 1 : 0)
   const [tab, setTab] = useState('bill')
   const [hover, setHover] = useState(null)
   const [method, setMethod] = useState('bkash')
   const [perGuest, setPerGuest] = useState(false)
   const [showPay, setShowPay] = useState(false)
-  const [paid, setPaid] = useState(b.payment || null)
+  const [trx, setTrx] = useState('')
+  const [busy, setBusy] = useState(false)
   const { rows, q } = useMemo(() => billRows(b), [b])
-  const s = SHIFTS.find((x) => x.id === b.shift)
   const pay = PAYMENT.find((m) => m.id === method)
-  const timer = useCountdown(b.createdAt)
-  const balance = q.total - q.advance
+  const timer = useCountdown(b.holdExpiresAt)
+  const paid = paidOf(b)
+  const payments = b.payments || []
+  const waiting = payments.filter((p) => p.status === 'pending').reduce((s, p) => s + p.amount, 0)
+  const advanceDue = Math.max(0, q.advance - paid)
+  const balance = q.total - paid
+  const dueNow = advanceDue > 0 ? Math.max(0, advanceDue - waiting) : Math.max(0, balance - waiting)   // what is left to pay after pending payments
+  const active = b.status === 'pending' || b.status === 'confirmed'
+  const refresh = async () => { try { setB(await api(`/bookings/${b.id}`)) } catch {} reloadMine() }
+  useEffect(() => { if (!fresh) refresh() }, []) // eslint-disable-line
   useEffect(() => { if (stage === 0) { const t = setTimeout(() => setStage(1), 1500); return () => clearTimeout(t) } }, [stage])
   const ics = () => import('./ics').then((m) => m.downloadIcs(b))
+  /* A payment is only a request until staff verify it (checked against the bKash/Nagad/bank statement). */
+  const submitPayment = async (body) => {
+    setBusy(true)
+    try { await api(`/bookings/${b.id}/payments`, { method: 'POST', body }); toast('Payment submitted — waiting for verification'); setTrx(''); await refresh() }
+    catch (e) { toast(e.message, 'error') }
+    finally { setBusy(false) }
+  }
+  const submitManual = () => {
+    if (method !== 'office' && trx.trim().length < 4) { toast('Enter the transaction ID', 'error'); return }
+    submitPayment({ amount: dueNow, method, ...(trx.trim() ? { reference: trx.trim() } : {}) })
+  }
 
   if (stage === 0) {
     return (
@@ -62,10 +86,10 @@ export default function Billing({ b, onNew, onManage }) {
   return (
     <div>
       <div className="relative text-center">
-        <Confetti />
+        {fresh && <Confetti />}
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"><CheckIcon width={32} height={32} strokeWidth={3} /></motion.div>
-        <h3 className="mt-4 text-2xl font-semibold text-fg">Request received, {b.name.split(' ')[0]}!</h3>
-        <p className="mt-1 text-sm text-slate-500">Pay the advance to confirm. We will also call <b>{b.phone}</b>.</p>
+        <h3 className="mt-4 text-2xl font-semibold text-fg">{fresh ? `Request received, ${b.name.split(' ')[0]}!` : `Billing · ${b.eventType}`}</h3>
+        <p className="mt-1 flex flex-wrap items-center justify-center gap-2 text-sm text-slate-500"><StatusPill status={b.status} />{b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : null}</p>
         <button onClick={() => copy(b.id, 'Booking ID')} className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-soft px-4 py-1.5 font-mono text-sm font-semibold text-brand-ink transition active:scale-95" aria-label={`Copy booking ID ${b.id}`}>{b.id}<ClipboardIcon width={15} height={15} /></button>
       </div>
 
@@ -83,12 +107,12 @@ export default function Billing({ b, onNew, onManage }) {
             {/* totals */}
             <div className="rounded-3xl bg-gradient-to-br from-[#6f0202] to-[#9b1c1c] p-6 text-white shadow-lg">
               <div className="flex flex-wrap items-end justify-between gap-4">
-                <div><p className="text-xs uppercase tracking-widest text-white/70">Total bill</p><Odometer value={perGuest ? Math.round(q.total / b.guests) : q.total} prefix="৳" className="text-4xl font-semibold sm:text-5xl" /><p className="mt-1 text-xs text-white/70">{perGuest ? `per guest · ${b.guests} guests` : `${b.eventType} · ${fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })} · ${s.label}`}</p></div>
+                <div><p className="text-xs uppercase tracking-widest text-white/70">Total bill</p><Odometer value={perGuest ? Math.round(q.total / b.guests) : q.total} prefix="৳" className="text-4xl font-semibold sm:text-5xl" /><p className="mt-1 text-xs text-white/70">{perGuest ? `per guest · ${b.guests} guests` : `${b.eventType} · ${fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })} · ${q.shiftLabel}`}</p></div>
                 <button onClick={() => setPerGuest((v) => !v)} aria-pressed={perGuest} className="rounded-full bg-white/15 px-4 py-2 text-xs font-semibold backdrop-blur transition hover:bg-white/25 active:scale-95">{perGuest ? 'Show total' : 'Show per guest'}</button>
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/70">Advance due now (30%)</p><p className="mt-1 text-2xl font-semibold"><AnimatedNumber value={q.advance} prefix="৳" /></p></div>
-                <div className="rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/70">Date held for</p><p className="mt-1 font-mono text-2xl font-semibold tabular-nums">{timer}</p></div>
+                <div className="rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/70">{advanceDue > 0 ? 'Advance due now (30%)' : 'Advance (30%) received'}</p><p className="mt-1 text-2xl font-semibold"><AnimatedNumber value={advanceDue > 0 ? advanceDue : q.advance} prefix="৳" /></p></div>
+                <div className="rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/70">{b.status === 'pending' && b.holdExpiresAt ? 'Date held for' : 'Paid so far'}</p><p className="mt-1 font-mono text-2xl font-semibold tabular-nums">{b.status === 'pending' && b.holdExpiresAt ? timer : money(paid)}</p></div>
               </div>
             </div>
 
@@ -110,28 +134,38 @@ export default function Billing({ b, onNew, onManage }) {
                   </motion.li>
                 ))}
               </ul>
-              <div className="mt-3 flex items-center justify-between border-t border-dashed border-slate-300 pt-3 text-sm"><span className="font-semibold text-fg">Balance after advance</span><span className="font-semibold text-fg">{money(balance)}</span></div>
+              <div className="mt-3 flex items-center justify-between border-t border-dashed border-slate-300 pt-3 text-sm"><span className="font-semibold text-fg">Balance due</span><span className="font-semibold text-fg">{money(balance)}</span></div>
             </div>
 
-            {/* online card payment */}
+            {/* payments so far */}
+            {payments.length > 0 && (
+              <div className="rounded-3xl p-5 ring-1 ring-slate-200">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Payments</p>
+                <ul className="divide-y divide-slate-100">
+                  {payments.map((p) => (
+                    <li key={p.id} className="flex items-center gap-3 py-2.5 text-sm">
+                      <span className="min-w-0 flex-1"><span className="block font-medium capitalize text-fg">{p.method}{p.reference ? <span className="font-mono text-xs font-normal text-slate-500"> · {p.reference}</span> : null}</span><span className="block text-xs text-slate-500">{fmtDate(p.createdAt.slice(0, 10))}</span></span>
+                      <StatusPill status={p.status} /><b className="w-24 text-right text-fg">{money(p.amount)}</b>
+                    </li>
+                  ))}
+                </ul>
+                {waiting > 0 && <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-700">{money(waiting)} is waiting for admin verification. Your booking confirms once the advance is verified.</p>}
+              </div>
+            )}
+
+            {active && dueNow > 0 && (<>
+            {/* online card payment (demo gateway) */}
             <div className="relative overflow-hidden rounded-3xl bg-ink p-5 text-white sm:p-6">
               <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand/30 blur-3xl" />
-              {paid ? (
-                <div className="relative flex items-center gap-4">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500"><CheckIcon width={22} height={22} /></span>
-                  <div className="min-w-0"><p className="font-semibold">Advance paid · {money(paid.amount)}</p><p className="mt-0.5 text-sm text-white/60">{paid.brand || 'Card'} •••• {paid.last4} · Ref <span className="font-mono">{paid.ref}</span></p></div>
-                </div>
-              ) : (
-                <div className="relative flex flex-wrap items-center justify-between gap-4">
-                  <div><p className="text-xs font-semibold uppercase tracking-widest text-white/60">Fastest way</p><p className="mt-1 text-lg font-semibold">Pay the advance by card</p><p className="mt-0.5 text-sm text-white/60">Visa, Mastercard, Amex · {money(q.advance)} now</p></div>
-                  <button onClick={() => setShowPay(true)} className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-slate-100 active:scale-95">Pay {money(q.advance)}</button>
-                </div>
-              )}
+              <div className="relative flex flex-wrap items-center justify-between gap-4">
+                <div><p className="text-xs font-semibold uppercase tracking-widest text-white/60">Fastest way</p><p className="mt-1 text-lg font-semibold">Pay {advanceDue > 0 ? 'the advance' : 'the balance'} by card</p><p className="mt-0.5 text-sm text-white/60">Visa, Mastercard, Amex · {money(dueNow)} now</p></div>
+                <button onClick={() => setShowPay(true)} disabled={busy} className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-slate-100 active:scale-95 disabled:opacity-60">Pay {money(dueNow)}</button>
+              </div>
             </div>
 
-            {/* payment */}
+            {/* manual payment */}
             <div className="rounded-3xl p-5 ring-1 ring-slate-200">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">{paid ? 'Other ways to pay the balance' : 'Or pay manually'} · {money(paid ? balance : q.advance)}</p>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Or pay manually · {money(dueNow)}</p>
               <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Payment method">
                 {PAYMENT.map((m) => (
                   <button key={m.id} role="radio" aria-checked={method === m.id} onClick={() => setMethod(m.id)} className={`relative rounded-full px-4 py-2 text-sm font-semibold transition ${method === m.id ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
@@ -143,10 +177,16 @@ export default function Billing({ b, onNew, onManage }) {
                 <motion.div key={method} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm">
                   <p className="text-xs text-slate-500">{pay.kind}</p>
                   <div className="mt-1 flex items-center justify-between gap-3"><p className="break-words font-semibold text-fg">{pay.value}</p>{method !== 'office' && <button onClick={() => copy(pay.value.split(' · ')[0].replace(/^A\/C /, ''), 'Number')} className="shrink-0 rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-brand-ink ring-1 ring-slate-200 active:scale-95">Copy</button>}</div>
-                  {method !== 'office' && <p className="mt-3 text-xs text-slate-500">Use <button onClick={() => copy(b.id, 'Booking ID')} className="font-mono font-semibold text-fg underline decoration-dotted">{b.id}</button> as the reference, then send us the transaction ID on WhatsApp.</p>}
+                  {method !== 'office' && <p className="mt-3 text-xs text-slate-500">Use <button onClick={() => copy(b.id, 'Booking ID')} className="font-mono font-semibold text-fg underline decoration-dotted">{b.id}</button> as the reference, then enter the transaction ID below.</p>}
                 </motion.div>
               </AnimatePresence>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                {method !== 'office' && <input value={trx} onChange={(e) => setTrx(e.target.value)} maxLength={60} placeholder="Transaction ID (TrxID)" className="min-w-0 flex-1 rounded-full border border-slate-200 bg-surface px-4 py-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/15" />}
+                <button onClick={submitManual} disabled={busy} className="btn-primary disabled:opacity-60">{busy ? 'Submitting…' : method === 'office' ? 'I will pay at the office' : 'Submit payment'}</button>
+              </div>
+              <p className="mt-2 text-xs text-slate-500">Staff verify the payment against our account, then your booking is confirmed.</p>
             </div>
+            </>)}
           </motion.div>
         ) : (
           <motion.div key="inv" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="mt-6"><InvoiceView b={b} /></motion.div>
@@ -158,9 +198,9 @@ export default function Billing({ b, onNew, onManage }) {
         <button onClick={ics} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-fg transition hover:bg-slate-200 active:scale-95"><DownloadIcon width={18} height={18} />Add to calendar</button>
         <button onClick={() => setTab('invoice')} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-fg transition hover:bg-slate-200 active:scale-95"><ClipboardIcon width={18} height={18} />View invoice</button>
       </div>
-      <PaymentGateway open={showPay} onClose={() => setShowPay(false)} amount={q.advance} bookingId={b.id} payer={b.name}
-        onPaid={(r) => { const p = { method: 'card', brand: r.brand, last4: r.last4, ref: r.ref, amount: r.amount, paidAt: r.paidAt }; setPaid(p); updateBooking(b.id, { payment: p }); toast('Advance payment received') }} />
-      <div className="mt-4 flex justify-center gap-5 text-sm font-medium text-brand"><button onClick={onManage} className="hover:underline">My bookings</button><button onClick={onNew} className="hover:underline">Book another date</button></div>
+      <PaymentGateway open={showPay} onClose={() => setShowPay(false)} amount={dueNow} bookingId={b.id} payer={b.name}
+        onPaid={(r) => submitPayment({ amount: dueNow, method: 'card', reference: r.ref })} />
+      <div className="mt-4 flex justify-center gap-5 text-sm font-medium text-brand">{onManage && <button onClick={onManage} className="hover:underline">My bookings</button>}{onNew && <button onClick={onNew} className="hover:underline">Book another date</button>}</div>
     </div>
   )
 }

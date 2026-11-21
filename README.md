@@ -22,8 +22,9 @@ A complete venue website: guests browse events, packages, food menus and facilit
 ## Features
 
 - **Hero carousel** with 11 slides, focus points so faces stay in frame, swipe and keyboard support
-- **Booking system** (demo, localStorage): step-by-step wizard, live availability calendar, weekend surcharge, 30% advance, booking ID, `.ics` calendar file, WhatsApp share
-- **Payment demo** with a card checkout modal (no real charge) and an animated bill
+- **Booking system** (Supabase + Express API): login required to book, live availability from the database, no double booking, weekend surcharge, 30% advance, booking ID, `.ics` calendar file, WhatsApp share
+- **Accounts**: Google or email + password login (Supabase Auth); name + Google photo in the navbar; "My bookings" only when logged in; admin role from the database
+- **Payments**: users submit bKash/Nagad/bank/card payment records, admin verifies, booking auto-confirms (card modal is a demo, no real charge)
 - **PDF invoice** with a Code 128 barcode of the booking ID
 - **Packages** with animated cards, Shift / Full-day price switch and a compare table
 - **Facilities** page: amenity strip, interactive venue tour, included checklist, safety section
@@ -87,3 +88,15 @@ Old links like `/#/events` redirect to `/events` automatically.
 ## License
 
 Personal / portfolio project by [Hafiz Sakib](https://github.com/Hafiz-Sakib).
+
+
+## Backend setup (new)
+
+Bookings, payments and users now live in Supabase behind the Express API in the `ncc-server` project (see its README and `supabase/schema.sql`).
+
+1. Copy `.env.example` to `.env` and fill:
+   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (anon/publishable key only — never the service_role key)
+   - `VITE_API_URL` (`http://localhost:4000` locally, your Render URL in production)
+2. `npm install && npm run dev` (frontend on :5173, API on :4000).
+3. Add the same three `VITE_*` variables in Vercel.
+4. Packages, add-ons, food, images stay in `src/data.js`. **If you change a price, change it in the server `src/config/pricing.js` too** — the server is the source of truth for what a booking costs, and old invoices keep their saved price.

@@ -1,16 +1,16 @@
-import { packages, addons, foodPkgs } from '../data'
-import { quote, SHIFTS, fmtDate } from './store'
+import { fmtDate } from './store'
 
-export const invoiceNo = (b) => 'INV-' + b.id.replace(/^NCC-/, '')
-export const bookingQuote = (b) => {
-  const pkg = packages.find((p) => p.id === b.packageId)
-  const menu = b.catering === 'hall' ? foodPkgs.find((m) => m.id === b.menu) : null
-  return { pkg, shift: SHIFTS.find((s) => s.id === b.shift), menu, q: quote({ pkg, shift: b.shift, date: b.date, guests: b.guests, addons: b.addons || [], addonDefs: addons, food: menu }) }
-}
+export const invoiceNo = (b) => b.invoiceNo || 'INV-' + b.id.replace(/^NCC-/, '')
+
+/* Everything on the bill/invoice comes from the booking's price snapshot (saved by the server at booking time),
+   so changing a package price later never rewrites an old invoice. */
+export const billQuote = (b) => b.priceSnapshot
+export const paidOf = (b) => (b.payments ? b.payments.filter((p) => p.status === 'verified').reduce((s, p) => s + p.amount, 0) : b.paidAmount || 0)
+
 /* Itemised rows shared by the bill and the invoice. `tone` colours the proportion bar. */
 export function billRows(b) {
-  const { pkg, shift, q } = bookingQuote(b)
-  const rows = [{ id: 'hall', label: `Hall rental · ${pkg.name}`, note: `${shift.label} shift (${shift.time})`, amount: q.base, tone: '#6f0202' }]
+  const q = b.priceSnapshot
+  const rows = [{ id: 'hall', label: `Hall rental · ${q.pkgName}`, note: `${q.shiftLabel} shift (${q.shiftTime})`, amount: q.base, tone: '#6f0202' }]
   if (q.weekend) rows.push({ id: 'weekend', label: 'Weekend surcharge (15%)', note: 'Friday / Saturday', amount: q.weekendFee, tone: '#c2410c' })
   q.lines.forEach((l, i) => rows.push({ id: l.id, label: l.label, note: l.note, amount: l.amount, tone: l.id === 'catering' ? '#d4a017' : ['#3f87f5', '#0f766e', '#7c3aed', '#be185d'][i % 4] }))
   return { rows, q }

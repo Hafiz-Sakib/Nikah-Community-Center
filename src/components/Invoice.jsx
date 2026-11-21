@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 import { CONTACT, img } from '../data'
 import { fmtDate, money } from '../lib/store'
-import { billRows, bookingQuote, invoiceNo } from '../lib/invoice'
+import { billRows, invoiceNo, paidOf } from '../lib/invoice'
 import Barcode from './Barcode'
 
 /* Printable invoice. Colours are fixed hex (not theme tokens) so it always looks the same, light or dark, on screen or in the PDF. */
@@ -13,10 +13,12 @@ const S = {
 }
 
 const Invoice = forwardRef(function Invoice({ b }, ref) {
-  const { pkg, shift, menu } = bookingQuote(b)
   const { rows, q } = billRows(b)
-  const status = b.status === 'cancelled' ? ['CANCELLED', '#b91c1c', '#fef2f2'] : b.status === 'confirmed' ? ['CONFIRMED', '#047857', '#ecfdf5'] : ['ADVANCE PENDING', '#b45309', '#fffbeb']
-  const balance = q.total - q.advance
+  const paid = paidOf(b)
+  const payList = (b.payments || []).filter((p) => p.status !== 'rejected')
+  const status = b.status === 'cancelled' ? ['CANCELLED', '#b91c1c', '#fef2f2'] : b.status === 'expired' ? ['EXPIRED', '#9a3412', '#fff7ed'] : b.status === 'completed' ? ['COMPLETED', '#0369a1', '#f0f9ff'] : b.status === 'confirmed' ? ['CONFIRMED', '#047857', '#ecfdf5'] : ['ADVANCE PENDING', '#b45309', '#fffbeb']
+  const advanceDue = Math.max(0, q.advance - paid)
+  const balance = q.total - paid
   return (
     <div ref={ref} style={{ width: 794, minHeight: 1123, background: C.paper, color: C.ink, fontFamily: 'Poppins, system-ui, sans-serif', position: 'relative', overflow: 'hidden', boxSizing: 'border-box' }}>
       <div style={{ height: 10, background: `linear-gradient(90deg, ${C.maroon}, #b3261e 60%, #d4a017)` }} />
@@ -45,7 +47,7 @@ const Invoice = forwardRef(function Invoice({ b }, ref) {
         <div style={{ background: C.soft, borderRadius: 16, padding: '16px 18px' }}>
           <div style={S.label}>Event</div>
           <div style={{ fontSize: 16, fontWeight: 600, marginTop: 6 }}>{b.eventType} · {fmtDate(b.date, { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-          <div style={{ fontSize: 12, color: C.mute, marginTop: 2, lineHeight: 1.6 }}>{shift.label} · {shift.time}<br />{b.guests} guests · {menu ? `Hall catering (${menu.name})` : 'Own caterer'}</div>
+          <div style={{ fontSize: 12, color: C.mute, marginTop: 2, lineHeight: 1.6 }}>{q.shiftLabel} · {q.shiftTime}<br />{b.guests} guests · {q.menuName ? `Hall catering (${q.menuName})` : 'Own caterer'}</div>
         </div>
       </div>
 
@@ -65,7 +67,13 @@ const Invoice = forwardRef(function Invoice({ b }, ref) {
       <div style={{ margin: '18px 48px 0', display: 'flex', justifyContent: 'flex-end' }}>
         <div style={{ width: 320 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 13 }}><span style={{ color: C.mute }}>Total</span><b>{money(q.total)}</b></div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 14, background: C.maroon, color: '#fff', fontSize: 14, fontWeight: 600 }}><span>Advance due (30%)</span><span>{money(q.advance)}</span></div>
+          {payList.map((p) => (
+            <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', fontSize: 11, color: C.mute }}>
+              <span>Payment · {p.method}{p.reference ? ` · ${p.reference}` : ''} · {p.status === 'verified' ? 'received' : 'awaiting verification'}</span><span>{money(p.amount)}</span>
+            </div>
+          ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 13 }}><span style={{ color: C.mute }}>Paid</span><b style={{ color: '#047857' }}>{money(paid)}</b></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 14, background: C.maroon, color: '#fff', fontSize: 14, fontWeight: 600 }}><span>{advanceDue > 0 ? 'Advance due (30%)' : 'Advance (30%) received'}</span><span>{money(advanceDue > 0 ? advanceDue : q.advance)}</span></div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 4px 0', fontSize: 12, color: C.mute }}><span>Balance, payable before the event</span><b style={{ color: C.ink }}>{money(balance)}</b></div>
         </div>
       </div>
@@ -76,7 +84,7 @@ const Invoice = forwardRef(function Invoice({ b }, ref) {
           <ul style={{ margin: '8px 0 0', padding: '0 0 0 16px', fontSize: 11, color: C.mute, lineHeight: 1.7 }}>
             <li>The date is held for 24 hours; it is confirmed when the advance is received.</li>
             <li>Cancel 14+ days before the event for a full advance refund. Within 14 days the advance is kept as a booking fee.</li>
-            <li>Quote &amp; package: {pkg.name}. Prices in Bangladeshi Taka (BDT).</li>
+            <li>Quote &amp; package: {q.pkgName}. Prices in Bangladeshi Taka (BDT).</li>
           </ul>
         </div>
         <div style={{ textAlign: 'center' }}>

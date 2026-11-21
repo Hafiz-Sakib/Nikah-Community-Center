@@ -17,7 +17,11 @@ import BookingPage from './pages/BookingPage'
 import FoodPage from './pages/FoodPage'
 import NotFound from './pages/NotFound'
 import { InstallBanner } from './components/Install'
-import { useBookings, toast } from './lib/store'
+import { toast } from './lib/store'
+import { RequireAuth } from './components/RequireAuth'
+import AuthPage from './components/AuthPage'
+import AuthCallback from './pages/AuthCallback'
+import ResetPassword from './pages/ResetPassword'
 
 function Page({ children }) {
   return <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.28 }}>{children}</motion.div>
@@ -25,8 +29,6 @@ function Page({ children }) {
 
 export default function App() {
   const location = useLocation()
-  const bookings = useBookings()
-  const count = bookings.filter((b) => b.status !== 'cancelled').length
   useEffect(() => { window.scrollTo(0, 0) }, [location.pathname])
   useEffect(() => {
     const off = () => toast('You’re offline — saved pages still work', 'error'), on = () => toast('Back online')
@@ -36,9 +38,9 @@ export default function App() {
 
   return (
     <>
-      <Navbar count={count} />
+      <Navbar />
       <AnimatePresence mode="wait" initial={false}>
-        <main key={location.pathname}>
+        <main key={location.pathname === '/signup' ? '/login' : location.pathname}>
           <Page>
             <Routes location={location}>
               <Route path="/" element={<Home />} />
@@ -48,10 +50,14 @@ export default function App() {
               <Route path="/gallery" element={<GalleryPage />} />
               <Route path="/packages" element={<PackagesPage />} />
               <Route path="/booking" element={<BookingPage />} />
-              <Route path="/my-bookings" element={<MyBookings />} />
+              <Route path="/my-bookings" element={<RequireAuth><MyBookings /></RequireAuth>} />
+              <Route path="/login" element={<AuthPage />} />
+              <Route path="/signup" element={<AuthPage />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/food" element={<FoodPage />} />
-              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin" element={<RequireAuth admin><Admin /></RequireAuth>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Page>

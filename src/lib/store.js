@@ -1,23 +1,5 @@
 import { useSyncExternalStore } from 'react'
 
-/* ---------- bookings store (localStorage demo backend) ---------- */
-const KEY = 'ncc.bookings.v1'
-const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]') } catch { return [] } }
-let state = read()
-const listeners = new Set()
-const emit = () => listeners.forEach((l) => l())
-function subscribe(l) {
-  listeners.add(l)
-  const h = (e) => { if (e.key === KEY) { state = read(); l() } }
-  window.addEventListener('storage', h)
-  return () => { listeners.delete(l); window.removeEventListener('storage', h) }
-}
-const persist = (next) => { state = next; try { localStorage.setItem(KEY, JSON.stringify(next)) } catch {} emit() }
-export const useBookings = () => useSyncExternalStore(subscribe, () => state)
-export const addBooking = (b) => persist([b, ...state])
-export const updateBooking = (id, patch) => persist(state.map((b) => (b.id === id ? { ...b, ...patch } : b)))
-export const removeBooking = (id) => persist(state.filter((b) => b.id !== id))
-
 /* ---------- toasts ---------- */
 let toasts = []
 const tl = new Set()
@@ -41,21 +23,13 @@ export const SHIFTS = [
   { id: 'full', label: 'Full Day', time: '10:00 AM – 10:30 PM', mult: 1.7 },
 ]
 
-// Demo seed: some slots look pre-booked so the calendar feels real. Replace with server data in production.
-const hash = (s) => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7)
-function seed(iso) {
-  const h = hash(iso)
-  return { morning: h % 7 === 0 || h % 11 === 0, evening: h % 4 === 0 || h % 13 === 0 }
+/* Availability comes from the API (see useAvailability): map = { 'YYYY-MM-DD': { morning, evening } } for booked days. */
+export function takenSlots(iso, map) {
+  const t = map?.[iso]
+  return { morning: !!t?.morning, evening: !!t?.evening }
 }
-export function takenSlots(iso, bookings) {
-  const t = seed(iso)
-  bookings.filter((b) => b.date === iso && b.status !== 'cancelled').forEach((b) => {
-    if (b.shift === 'full') { t.morning = true; t.evening = true } else t[b.shift] = true
-  })
-  return t
-}
-export const dayStatus = (iso, bookings) => {
-  const t = takenSlots(iso, bookings)
+export const dayStatus = (iso, map) => {
+  const t = takenSlots(iso, map)
   return t.morning && t.evening ? 'full' : t.morning || t.evening ? 'partial' : 'free'
 }
 export const shiftFree = (shift, t) => (shift === 'full' ? !t.morning && !t.evening : !t[shift])
@@ -74,4 +48,3 @@ export function quote({ pkg, shift, date, guests, addons = [], addonDefs, food =
   const total = base + weekendFee + lines.reduce((s, l) => s + l.amount, 0)
   return { base, weekend, weekendFee, lines, total, advance: Math.round(total * 0.3) }
 }
-export const newId = () => 'NCC-' + Math.random().toString(36).slice(2, 8).toUpperCase()

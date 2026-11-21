@@ -3,7 +3,9 @@ import { img, nav, CONTACT } from '../data'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 import { InstallButton } from './Install'
+import { useAuth } from '../context/AuthContext'
 export default function Footer() {
+  const { user, isAdmin } = useAuth()
   return (
     <footer className="bg-ink pb-10 pt-14 text-white">
       <div className="container-x grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
@@ -24,7 +26,7 @@ export default function Footer() {
       </div>
       <div className="container-x mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/50">
         <p>© 2020 Nikah Community Center. All rights reserved by <a className="text-brand hover:underline" href="https://www.facebook.com/Sakib1056" target="_blank" rel="noreferrer">Mohammad Hafizur Rahman Sakib</a></p>
-        <div className="flex items-center gap-4"><ThemeToggle className="!bg-white/10 hover:!bg-white/20" /><Link to="/my-bookings" className="hover:text-white">My bookings</Link><Link to="/admin" className="hover:text-white">Staff login</Link></div>
+        <div className="flex items-center gap-4"><ThemeToggle className="!bg-white/10 hover:!bg-white/20" />{user ? <Link to="/my-bookings" className="hover:text-white">My bookings</Link> : <Link to="/login" className="hover:text-white">Log in</Link>}{isAdmin && <Link to="/admin" className="hover:text-white">Admin</Link>}</div>
       </div>
     </footer>
   )

@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { MotionConfig } from 'motion/react'
 import App from './App.jsx'
+import { AuthProvider } from './context/AuthContext'
+import { BookingsProvider } from './lib/bookings'
 import './index.css'
 
 /* old shared links like /#/events keep working: turn them into /events before the router starts */
@@ -15,7 +17,7 @@ window.addEventListener('appinstalled', () => { window.__pwaPrompt = null; windo
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <MotionConfig reducedMotion="user">
-      <BrowserRouter><App /></BrowserRouter>
+      <BrowserRouter><AuthProvider><BookingsProvider><App /></BookingsProvider></AuthProvider></BrowserRouter>
     </MotionConfig>
   </React.StrictMode>
 )

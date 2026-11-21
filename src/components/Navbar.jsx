@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { nav } from '../data'
-import { MenuIcon, CloseIcon, ArrowRight, ClipboardIcon, ChevronDown, ICONS2, HomeIcon, PhoneIcon } from './Icons'
+import { MenuIcon, CloseIcon, ArrowRight, ClipboardIcon, ChevronDown, ICONS2, HomeIcon, PhoneIcon, ShieldIcon } from './Icons'
+import { useAuth } from '../context/AuthContext'
+import { useMyBookings, isActive } from '../lib/bookings'
+import Avatar from './Avatar'
+import UserMenu from './UserMenu'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 import { InstallIconButton } from './Install'
@@ -57,7 +61,10 @@ function VenueMenu({ pathname }) {
   )
 }
 
-export default function Navbar({ count }) {
+export default function Navbar() {
+  const { user, isAdmin, signOut } = useAuth()
+  const { bookings } = useMyBookings()
+  const count = bookings.filter(isActive).length
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
@@ -88,10 +95,7 @@ export default function Navbar({ count }) {
           <div className="flex items-center gap-1.5 sm:gap-2">
             <ThemeToggle />
             <InstallIconButton className="lg:hidden" />
-            <Link to="/my-bookings" aria-label="My bookings" title="My bookings" className="relative hidden h-10 w-10 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 lg:flex">
-              <ClipboardIcon width={20} height={20} />
-              {count > 0 && <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{count}</span>}
-            </Link>
+            {user ? <UserMenu /> : <Link to="/login" className="hidden rounded-full px-4 py-2 text-sm font-semibold text-fg ring-1 ring-slate-300 transition hover:bg-slate-100 lg:inline-flex">Log in</Link>}
             <Link to="/booking" className="btn-primary hidden !px-5 !py-2.5 sm:inline-flex">Book Now</Link>
             <button onClick={() => setOpen((o) => !o)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-fg transition active:scale-90 lg:hidden">
               <AnimatePresence mode="wait" initial={false}>
@@ -106,7 +110,12 @@ export default function Navbar({ count }) {
         {open && (
           <motion.div className="fixed inset-0 z-[55] bg-surface pt-20 lg:hidden" initial={{ clipPath: 'inset(0 0 100% 0)' }} animate={{ clipPath: 'inset(0 0 0% 0)' }} exit={{ clipPath: 'inset(0 0 100% 0)' }} transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}>
             <motion.ul initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.05, delayChildren: 0.2 } } }} className="container-x max-h-full space-y-1 overflow-y-auto pb-24">
-              {[...nav, { to: '/my-bookings', label: 'My bookings', icon: 'clipboard', hint: 'Look up or cancel a booking' }].map((n) => {
+              {user && (
+                <motion.li variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0 } }} className="flex items-center gap-3 rounded-2xl bg-slate-50 px-3 py-3">
+                  <Avatar user={user} size={44} /><div className="min-w-0"><p className="truncate font-semibold text-fg">{user.name}</p><p className="truncate text-xs text-slate-500">{user.email}</p></div>
+                </motion.li>
+              )}
+              {[...nav, ...(user ? [{ to: '/my-bookings', label: 'My bookings', icon: 'clipboard', hint: count ? `${count} active` : 'View, edit or cancel a booking' }] : []), ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: 'shield', hint: 'Manage all bookings' }] : [])].map((n) => {
                 const Ico = NAV_ICONS[n.icon]
                 return (
                   <motion.li key={n.to} variants={{ hidden: { opacity: 0, x: -20 }, show: { opacity: 1, x: 0 } }}>
@@ -118,7 +127,10 @@ export default function Navbar({ count }) {
                   </motion.li>
                 )
               })}
-              <motion.li variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }} className="space-y-3 pt-4"><Link to="/booking" className="btn-primary w-full !py-4 text-base">Book your date</Link></motion.li>
+              <motion.li variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }} className="space-y-3 pt-4"><Link to="/booking" className="btn-primary w-full !py-4 text-base">Book your date</Link>
+                {user ? <button type="button" onClick={() => { setOpen(false); signOut() }} className="w-full rounded-full bg-slate-100 py-3.5 text-base font-semibold text-red-600">Log out</button>
+                  : <Link to="/login" className="flex w-full items-center justify-center rounded-full bg-slate-100 py-3.5 text-base font-semibold text-fg">Log in / Sign up</Link>}
+              </motion.li>
             </motion.ul>
           </motion.div>
         )}

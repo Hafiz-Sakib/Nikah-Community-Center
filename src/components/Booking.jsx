@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { packages, addons, eventTypes, events, CONTACT, foodPkgs, foodItems } from '../data'
-import { addBooking, useBookings, takenSlots, shiftFree, SHIFTS, quote, newId, money, fmtDate, toast } from '../lib/store'
+import { takenSlots, shiftFree, SHIFTS, quote, money, fmtDate, toast } from '../lib/store'
+import { useAuth } from '../context/AuthContext'
+import { useMyBookings } from '../lib/bookings'
+import { useAvailability } from '../lib/useAvailability'
+import { api } from '../lib/api'
+import { GoogleG } from './AuthShell'
 import Calendar from './Calendar'
 import Billing from './Billing'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -9,6 +14,9 @@ import { tomorrowISO } from '../lib/store'
 import { CalendarIcon, CheckIcon, MinusIcon, PlusIcon, ArrowRight, ChevronLeft, DownloadIcon, ChatIcon } from './Icons'
 
 const STEPS = ['Event', 'Date & shift', 'Details', 'Confirm']
+const DRAFT = 'ncc.bookingDraft'
+function loadDraft() { try { const d = JSON.parse(sessionStorage.getItem(DRAFT) || 'null'); return d && typeof d === 'object' ? d : null } catch { return null } }
+const saveDraft = (f) => { try { sessionStorage.setItem(DRAFT, JSON.stringify(f)); sessionStorage.setItem('ncc.returnTo', '/booking') } catch {} }
 const phoneOk = (p) => /^(?:\+?88)?01[3-9]\d{8}$/.test(p.replace(/[\s-]/g, ''))
 const emailOk = (e) => !e || /^\S+@\S+\.\S+$/.test(e)
 const input = 'w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm text-fg outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15'
@@ -52,12 +60,17 @@ export default function Booking() {
   const navigate = useNavigate()
   const onManage = () => navigate('/my-bookings')
   const [sp] = useSearchParams()
-  const bookings = useBookings()
-  const [step, setStep] = useState(0)
+  const { user, signInGoogle } = useAuth()
+  const { reload: reloadMine } = useMyBookings()
+  const { map, reload: reloadMap } = useAvailability()
+  const [busy, setBusy] = useState(false)
+  const [step, setStep] = useState(() => (loadDraft() ? 3 : 0))
   const [dir, setDir] = useState(1)
   const [tried, setTried] = useState(false)
   const [done, setDone] = useState(null)
-  const [f, setF] = useState({ packageId: 'wedding-plus', eventType: 'Wedding', guests: 200, date: '', shift: '', addons: [], catering: 'own', menu: 'wedding-plus', name: '', phone: '', email: '', notes: '' })
+  const [f, setF] = useState(() => loadDraft() ?? { packageId: 'wedding-plus', eventType: 'Wedding', guests: 200, date: '', shift: '', addons: [], catering: 'own', menu: 'wedding-plus', name: '', phone: '', email: '', notes: '' })
+  useEffect(() => { try { sessionStorage.removeItem(DRAFT) } catch {} }, [])   // draft only needs to survive the login round-trip
+  useEffect(() => { if (user) setF((x) => ({ ...x, name: x.name || user.name || '', email: x.email || user.email || '' })) }, [user])
   const set = (p) => setF((x) => ({ ...x, ...p }))
   /* Picking an event type also selects the package that suits it (Milad -> Wedding Basic, Corporate -> Corporate Event...).
      The package can still be changed afterwards; "Other" keeps whatever is selected. */
@@ -78,7 +91,7 @@ export default function Booking() {
 
   const pkg = packages.find((p) => p.id === f.packageId)
   const shift = SHIFTS.find((s) => s.id === f.shift)
-  const taken = useMemo(() => (f.date ? takenSlots(f.date, bookings) : null), [f.date, bookings])
+  const taken = useMemo(() => (f.date ? takenSlots(f.date, map) : null), [f.date, map])
   const menu = f.catering === 'hall' ? foodPkgs.find((m) => m.id === f.menu) : null
   const q = quote({ pkg, shift: f.shift, date: f.date, guests: f.guests, addons: f.addons, addonDefs: addons, food: menu })
   const cap = Math.min(600, pkg.cap)
@@ -92,13 +105,20 @@ export default function Booking() {
     if (d > 0 && !valid) { setTried(true); toast('Please complete the highlighted fields', 'error'); return }
     setTried(false); setDir(d); setStep((s) => s + d)
   }
-  const confirm = () => {
-    const fresh = takenSlots(f.date, bookings)
-    if (!shiftFree(f.shift, fresh)) { toast('Sorry, that shift was just taken', 'error'); setStep(1); return }
-    const b = { id: newId(), createdAt: new Date().toISOString(), status: 'pending', ...f, name: f.name.trim(), phone: f.phone.replace(/[\s-]/g, ''), total: q.total, advance: q.advance }
-    addBooking(b); setDone(b); toast('Booking request submitted')
-    document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })
+  const confirm = async () => {
+    if (!user) return
+    setBusy(true)
+    try {
+      const body = { eventType: f.eventType, packageId: f.packageId, date: f.date, shift: f.shift, guests: f.guests, addons: f.addons, catering: f.catering, ...(f.catering === 'hall' ? { menu: f.menu } : {}), name: f.name.trim(), phone: f.phone.replace(/[\s-]/g, ''), email: f.email.trim(), notes: f.notes }   // no price fields: the server prices it
+      const b = await api('/bookings', { method: 'POST', body })
+      setDone(b); toast('Booking request submitted'); reloadMine(); reloadMap()
+      document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })
+    } catch (e) {
+      toast(e.message, 'error')
+      if (e.status === 409) { reloadMap(); set({ shift: '' }); setStep(1) }
+    } finally { setBusy(false) }
   }
+  const loginFirst = (google) => { saveDraft(f); if (google) signInGoogle(); else navigate('/login') }
   const reset = () => { setDone(null); setStep(0); setF((x) => ({ ...x, date: '', shift: '', addons: [], notes: '' })) }
 
   const slide = { enter: (d) => ({ opacity: 0, x: d * 40 }), center: { opacity: 1, x: 0 }, exit: (d) => ({ opacity: 0, x: d * -40 }) }
@@ -108,7 +128,7 @@ export default function Booking() {
       <div className="container-x">
         <div className={`grid gap-6 ${done ? "mx-auto max-w-3xl" : "lg:grid-cols-[1fr_340px]"}`}>
           <div className="rounded-[2rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 sm:p-8">
-            {done ? <Billing b={done} onNew={reset} onManage={onManage} /> : (
+            {done ? <Billing b={done} fresh onNew={reset} onManage={onManage} /> : (
               <>
                 <ol className="mb-8 flex items-center" aria-label="Progress">
                   {STEPS.map((s, i) => (
@@ -165,7 +185,7 @@ export default function Booking() {
 
                     {step === 1 && (
                       <div className="grid gap-8 md:grid-cols-2">
-                        <Calendar value={f.date} onChange={(d) => set({ date: d })} bookings={bookings} />
+                        <Calendar value={f.date} onChange={(d) => set({ date: d })} map={map} />
                         <div>
                           <p className="mb-2 text-sm font-medium text-fg">{f.date ? fmtDate(f.date, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Select a date first'}</p>
                           <div className="space-y-2.5">
@@ -257,7 +277,17 @@ export default function Booking() {
                           <Row k="Name" v={f.name} /><Row k="Mobile" v={f.phone} />{f.email && <Row k="Email" v={f.email} />}{f.notes && <Row k="Notes" v={<span className="max-w-[16rem] break-words">{f.notes}</span>} />}
                         </div>
                         <div className="lg:hidden"><Summary f={f} q={q} pkg={pkg} shift={shift} menu={menu} /></div>
-                        <p className="text-xs leading-relaxed text-slate-500">By confirming you agree to our cancellation policy: full advance refund if cancelled 14+ days before the event. No payment is taken online — our team will contact you for the 30% advance.</p>
+                        <p className="text-xs leading-relaxed text-slate-500">By confirming you agree to our cancellation policy: full advance refund if cancelled 14+ days before the event. Pay the 30% advance after booking to confirm your date.</p>
+                        {!user && (
+                          <div className="rounded-2xl bg-brand-soft p-4 text-center ring-1 ring-brand/20">
+                            <p className="text-sm font-semibold text-brand-ink">Log in to book</p>
+                            <p className="mt-1 text-xs text-slate-600">Your details are saved, you will come right back here.</p>
+                            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-center">
+                              <button type="button" onClick={() => loginFirst(true)} className="inline-flex items-center justify-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-semibold text-fg ring-1 ring-slate-300 active:scale-95"><GoogleG width={18} height={18} />Continue with Google</button>
+                              <button type="button" onClick={() => loginFirst(false)} className="btn-primary !py-2.5">Log in with email</button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </motion.div>
@@ -268,7 +298,8 @@ export default function Booking() {
                   <div className="flex items-center gap-4">
                     <span className="hidden text-sm text-slate-500 sm:block">Total <b className="text-fg">{money(q.total)}</b></span>
                     {step < 3 ? <button type="button" onClick={() => go(1)} className="btn-primary">Continue <ArrowRight /></button>
-                      : <button type="button" onClick={confirm} className="btn-primary !bg-emerald-500 !shadow-emerald-500/30 hover:!bg-emerald-600"><CheckIcon width={18} height={18} />Confirm booking</button>}
+                      : user ? <button type="button" onClick={confirm} disabled={busy} className="btn-primary !bg-emerald-500 !shadow-emerald-500/30 hover:!bg-emerald-600 disabled:opacity-60"><CheckIcon width={18} height={18} />{busy ? 'Booking…' : 'Confirm booking'}</button>
+                      : <button type="button" onClick={() => loginFirst(false)} className="btn-primary">Log in to book</button>}
                   </div>
                 </div>
               </>

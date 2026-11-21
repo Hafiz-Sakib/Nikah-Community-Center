@@ -2,18 +2,19 @@ import { useState } from 'react'
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
 import { eventTypes } from '../data'
-import { tomorrowISO, takenSlots, useBookings, toast } from '../lib/store'
+import { tomorrowISO, takenSlots, toast } from '../lib/store'
+import { useAvailability } from '../lib/useAvailability'
 import { CalendarIcon, UsersIcon, ArrowRight } from './Icons'
 
 const f = 'w-full bg-transparent text-sm font-medium text-fg outline-none'
 export default function AvailabilityBar() {
   const navigate = useNavigate()
-  const bookings = useBookings()
+  const { map } = useAvailability()
   const [v, setV] = useState({ eventType: 'Wedding', date: '', guests: 200 })
   const submit = (e) => {
     e.preventDefault()
     if (v.date) {
-      const t = takenSlots(v.date, bookings)
+      const t = takenSlots(v.date, map)
       if (t.morning && t.evening) { toast('That date is fully booked — try another', 'error'); return }
     }
     const qs = new URLSearchParams({ event: v.eventType, guests: String(Math.max(20, Math.min(600, +v.guests || 200))), ...(v.date ? { date: v.date } : {}) })
