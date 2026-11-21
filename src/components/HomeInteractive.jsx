@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link } from 'react-router-dom'
-import { events, packages, foodPkgs, addons, img } from '../data'
+import { events, packages, foodPkgs, addons, img, capOf } from '../data'
 import { money } from '../lib/store'
 import { ICONS2, ArrowRight } from './Icons'
 import SectionHead from './SectionHead'
@@ -50,9 +50,9 @@ export function CostEstimator() {
   const [food, setFood] = useState('hall')
   const [guests, setGuests] = useState(200)
   const p = packages.find((x) => x.id === pkgId)
-  const g = Math.min(guests, p.cap)
+  const g = Math.min(guests, capOf(p))
   const hall = Math.round(p.price * (shift === 'full' ? 1.7 : 1))
-  const meals = food === 'hall' ? g * catering[pkgId] : 0
+  const meals = food === 'hall' ? g * (catering[p.menu ?? pkgId] ?? 0) : 0
   const total = hall + meals
   const fmt = (n) => n.toLocaleString('en-IN')
   return (
@@ -68,7 +68,7 @@ export function CostEstimator() {
             </div>
           </div>
           <div className="mt-8">
-            <AmountSlider key={pkgId} label={`Expected guests (up to ${p.cap})`} min={30} max={p.cap} step={10} defaultValue={Math.min(g, p.cap)} onChange={setGuests} />
+            <AmountSlider key={pkgId} label={`Expected guests (up to ${capOf(p).toLocaleString('en-IN')})`} min={30} max={capOf(p)} step={capOf(p) > 500 ? 50 : 10} defaultValue={Math.min(g, capOf(p))} onChange={setGuests} />
           </div>
         </div>
         <div className="flex flex-col justify-between rounded-3xl bg-ink p-6 text-white shadow-dock sm:p-8">
@@ -77,7 +77,7 @@ export function CostEstimator() {
             <p className="mt-2 text-4xl font-semibold sm:text-5xl"><Rolling text={`৳${fmt(total)}`} /></p>
             <ul className="mt-6 space-y-3 text-sm">
               <li className="flex justify-between gap-4 border-b border-white/10 pb-3"><span className="text-white/70">{p.name}, {shift === 'full' ? 'full day' : 'one shift'}</span><span className="font-medium tabular-nums">{money(hall)}</span></li>
-              <li className="flex justify-between gap-4 border-b border-white/10 pb-3"><span className="text-white/70">{food === 'hall' ? `Hall catering, ${g} × ${money(catering[pkgId])}` : 'Own caterer'}</span><span className="font-medium tabular-nums">{food === 'hall' ? money(meals) : '—'}</span></li>
+              <li className="flex justify-between gap-4 border-b border-white/10 pb-3"><span className="text-white/70">{food === 'hall' ? `Hall catering, ${g} × ${money(catering[p.menu ?? pkgId] ?? 0)}` : 'Own caterer'}</span><span className="font-medium tabular-nums">{food === 'hall' ? money(meals) : '—'}</span></li>
             </ul>
             <p className="mt-4 text-xs text-white/50">Add-ons and the 15% Friday/Saturday surcharge are not included.</p>
           </div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useInView, useReducedMotion } from 'motion/react'
-import { PAYMENT, CONTACT } from '../data'
+import { PAYMENT, CONTACT, packages, capOf } from '../data'
 import { fmtDate, money, toast } from '../lib/store'
 import { billRows, waText, moneyOf } from '../lib/invoice'
 import { api } from '../lib/api'
@@ -77,6 +77,8 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
   const pay = PAYMENT.find((m) => m.id === method) || PAYMENT[1]
   const timer = useHoldText(b)
   const m = moneyOf(b)
+  const pkgDef = packages.find((x) => x.id === b.packageId)
+  const pkgCap = pkgDef ? capOf(pkgDef) : 0
   const { paid, waiting, balance } = m
   const payments = b.payments || []
   const canPay = ['pending', 'confirmed', 'completed'].includes(b.status) && m.room > 0          // something is still open to pay
@@ -117,6 +119,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
         <h3 className="mt-4 text-xl font-semibold text-fg sm:text-2xl">{fresh ? `Request received, ${b.name.split(' ')[0]}!` : `Billing · ${b.eventType}`}</h3>
         </>)}
         <p className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-slate-500 ${fresh ? 'mt-1' : ''}`}><StatusPill status={shownStatus(b)} />{m.paidInFull && !m.overpaid && <StatusPill status="fully paid" />}{inReview ? null : b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : b.status === 'confirmed' && balance > 0 ? <span>Advance received. Pay the rest online, at the office or after the event.</span> : b.status === 'completed' && balance > 0 ? <span>The event is over and {money(balance)} is still unpaid.</span> : null}</p>
+        <p className="mx-auto mt-2 flex max-w-xl flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-slate-600"><span>{b.eventType}</span><span aria-hidden>·</span><b className="text-fg">{q.pkgName}</b><span aria-hidden>·</span><span>{b.guests?.toLocaleString('en-IN')} guests{pkgCap ? <span className="text-slate-400"> (package allows up to {pkgCap.toLocaleString('en-IN')})</span> : null}</span></p>
         <button onClick={() => copy(b.id, 'Booking ID')} className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-brand-soft px-4 py-1.5 font-mono text-sm font-semibold text-brand-ink ring-1 ring-brand/30 transition hover:ring-brand active:scale-95" aria-label={`Copy booking ID ${b.id}`}>{b.id}<ClipboardIcon width={15} height={15} /></button>
         {b.status === 'pending' && <div className="mx-auto mt-4 max-w-xl text-left"><HoldWarning b={b} hideCta onExpire={refresh} className="!mt-0" /></div>}
         {!['cancelled', 'expired'].includes(b.status) && <PayProgress submitted={payments.length > 0} verified={paid >= q.advance} confirmed={b.status === 'confirmed' || b.status === 'completed'} />}

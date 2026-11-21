@@ -24,7 +24,7 @@ export const img = (n) => `${import.meta.env.BASE_URL}images/${n}`
 export const slides = [
   { image: 'hero-1.webp', pos: '50% 42%', eyebrow: 'Chattogram’s favourite venue', title: 'The perfect venue for your next event', text: 'Best decorated, clean and budget-friendly community center. Check a date and book in minutes.' },
   { image: 'hero-6.webp', pos: '45% 20%', side: 'right', eyebrow: 'Weddings & receptions', title: 'Where your story begins beautifully', text: 'Elegant stage décor, bridal rooms and a dedicated team for your biggest day.' },
-  { image: 'hero-3.webp', pos: '50% 50%', eyebrow: 'Holud & celebrations', title: 'Make every moment unforgettable', text: 'A spacious, air-conditioned hall for up to 600 guests with easy parking.' },
+  { image: 'hero-3.webp', pos: '50% 50%', eyebrow: 'Holud & celebrations', title: 'Make every moment unforgettable', text: 'A spacious, air-conditioned hall for up to 2,000 guests with easy parking.' },
   { image: 'hero-2.webp', pos: '60% 30%', eyebrow: 'Engagements & Nikah', title: 'Small details, handled with care', text: 'From flowers to flow of the day — one team looks after everything.' },
   { image: 'hero-4.webp', pos: '62% 50%', eyebrow: 'In-house catering', title: 'Fresh, generous menus for every guest', text: 'Experienced chefs and serving staff, with menus to suit your budget.' },
   { image: 'hero-12.webp', pos: '55% 42%', eyebrow: 'Bridal moments', title: 'Every bride deserves the perfect stage', text: 'Floral backdrops, royal seating and soft light, set up just the way you imagined.' },
@@ -39,26 +39,49 @@ export const eventTypes = ['Wedding', 'Reception', 'Holud', 'Corporate', 'Birthd
 export const marquee = ['Weddings', 'Holud', 'Receptions', 'Aqiqah', 'Milad', 'Corporate Events', 'Seminars', 'Birthdays', 'Engagements', 'Book Fairs']
 
 export const packages = [
-  { id: 'wedding-basic', photo: 'g-couple-stage.webp', photoPos: '50% 22%', icon: 'heart', tag: 'Simple & elegant', ideal: 'Ideal for simple weddings', price: 55000, name: 'Wedding Basic', desc: 'Weddings with a basic plan and limited items.', cap: 400, items: [
+  { id: 'wedding-basic', photo: 'g-couple-stage.webp', photoPos: '50% 22%', icon: 'heart', tag: 'Simple & elegant', ideal: 'Ideal for simple weddings', price: 55000, name: 'Wedding Basic', desc: 'Weddings with a basic plan and limited items.', cap: 1000, events: ['Wedding', 'Reception', 'Holud'], items: [
     { icon: 'building', title: 'Full space access', text: 'The entire hall and entrance' },
     { icon: 'utensils', title: 'Food arrangement', text: 'Menus arranged with our kitchen' },
     { icon: 'users', title: 'Management support', text: 'On-the-day coordination' },
     { icon: 'sparkles', title: 'Decoration design', text: 'Standard stage and seating' },
     { icon: 'wallet', title: 'Billed per shift', text: 'Morning or evening' } ] },
-  { id: 'wedding-plus', photo: 'hero-12.webp', photoPos: '55% 55%', icon: 'sparkles', tag: 'Most booked', ideal: 'Ideal for grand weddings', price: 85000, name: 'Wedding Plus', desc: 'Most weddings with premium plans.', cap: 600, popular: true, items: [
+  { id: 'wedding-plus', photo: 'hero-12.webp', photoPos: '55% 55%', icon: 'sparkles', tag: 'Most booked', ideal: 'Ideal for grand weddings', price: 85000, name: 'Wedding Plus', desc: 'Most weddings with premium plans.', cap: 2000, events: ['Wedding', 'Reception', 'Holud'], popular: true, items: [
     { icon: 'building', title: 'Full space access', text: 'The entire hall, entrance and rooms' },
     { icon: 'shield', title: 'Security facility', text: 'Guards and parking attendants' },
     { icon: 'users', title: 'Dedicated team', text: 'A coordinator for your event' },
     { icon: 'crown', title: 'Premium decoration', text: 'Themed stage, entrance and seating' },
     { icon: 'wallet', title: 'Pay as per plan', text: 'A flexible payment schedule' } ] },
-  { id: 'corporate', photo: 'corporate.webp', photoPos: '50% 45%', icon: 'building', tag: 'Teams & brands', ideal: 'Ideal for corporate events', price: 120000, name: 'Corporate Event', desc: 'Dedicated team for corporate events.', cap: 500, items: [
+  { id: 'corporate', photo: 'corporate.webp', photoPos: '50% 45%', icon: 'building', tag: 'Teams & brands', ideal: 'Ideal for corporate events', price: 120000, name: 'Corporate Event', desc: 'Dedicated team for corporate events.', cap: 1500, events: ['Corporate'], items: [
     { icon: 'building', title: 'Full space access', text: 'Hall, lobby and breakout areas' },
     { icon: 'utensils', title: 'Buffet food', text: 'Served by trained staff' },
     { icon: 'crown', title: 'Premium decoration', text: 'Branding-friendly stage setup' },
     { icon: 'mic', title: 'Sound & projector', text: 'Mic, LED wall and AV support' },
     { icon: 'wallet', title: 'Per day plan', text: 'Billed per day' } ] },
+  { id: 'birthday-party', photo: 'party.webp', photoPos: '50% 40%', icon: 'cake', tag: 'Parties & fun', ideal: 'Ideal for birthdays and parties', price: 35000, name: 'Birthday Party', desc: 'A bright, flexible hall for birthdays, aqiqah and small parties.', cap: 500, events: ['Birthday'], menu: 'wedding-basic', items: [
+    { icon: 'building', title: 'Hall access', text: 'The main hall and entrance' },
+    { icon: 'cake', title: 'Party setup', text: 'Tables, seating and a cake stand' },
+    { icon: 'sparkles', title: 'Basic decoration', text: 'Balloons and stage backdrop' },
+    { icon: 'utensils', title: 'Food arrangement', text: 'Menus arranged with our kitchen' },
+    { icon: 'wallet', title: 'Billed per shift', text: 'Morning or evening' } ] },
+  { id: 'milad-mahfil', photo: 'milad.webp', photoPos: '50% 40%', icon: 'moon', tag: 'Calm & respectful', ideal: 'Ideal for milad and family gatherings', price: 40000, name: 'Milad Mahfil', desc: 'A quiet, respectful space for milad, dua and family gatherings.', cap: 1000, events: ['Milad'], menu: 'wedding-basic', items: [
+    { icon: 'building', title: 'Hall access', text: 'The main hall, seating arranged for the mahfil' },
+    { icon: 'moon', title: 'Prayer space', text: 'Wudu facilities close by' },
+    { icon: 'mic', title: 'Sound system', text: 'Mic and speakers for the gathering' },
+    { icon: 'utensils', title: 'Food arrangement', text: 'Tabarruk and meals arranged for you' },
+    { icon: 'wallet', title: 'Billed per shift', text: 'Morning or evening' } ] },
+  { id: 'other-event', photo: 'hero-7.webp', photoPos: '50% 50%', icon: 'gift', tag: 'Anything else', ideal: 'Ideal for any other gathering', price: 45000, name: 'Other Event', desc: 'For exhibitions, training, community programs and other events.', cap: 1000, events: ['Other'], menu: 'wedding-basic', items: [
+    { icon: 'building', title: 'Hall access', text: 'The main hall, lobby and entrance' },
+    { icon: 'users', title: 'Management support', text: 'On-the-day coordination' },
+    { icon: 'mic', title: 'Sound & projector', text: 'Add as an extra when you book' },
+    { icon: 'utensils', title: 'Food arrangement', text: 'Optional hall catering' },
+    { icon: 'wallet', title: 'Billed per shift', text: 'Morning, evening or full day' } ] },
 ]
 
+export const HALL_CAP = 2000   // the hall's absolute maximum (the server enforces the same number)
+/* A package is only for its own kinds of event: Birthday / Milad / Other have their own, and never use Wedding or Corporate. */
+export const packagesFor = (eventType) => packages.filter((p) => p.events.includes(eventType))
+export const defaultPackageFor = (eventType) => packagesFor(eventType).find((p) => p.popular) ?? packagesFor(eventType)[0]
+export const capOf = (p) => Math.min(HALL_CAP, p.cap)
 export const addons = [
   { id: 'catering', label: 'Hall catering (per guest, from)', price: 450, perGuest: true, hint: 'Choose a food package while booking — see the Food page' },
   { id: 'stage', label: 'Stage & floral decoration', price: 18000, hint: 'Themed stage, entrance, seating' },
@@ -68,7 +91,7 @@ export const addons = [
 ]
 
 export const facilities = [
-  { icon: 'users', title: 'Up to 600 guests', text: 'A column-free main hall with flexible round-table or theatre seating.' },
+  { icon: 'users', title: 'Up to 2,000 guests', text: 'A column-free main hall with flexible round-table or theatre seating.' },
   { icon: 'snow', title: 'Fully air-conditioned', text: 'Central cooling keeps guests comfortable through every season.' },
   { icon: 'car', title: 'Parking for 80 cars', text: 'Secure on-site parking with attendants on busy event days.' },
   { icon: 'bolt', title: 'Backup generator', text: 'Uninterrupted power for lights, sound and cooling.' },
@@ -83,7 +106,7 @@ export const facilities = [
 ]
 
 export const stats = [
-  { value: 600, suffix: '', label: 'Guest capacity' },
+  { value: 2000, suffix: '', label: 'Guest capacity' },
   { value: 80, suffix: '', label: 'Parking spaces' },
   { value: 3, suffix: '', label: 'Daily shifts' },
   { value: 24, suffix: '/7', label: 'Booking online' },
@@ -144,23 +167,24 @@ export const faqs = [
 ]
 
 export const compare = [
-  { label: 'Guest capacity', v: ['400', '600', '500'] },
-  { label: 'Hall access', v: ['Full hall', 'Full hall', 'Full hall'] },
-  { label: 'Security', v: [true, true, true] },
-  { label: 'Decoration', v: ['Standard', 'Premium', 'Premium'] },
-  { label: 'Dedicated event team', v: [false, true, true] },
-  { label: 'Food arrangement', v: [true, true, 'Buffet'] },
-  { label: 'Sound & projector', v: [false, false, true] },
-  { label: 'Billing', v: ['Per shift', 'As per plan', 'Per day'] },
+  { label: 'Guest capacity', v: ['1,000', '2,000', '1,500', '500', '1,000', '1,000'] },
+  { label: 'Best for', v: ['Weddings, receptions, holud', 'Weddings, receptions, holud', 'Corporate events', 'Birthdays', 'Milad', 'Other events'] },
+  { label: 'Hall access', v: ['Full hall', 'Full hall', 'Full hall', 'Main hall', 'Main hall', 'Main hall'] },
+  { label: 'Security', v: [true, true, true, false, false, false] },
+  { label: 'Decoration', v: ['Standard', 'Premium', 'Premium', 'Basic', '—', '—'] },
+  { label: 'Dedicated event team', v: [false, true, true, false, false, false] },
+  { label: 'Food arrangement', v: [true, true, 'Buffet', true, true, 'Optional'] },
+  { label: 'Sound & projector', v: [false, false, true, false, true, 'Add-on'] },
+  { label: 'Billing', v: ['Per shift', 'As per plan', 'Per day', 'Per shift', 'Per shift', 'Per shift'] },
 ]
 
 export const events = [
-  { slug: 'Wedding', icon: 'heart', image: 'hero-6.webp', title: 'Weddings', text: 'A complete setting for your biggest day: stage, bridal room, catering and a team that keeps the day on schedule.', pkg: 'wedding-plus', guests: '100–600 guests' },
-  { slug: 'Holud', icon: 'sparkles', image: 'hero-3.webp', title: 'Holud & Cultural', text: 'Colourful, high-energy evenings with room for dance, music and family traditions.', pkg: 'wedding-basic', guests: '80–400 guests' },
-  { slug: 'Reception', icon: 'gift', image: 'reception.webp', title: 'Receptions', text: 'An elegant hall, warm lighting and buffet service for the celebration with everyone you love.', pkg: 'wedding-plus', guests: '150–600 guests' },
-  { slug: 'Corporate', icon: 'mic', image: 'corporate.webp', title: 'Corporate & Seminars', text: 'Sound, projector and a professional setup for conferences, annual dinners and product launches.', pkg: 'corporate', guests: '50–500 guests' },
-  { slug: 'Milad', icon: 'moon', image: 'milad.webp', title: 'Milad & Family', text: 'A calm, respectful space for milad, aqiqah and family gatherings, with food arranged for you.', pkg: 'wedding-basic', guests: '40–300 guests' },
-  { slug: 'Birthday', icon: 'cake', image: 'party.webp', title: 'Birthdays & Parties', text: 'Flexible morning or evening shifts with decoration and catering add-ons.', pkg: 'wedding-basic', guests: '30–300 guests' },
+  { slug: 'Wedding', icon: 'heart', image: 'hero-6.webp', title: 'Weddings', text: 'A complete setting for your biggest day: stage, bridal room, catering and a team that keeps the day on schedule.', pkg: 'wedding-plus', guests: '100–2000 guests' },
+  { slug: 'Holud', icon: 'sparkles', image: 'hero-3.webp', title: 'Holud & Cultural', text: 'Colourful, high-energy evenings with room for dance, music and family traditions.', pkg: 'wedding-basic', guests: '80–1000 guests' },
+  { slug: 'Reception', icon: 'gift', image: 'reception.webp', title: 'Receptions', text: 'An elegant hall, warm lighting and buffet service for the celebration with everyone you love.', pkg: 'wedding-plus', guests: '150–2000 guests' },
+  { slug: 'Corporate', icon: 'mic', image: 'corporate.webp', title: 'Corporate & Seminars', text: 'Sound, projector and a professional setup for conferences, annual dinners and product launches.', pkg: 'corporate', guests: '50–1500 guests' },
+  { slug: 'Milad', icon: 'moon', image: 'milad.webp', title: 'Milad & Family', text: 'A calm, respectful space for milad, aqiqah and family gatherings, with food arranged for you.', pkg: 'milad-mahfil', guests: '40–1000 guests' },
+  { slug: 'Birthday', icon: 'cake', image: 'party.webp', title: 'Birthdays & Parties', text: 'Flexible morning or evening shifts with decoration and catering add-ons.', pkg: 'birthday-party', guests: '30–500 guests' },
 ]
 
 export const process = [

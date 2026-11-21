@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { packages, addons, eventTypes, foodPkgs } from '../data'
+import { packages, addons, eventTypes, foodPkgs, packagesFor, defaultPackageFor, capOf, HALL_CAP } from '../data'
 import { moneyOf } from '../lib/invoice'
 import { takenSlots, shiftFree, SHIFTS, quote, money, fmtDate, toast } from '../lib/store'
 import { api } from '../lib/api'
@@ -26,7 +26,11 @@ export default function EditBooking({ booking, map, admin = false, onClose, onSa
   const [busy, setBusy] = useState(false)
   const set = (p) => setF((x) => ({ ...x, ...p }))
   const pkg = packages.find((p) => p.id === f.packageId)
-  const cap = Math.min(600, pkg.cap)
+  const cap = capOf(pkg)
+  const pkgOptions = packagesFor(f.eventType)
+  // a legacy booking may sit on a package that no longer fits its event: keep it selectable so it can still be viewed
+  const pkgList = pkgOptions.some((p) => p.id === f.packageId) ? pkgOptions : [pkg, ...pkgOptions]
+  const pickEvent = (t) => setF((x) => { const ok = packagesFor(t); const next = ok.find((p) => p.id === x.packageId) ?? defaultPackageFor(t); return { ...x, eventType: t, packageId: next.id, guests: Math.min(+x.guests || 20, capOf(next)) } })
 
   // the booking being edited must not block its own slot
   const taken = useMemo(() => {
@@ -60,9 +64,9 @@ export default function EditBooking({ booking, map, admin = false, onClose, onSa
   return (
     <Modal size="lg" title={create ? 'New walk-in booking' : `Edit ${booking.id}`} onClose={onClose}>
         <div className="grid gap-4 sm:grid-cols-3">
-          <label><span className={lab}>Event</span><select className={inp} value={f.eventType} onChange={(e) => set({ eventType: e.target.value })}>{eventTypes.map((t) => <option key={t}>{t}</option>)}</select></label>
-          <label><span className={lab}>Package</span><select className={inp} value={f.packageId} onChange={(e) => set({ packageId: e.target.value })}>{packages.map((p) => <option key={p.id} value={p.id}>{p.name} · {money(p.price)}</option>)}</select></label>
-          <label><span className={lab}>Guests (20–{cap})</span><input className={inp} type="number" min={20} max={cap} value={f.guests} onChange={(e) => set({ guests: e.target.value })} /></label>
+          <label><span className={lab}>Event</span><select className={inp} value={f.eventType} onChange={(e) => pickEvent(e.target.value)}>{eventTypes.map((t) => <option key={t}>{t}</option>)}</select></label>
+          <label><span className={lab}>Package</span><select className={inp} value={f.packageId} onChange={(e) => { const np = packages.find((p) => p.id === e.target.value); set({ packageId: np.id, guests: Math.min(+f.guests || 20, capOf(np)) }) }}>{pkgList.map((p) => <option key={p.id} value={p.id}>{p.name} · {money(p.price)}</option>)}</select></label>
+          <label><span className={lab}>Guests (20–{cap.toLocaleString('en-IN')})</span><input className={inp} type="number" min={20} max={cap} value={f.guests} onChange={(e) => set({ guests: e.target.value })} /></label>
         </div>
 
         <div className="mt-5 grid gap-6 md:grid-cols-2">

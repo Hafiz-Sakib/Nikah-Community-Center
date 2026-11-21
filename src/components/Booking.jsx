@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { packages, addons, eventTypes, events, CONTACT, foodPkgs, foodItems } from '../data'
+import { packages, addons, eventTypes, events, CONTACT, foodPkgs, foodItems, packagesFor, defaultPackageFor, capOf, HALL_CAP } from '../data'
 import { takenSlots, shiftFree, SHIFTS, quote, money, fmtDate, toast } from '../lib/store'
 import { useAuth } from '../context/AuthContext'
 import { useMyBookings } from '../lib/bookings'
@@ -79,10 +79,10 @@ export default function Booking() {
   /* Picking an event type also selects the package that suits it (Milad -> Wedding Basic, Corporate -> Corporate Event...).
      The package can still be changed afterwards; "Other" keeps whatever is selected. */
   const pickEvent = (t) => setF((x) => {
+    const ok = packagesFor(t)                                  // only packages made for this kind of event
     const suggested = events.find((e) => e.slug === t)?.pkg
-    const packageId = suggested && packages.some((p) => p.id === suggested) ? suggested : x.packageId
-    const cap = Math.min(600, packages.find((p) => p.id === packageId).cap)
-    return { ...x, eventType: t, packageId, guests: Math.min(x.guests, cap) }
+    const next = ok.find((p) => p.id === x.packageId) ?? ok.find((p) => p.id === suggested) ?? defaultPackageFor(t)
+    return { ...x, eventType: t, packageId: next.id, guests: Math.min(x.guests, capOf(next)) }
   })
 
   useEffect(() => {
@@ -90,7 +90,12 @@ export default function Booking() {
     if (!ev && !pk && !d && !g) return
     const okDate = d && /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= tomorrowISO()
     setDone(null); setStep(okDate ? 1 : 0)
-    setF((x) => ({ ...x, ...(ev && eventTypes.includes(ev) ? { eventType: ev } : {}), ...(pk && packages.some((p) => p.id === pk) ? { packageId: pk } : {}), ...(okDate ? { date: d, shift: '' } : {}), ...(g ? { guests: Math.max(20, Math.min(600, g)) } : {}) }))
+    setF((x) => {
+      const eventType = ev && eventTypes.includes(ev) ? ev : x.eventType
+      const ok = packagesFor(eventType)
+      const next = ok.find((p) => p.id === pk) ?? ok.find((p) => p.id === x.packageId) ?? defaultPackageFor(eventType)   // a package for another kind of event is ignored
+      return { ...x, eventType, packageId: next.id, ...(okDate ? { date: d, shift: '' } : {}), guests: Math.min(capOf(next), g ? Math.max(20, g) : x.guests) }
+    })
   }, [sp])
 
   const pkg = packages.find((p) => p.id === f.packageId)
@@ -98,7 +103,8 @@ export default function Booking() {
   const taken = useMemo(() => (f.date ? takenSlots(f.date, map) : null), [f.date, map])
   const menu = f.catering === 'hall' ? foodPkgs.find((m) => m.id === f.menu) : null
   const q = quote({ pkg, shift: f.shift, date: f.date, guests: f.guests, addons: f.addons, addonDefs: addons, food: menu })
-  const cap = Math.min(600, pkg.cap)
+  const cap = capOf(pkg)
+  const gStep = cap > 500 ? 50 : 10
   useEffect(() => { if (f.guests > cap) set({ guests: cap }) }, [cap]) // eslint-disable-line
   useEffect(() => { if (f.date && f.shift && taken && !shiftFree(f.shift, taken)) set({ shift: '' }) }, [taken]) // eslint-disable-line
 
@@ -131,7 +137,7 @@ export default function Booking() {
     <section id="booking" className="relative py-12 sm:py-16">
       <div className="container-x">
         <div className={`grid gap-6 ${done ? "mx-auto max-w-3xl 2xl:max-w-4xl" : "lg:grid-cols-[1fr_340px]"}`}>
-          <div className="rounded-[2rem] bg-surface p-5 shadow-dock ring-1 ring-slate-200 sm:p-8">
+          <div className="min-w-0 rounded-[2rem] bg-surface p-5 shadow-dock ring-1 ring-slate-200 sm:p-8">
             {done ? <Billing b={done} fresh onNew={reset} onManage={onManage} /> : (
               <>
                 <div className="mb-8" aria-label="Progress">
@@ -157,26 +163,27 @@ export default function Booking() {
                         </div>
                         <div>
                           <p className="mb-2 text-sm font-medium text-fg">Package</p>
-                          <div className="grid gap-3 sm:grid-cols-3">
-                            {packages.map((p) => (
+                          <div className={`grid gap-3 ${packagesFor(f.eventType).length === 1 ? 'sm:grid-cols-1' : packagesFor(f.eventType).length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
+                            {packagesFor(f.eventType).map((p) => (
                               <TiltCard key={p.id} maxTilt={6} hoverScale={1.02} className={`!rounded-2xl ring-1 transition-colors ${f.packageId === p.id ? '!bg-brand-soft !ring-2 ring-brand' : 'ring-slate-300'}`}>
                                 <button type="button" onClick={() => set({ packageId: p.id })} aria-pressed={f.packageId === p.id} className="block h-full w-full p-4 pb-5 text-left">
                                 <span className="flex flex-wrap items-center justify-between gap-1"><b className="text-fg">{p.name}</b>{p.popular && <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">Popular</span>}</span>
                                 <span className="mt-1 block text-sm text-brand-ink">{money(p.price)} <span className="text-slate-400">/ shift</span></span>
-                                <span className="mt-1 block text-xs text-slate-500">Up to {p.cap} guests</span>
+                                <span className="mt-1 block text-xs text-slate-500">Up to {capOf(p).toLocaleString('en-IN')} guests</span>
                                 </button>
                                 {f.packageId === p.id && <span aria-hidden className="pointer-events-none absolute bottom-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-brand text-white"><CheckIcon width={14} height={14} /></span>}
                               </TiltCard>
                             ))}
                           </div>
                         </div>
-                        <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
-                          <div><p className="text-sm font-medium text-fg">Expected guests</p><p className="text-xs text-slate-500">Max {cap} for this package</p></div>
+                        <div className="flex flex-wrap items-center justify-between gap-y-2 rounded-2xl bg-slate-50 p-4">
+                          <div><p className="text-sm font-medium text-fg">Expected guests</p><p className="text-xs text-slate-500">Max {cap.toLocaleString('en-IN')} for this package · the hall holds {HALL_CAP.toLocaleString('en-IN')}</p></div>
                           <div className="flex items-center gap-3">
-                            <button type="button" aria-label="Fewer guests" disabled={f.guests <= 20} onClick={() => set({ guests: Math.max(20, f.guests - 10) })} className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-fg ring-1 ring-slate-400 transition hover:bg-slate-100 active:scale-90 disabled:opacity-35"><MinusIcon width={18} height={18} /></button>
-                            <span className="flex w-16 justify-center"><Odometer value={f.guests} className="text-2xl font-semibold text-fg" /></span>
-                            <button type="button" aria-label="More guests" disabled={f.guests >= cap} onClick={() => set({ guests: Math.min(cap, f.guests + 10) })} className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-fg ring-1 ring-slate-400 transition hover:bg-slate-100 active:scale-90 disabled:opacity-35"><PlusIcon width={18} height={18} /></button>
+                            <button type="button" aria-label="Fewer guests" disabled={f.guests <= 20} onClick={() => set({ guests: Math.max(20, f.guests - gStep) })} className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-fg ring-1 ring-slate-400 transition hover:bg-slate-100 active:scale-90 disabled:opacity-35"><MinusIcon width={18} height={18} /></button>
+                            <span className="flex w-20 justify-center"><Odometer value={f.guests} className="text-2xl font-semibold text-fg" /></span>
+                            <button type="button" aria-label="More guests" disabled={f.guests >= cap} onClick={() => set({ guests: Math.min(cap, f.guests + gStep) })} className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-fg ring-1 ring-slate-400 transition hover:bg-slate-100 active:scale-90 disabled:opacity-35"><PlusIcon width={18} height={18} /></button>
                           </div>
+                          <input type="range" aria-label="Expected guests" min={20} max={cap} step={10} value={f.guests} onChange={(e) => set({ guests: +e.target.value })} className="mt-2 block w-full basis-full accent-brand" />
                         </div>
                       </div>
                     )}

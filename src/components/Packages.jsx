@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
-import { packages, compare, img } from '../data'
+import { packages, compare, img, capOf } from '../data'
 import { ICONS2, CheckIcon, ArrowRight } from './Icons'
 import Odometer from './Odometer'
 
@@ -35,7 +35,7 @@ function PackageCard({ p, index }) {
               {p.popular
                 ? <span className="inline-flex items-center gap-1.5 rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white"><span className="relative flex h-1.5 w-1.5"><span className="absolute inset-0 animate-ping rounded-full bg-white/80 motion-reduce:animate-none" /><span className="relative h-1.5 w-1.5 rounded-full bg-white" /></span>Most booked</span>
                 : <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md">{p.tag}</span>}
-              <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md">Up to {p.cap} guests</span>
+              <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md">Up to {capOf(p).toLocaleString('en-IN')} guests</span>
             </div>
           </div>
 
@@ -63,7 +63,7 @@ function PackageCard({ p, index }) {
             </div>
             <p className="mt-2 text-[13px] leading-snug text-slate-600">{full ? 'Morning + Evening · about 15% cheaper' : 'Billed per shift · Fri & Sat +15%'}</p>
 
-            <Link to={`/booking?package=${p.id}`} className={`group/btn relative mt-5 flex items-center justify-center gap-2 overflow-hidden rounded-2xl px-4 py-3.5 text-center text-sm font-semibold transition-all active:scale-[0.98] ${p.popular ? 'bg-brand text-white shadow-glow hover:bg-brand-dark' : 'bg-slate-100 text-fg hover:bg-fg hover:text-surface'}`}>
+            <Link to={`/booking?event=${p.events[0]}&package=${p.id}`} className={`group/btn relative mt-5 flex items-center justify-center gap-2 overflow-hidden rounded-2xl px-4 py-3.5 text-center text-sm font-semibold transition-all active:scale-[0.98] ${p.popular ? 'bg-brand text-white shadow-glow hover:bg-brand-dark' : 'bg-slate-100 text-fg hover:bg-fg hover:text-surface'}`}>
               <span aria-hidden className="absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-white/30 transition-all duration-700 group-hover/btn:left-[130%] motion-reduce:hidden" />
               <span className="relative">Book this package</span>
               <span className="relative transition-transform duration-300 group-hover/btn:translate-x-1"><ArrowRight /></span>
@@ -89,12 +89,26 @@ function PackageCard({ p, index }) {
   )
 }
 
+/* Weddings and corporate events keep their own packages; birthdays, milad and other events each have theirs. */
+const GROUPS = [
+  { title: 'Weddings & receptions', note: 'Wedding, Reception and Holud', ids: ['wedding-basic', 'wedding-plus'] },
+  { title: 'Corporate', note: 'Conferences, seminars and annual dinners', ids: ['corporate'] },
+  { title: 'Birthday, Milad & other events', note: 'Each has its own package', ids: ['birthday-party', 'milad-mahfil', 'other-event'] },
+]
 export function PackageGrid() {
   return (
     <>
-      <ul className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {packages.map((p, i) => <PackageCard key={p.id} p={p} index={i} />)}
-      </ul>
+      {GROUPS.map((g) => (
+        <div key={g.title} className="mt-12 first:mt-12">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+            <h3 className="text-xl font-semibold tracking-tight text-fg sm:text-2xl">{g.title}</h3>
+            <p className="text-sm text-slate-500">{g.note}</p>
+          </div>
+          <ul className={`grid grid-cols-1 gap-4 ${g.ids.length === 1 ? 'mx-auto max-w-md' : g.ids.length === 2 ? 'sm:grid-cols-2 lg:mx-auto lg:max-w-4xl' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
+            {g.ids.map((id, i) => <PackageCard key={id} p={packages.find((p) => p.id === id)} index={i} />)}
+          </ul>
+        </div>
+      ))}
       <p className="mt-6 text-center text-[13px] text-slate-600">Friday &amp; Saturday carry a 15% surcharge. Full day = Morning + Evening at 1.7× the shift price.</p>
     </>
   )
@@ -104,7 +118,7 @@ export function CompareTable() {
   return (
     <div className="overflow-hidden rounded-3xl bg-surface shadow-card ring-1 ring-fg/5">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] border-collapse text-sm">
+        <table className="w-full min-w-[900px] border-collapse text-sm">
           <thead>
             <tr>
               <th className="sticky left-0 z-10 bg-surface p-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Compare</th>

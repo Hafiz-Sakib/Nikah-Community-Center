@@ -17,7 +17,7 @@ export default function AvailabilityBar() {
       const t = takenSlots(v.date, map)
       if (t.morning && t.evening) { toast('That date is fully booked — try another', 'error'); return }
     }
-    const qs = new URLSearchParams({ event: v.eventType, guests: String(Math.max(20, Math.min(600, +v.guests || 200))), ...(v.date ? { date: v.date } : {}) })
+    const qs = new URLSearchParams({ event: v.eventType, guests: String(Math.max(20, Math.min(2000, +v.guests || 200))), ...(v.date ? { date: v.date } : {}) })
     navigate(`/booking?${qs}`)
   }
   return (
@@ -29,7 +29,7 @@ export default function AvailabilityBar() {
         <label className="rounded-2xl bg-slate-50 px-4 py-2.5"><span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-slate-400"><CalendarIcon width={12} height={12} />Date</span>
           <input type="date" min={tomorrowISO()} className={f} value={v.date} onChange={(e) => setV({ ...v, date: e.target.value })} /></label>
         <label className="rounded-2xl bg-slate-50 px-4 py-2.5"><span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-slate-400"><UsersIcon width={12} height={12} />Guests</span>
-          <input type="number" min={20} max={600} className={f} value={v.guests} onChange={(e) => setV({ ...v, guests: e.target.value })} /></label>
+          <input type="number" min={20} max={2000} className={f} value={v.guests} onChange={(e) => setV({ ...v, guests: e.target.value })} /></label>
         <button className="btn-primary sm:col-span-2 lg:col-span-1">Check availability <ArrowRight /></button>
       </motion.form>
     </div>
