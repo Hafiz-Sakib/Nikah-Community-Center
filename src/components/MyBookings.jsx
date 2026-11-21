@@ -81,7 +81,7 @@ export default function MyBookings() {
                   </div>
                   {isActive(b) && <p className="mt-1 text-xs text-slate-500">Paid {money(b.paidAmount)} · Balance {money(due)}{b.payments?.some((x) => x.status === 'pending') ? ' · payment submitted, staff are verifying it' : ''}</p>}
                   {b.status === 'pending' && <HoldWarning b={b} onPay={() => setBill(b)} onExpire={() => { toast('An unpaid booking was cancelled automatically', 'error'); reload(); reloadMap() }} />}
-                  {b.status === 'expired' && <p className="mt-2 rounded-xl bg-orange-50 p-3 text-xs text-orange-700 ring-1 ring-orange-200 dark:!bg-white/5 dark:!text-fg dark:!ring-white/15">This booking was cancelled automatically because the advance was not paid within {b.holdHours ?? 48} hours. The date is free again — you can book it again if it is still available.</p>}
+                  {b.status === 'expired' && <p className="mt-2 rounded-xl bg-orange-50 p-3 text-xs text-orange-700 ring-1 ring-orange-200 dark:!bg-white/5 dark:!text-fg dark:!ring-white/15">Cancelled — the advance was not paid within {b.holdHours ?? 48} hours, so the date was released. This record stays here for your reference; you can book the date again if it is still available.</p>}
                   <AnimatePresence mode="wait" initial={false}>
                     {confirmId === b.id ? (
                       <motion.div key="confirm" role="alertdialog" aria-label="Confirm cancellation" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}

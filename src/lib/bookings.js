@@ -31,4 +31,6 @@ export const isActive = (b) => b.status === 'pending' || b.status === 'confirmed
 export const hasReview = (b) => !!b.payments?.some((p) => p.status === 'pending')
 export const reviewAmount = (b) => (b.payments || []).filter((p) => p.status === 'pending').reduce((s, p) => s + p.amount, 0)
 /* Status to show people: a pending booking whose payment is in review reads "in review", not "pending". */
-export const shownStatus = (b) => (b.status === 'pending' && hasReview(b) ? 'in review' : b.status)
+export const shownStatus = (b) => (b.status === 'pending' && hasReview(b) ? 'in review' : b.status === 'expired' ? 'cancelled' : b.status)
+/* An unpaid booking whose time ran out is kept in the list as Cancelled (never deleted). */
+export const autoCancelled = (b) => b.status === 'expired'

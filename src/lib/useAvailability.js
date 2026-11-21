@@ -18,5 +18,13 @@ export function useAvailability(fromISO, toISO_) {
     .then((rows) => { setMap(Object.fromEntries(rows.map((r) => [r.date, { morning: r.morning, evening: r.evening }]))); setLoaded(true) })
     .catch(() => {}), [from, to])
   useEffect(() => { load() }, [load])
+  /* Slots held or booked by other people must disappear without a page refresh: re-check every 20 s and when the tab regains focus. */
+  useEffect(() => {
+    const tick = () => { if (!document.hidden) load() }
+    const t = setInterval(tick, 20_000)
+    document.addEventListener('visibilitychange', tick)
+    window.addEventListener('focus', tick)
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', tick); window.removeEventListener('focus', tick) }
+  }, [load])
   return { map, reload: load, loaded }
 }

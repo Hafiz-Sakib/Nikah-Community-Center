@@ -15,9 +15,10 @@ import { packages, img } from '../data'
 import { api } from '../lib/api'
 import { useAvailability } from '../lib/useAvailability'
 import { shownStatus } from '../lib/bookings'
+import Avatar from './Avatar'
 import { DownloadIcon, CloseIcon, SearchIcon, PlusIcon, PhoneIcon, CheckIcon, ChevronDown, ChevronLeft, ChevronRight, ClipboardIcon, CalendarIcon, WalletIcon, UsersIcon } from './Icons'
 
-const FILTERS = ['all', 'verify', 'pending', 'confirmed', 'cancelled', 'expired', 'completed']
+const FILTERS = ['all', 'verify', 'pending', 'confirmed', 'cancelled', 'completed']
 const LABELS = { verify: 'To verify' }
 const fmtWhen = (iso) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
 const METHODS = ['office', 'bkash', 'nagad', 'bank', 'card']
@@ -218,9 +219,12 @@ export default function Admin() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <p className="truncate font-semibold text-fg">{b.name}</p>
-                                <p className="text-sm text-slate-500">{b.phone}</p>
+                              <div className="flex min-w-0 items-center gap-3">
+                                <Avatar user={{ name: b.name, avatar: b.avatar }} size={40} />
+                                <div className="min-w-0">
+                                  <p className="truncate font-semibold text-fg">{b.name}</p>
+                                  <p className="text-sm text-slate-500">{b.phone}</p>
+                                </div>
                               </div>
                               <div className="flex flex-col items-end gap-1.5"><StatusPill status={shownStatus(b)} />{b.status === 'pending' && <HoldChip b={b} onExpire={changed} />}</div>
                             </div>
@@ -232,13 +236,14 @@ export default function Admin() {
                               <span className="font-mono text-xs text-slate-400">{b.id}</span>
                             </div>
                             <div className="mt-2.5"><EventTimer b={b} /></div>
+                            {b.status === 'expired' && <p className="mt-2 text-xs text-red-600 dark:text-red-300">Auto-cancelled: advance not paid in time</p>}
                             </div>
                         </div>
                         <VerifyBox b={b} busy={reviewing} onReview={review} />
 
                         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
                           {b.status !== 'confirmed' && <Button size="sm" variant="success" onClick={() => setStatus(b, 'confirmed')}><CheckIcon width={14} height={14} />Confirm</Button>}
-                          {b.status !== 'cancelled' && <Button size="sm" variant="outline" onClick={() => setStatus(b, 'cancelled')}>Cancel booking</Button>}
+                          {b.status !== 'cancelled' && b.status !== 'expired' && <Button size="sm" variant="outline" onClick={() => setStatus(b, 'cancelled')}>Cancel booking</Button>}
                           <Button size="sm" variant="outline" onClick={() => setEdit(b)}>Edit</Button>
                           <Button size="sm" variant={open === b.id ? 'primary' : 'soft'} aria-expanded={open === b.id} onClick={() => setOpen(open === b.id ? null : b.id)}>Payments ({b.payments?.length ?? 0})<ChevronDown width={14} height={14} className={`transition-transform ${open === b.id ? 'rotate-180' : ''}`} /></Button>
                           <Button size="sm" variant="outline" onClick={() => openInvoice(b)}>Invoice</Button>

@@ -11,9 +11,13 @@ import Odometer from './Odometer'
 import AnimatedNumber from './AnimatedNumber'
 import InvoiceView from './InvoiceView'
 import PaymentGateway from './gateway/PaymentGateway'
-import { CheckIcon, ChatIcon, DownloadIcon, ClipboardIcon } from './Icons'
+import Button from './brew/Button'
+import { CheckIcon, ChatIcon, DownloadIcon, ClipboardIcon, PlusIcon, CalendarIcon } from './Icons'
 
-const COLORS = ['#fde68a', '#6f0202', '#3f87f5', '#10b981', '#f472b6', '#d4a017']
+const CARD = 'rounded-3xl bg-surface p-4 ring-1 ring-slate-200 shadow-card sm:p-5'
+const EYEBROW = 'text-[11px] font-semibold uppercase tracking-wider text-slate-500'
+
+const COLORS = ['#fde68a', '#2563d6', '#3f87f5', '#10b981', '#f472b6', '#d4a017']
 function Confetti() {
   const bits = useMemo(() => Array.from({ length: 34 }, (_, i) => ({ a: (i / 34) * Math.PI * 2 + Math.random() * 0.4, d: 90 + Math.random() * 120, r: Math.random() * 540 - 270, c: COLORS[i % COLORS.length], w: 6 + Math.random() * 6 })), [])
   return (
@@ -84,40 +88,41 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
         {fresh && <Confetti />}
         {fresh && (<>
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"><CheckIcon width={32} height={32} strokeWidth={3} /></motion.div>
-        <h3 className="mt-4 text-2xl font-semibold text-fg">{fresh ? `Request received, ${b.name.split(' ')[0]}!` : `Billing · ${b.eventType}`}</h3>
+        <h3 className="mt-4 text-xl font-semibold text-fg sm:text-2xl">{fresh ? `Request received, ${b.name.split(' ')[0]}!` : `Billing · ${b.eventType}`}</h3>
         </>)}
-        <p className={`flex flex-wrap items-center justify-center gap-2 text-sm text-slate-500 ${fresh ? 'mt-1' : ''}`}><StatusPill status={shownStatus(b)} />{inReview ? null : b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : null}</p>
-        <button onClick={() => copy(b.id, 'Booking ID')} className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-soft px-4 py-1.5 font-mono text-sm font-semibold text-brand-ink transition active:scale-95" aria-label={`Copy booking ID ${b.id}`}>{b.id}<ClipboardIcon width={15} height={15} /></button>
+        <p className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-slate-500 ${fresh ? 'mt-1' : ''}`}><StatusPill status={shownStatus(b)} />{inReview ? null : b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : null}</p>
+        <button onClick={() => copy(b.id, 'Booking ID')} className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-brand-soft px-4 py-1.5 font-mono text-sm font-semibold text-brand-ink ring-1 ring-brand/30 transition hover:ring-brand active:scale-95" aria-label={`Copy booking ID ${b.id}`}>{b.id}<ClipboardIcon width={15} height={15} /></button>
         {b.status === 'pending' && <div className="mx-auto mt-4 max-w-xl text-left"><HoldWarning b={b} hideCta onExpire={refresh} className="!mt-0" /></div>}
       </div>
 
-      <div className="mx-auto mt-6 flex w-fit rounded-full bg-slate-100 p-1" role="tablist">
+      <div className="mx-auto mt-6 grid w-full max-w-xs grid-cols-2 rounded-full bg-slate-100 p-1 ring-1 ring-slate-200" role="tablist">
         {[['bill', 'Your bill'], ['invoice', 'Invoice']].map(([id, label]) => (
-          <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`relative rounded-full px-5 py-2 text-sm font-semibold transition-colors ${tab === id ? 'text-fg' : 'text-slate-500'}`}>
-            {tab === id && <motion.span layoutId="bill-tab" className="absolute inset-0 rounded-full bg-surface shadow-sm" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}<span className="relative">{label}</span>
+          <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`relative rounded-full px-4 py-2 text-sm font-semibold transition-colors ${tab === id ? 'text-fg' : 'text-slate-500 hover:text-fg'}`}>
+            {tab === id && <motion.span layoutId="bill-tab" className="absolute inset-0 rounded-full bg-surface shadow-sm ring-1 ring-slate-200" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}<span className="relative">{label}</span>
           </button>
         ))}
       </div>
 
       <AnimatePresence mode="wait" initial={false}>
         {tab === 'bill' ? (
-          <motion.div key="bill" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="mt-6 space-y-5">
+          <motion.div key="bill" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="mt-5 space-y-4 sm:mt-6 sm:space-y-5">
             {/* totals */}
-            <div className="rounded-3xl bg-gradient-to-br from-[#6f0202] to-[#9b1c1c] p-5 text-white shadow-lg sm:p-6">
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div><p className="text-xs uppercase tracking-widest text-white/70">Total bill</p><Odometer value={perGuest ? Math.round(q.total / b.guests) : q.total} prefix="৳" className="text-[2rem] font-semibold sm:text-5xl" /><p className="mt-1 text-xs text-white/70">{perGuest ? `per guest · ${b.guests} guests` : `${b.eventType} · ${fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })} · ${q.shiftLabel}`}</p></div>
-                <button onClick={() => setPerGuest((v) => !v)} aria-pressed={perGuest} className="rounded-full bg-white/15 px-4 py-2 text-xs font-semibold backdrop-blur transition hover:bg-white/25 active:scale-95">{perGuest ? 'Show total' : 'Show per guest'}</button>
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1e4fbf] via-brand-dark to-brand p-4 text-white shadow-glow sm:p-6">
+              <div aria-hidden className="pointer-events-none absolute -right-14 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
+              <div className="relative flex flex-wrap items-end justify-between gap-3 sm:gap-4">
+                <div className="min-w-0"><p className="text-xs font-medium uppercase tracking-widest text-white/80">Total bill</p><Odometer value={perGuest ? Math.round(q.total / b.guests) : q.total} prefix="৳" className="text-3xl font-semibold sm:text-5xl" /><p className="mt-1 text-xs leading-relaxed text-white/80">{perGuest ? `per guest · ${b.guests} guests` : `${b.eventType} · ${fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })} · ${q.shiftLabel}`}</p></div>
+                <button onClick={() => setPerGuest((v) => !v)} aria-pressed={perGuest} className="rounded-full bg-white/15 px-4 py-2 text-xs font-semibold ring-1 ring-white/30 backdrop-blur transition hover:bg-white/25 active:scale-95">{perGuest ? 'Show total' : 'Show per guest'}</button>
               </div>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="min-w-0 rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/70">{advanceCovered ? 'Advance (30%) submitted' : advanceDue > 0 ? 'Advance due now (30%)' : 'Advance (30%) received'}</p><p className="mt-1 text-xl font-semibold sm:text-2xl"><AnimatedNumber value={advanceCovered ? q.advance : advanceDue > 0 ? dueNow : q.advance} prefix="৳" /></p></div>
-                <div className="min-w-0 rounded-2xl bg-white/10 p-4"><p className="text-xs text-white/70">{inReview ? 'Paid · staff verifying' : b.status === 'pending' && b.holdExpiresAt ? 'Pay within (48 h hold)' : 'Paid so far'}</p><p className="mt-1 font-mono text-xl font-semibold tabular-nums sm:text-2xl">{inReview ? money(paid + waiting) : b.status === 'pending' && b.holdExpiresAt ? timer : money(paid)}</p></div>
+              <div className="relative mt-4 grid gap-2.5 sm:mt-5 sm:grid-cols-2 sm:gap-3">
+                <div className="min-w-0 rounded-2xl bg-white/12 p-3.5 ring-1 ring-white/20 sm:p-4"><p className="text-xs text-white/80">{advanceCovered ? 'Advance (30%) submitted' : advanceDue > 0 ? 'Advance due now (30%)' : 'Advance (30%) received'}</p><p className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl"><AnimatedNumber value={advanceCovered ? q.advance : advanceDue > 0 ? dueNow : q.advance} prefix="৳" /></p></div>
+                <div className="min-w-0 rounded-2xl bg-white/12 p-3.5 ring-1 ring-white/20 sm:p-4"><p className="text-xs text-white/80">{inReview ? 'Paid · staff verifying' : b.status === 'pending' && b.holdExpiresAt ? 'Pay within (48 h hold)' : 'Paid so far'}</p><p className="mt-1 break-words font-mono text-xl font-semibold tabular-nums sm:text-2xl">{inReview ? money(paid + waiting) : b.status === 'pending' && b.holdExpiresAt ? timer : money(paid)}</p></div>
               </div>
             </div>
 
             {/* breakdown */}
-            <div className="rounded-3xl p-5 ring-1 ring-slate-200">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Where your money goes</p>
-              <div className="flex h-3 overflow-hidden rounded-full bg-slate-100" onMouseLeave={() => setHover(null)}>
+            <div className={CARD}>
+              <p className={`mb-3 ${EYEBROW}`}>Where your money goes</p>
+              <div className="flex h-2.5 overflow-hidden rounded-full bg-slate-100 sm:h-3" onMouseLeave={() => setHover(null)}>
                 {rows.map((r) => (
                   <motion.span key={r.id} onMouseEnter={() => setHover(r.id)} initial={{ width: 0 }} animate={{ width: `${(r.amount / q.total) * 100}%`, opacity: hover && hover !== r.id ? 0.35 : 1 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} style={{ background: r.tone }} className="h-full border-r-2 border-surface last:border-0" />
                 ))}
@@ -125,62 +130,62 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
               <ul className="mt-4 divide-y divide-slate-100">
                 {rows.map((r, i) => (
                   <motion.li key={r.id} initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 + i * 0.07 }} onMouseEnter={() => setHover(r.id)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(r.id)} tabIndex={0}
-                    className={`flex items-center gap-3 rounded-xl px-2 py-3 text-sm outline-none transition-colors ${hover === r.id ? 'bg-slate-50' : ''}`}>
+                    className={`flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand/50 sm:py-3 ${hover === r.id ? 'bg-slate-50' : ''}`}>
                     <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: r.tone }} />
-                    <span className="min-w-0 flex-1"><span className="block font-medium text-fg">{r.label}</span>{r.note && <span className="block text-xs text-slate-500">{r.note}</span>}</span>
-                    <b className="text-fg">{money(r.amount)}</b>
+                    <span className="min-w-0 flex-1"><span className="block break-words font-medium text-fg">{r.label}</span>{r.note && <span className="block text-xs text-slate-500">{r.note}</span>}</span>
+                    <b className="shrink-0 tabular-nums text-fg">{money(r.amount)}</b>
                   </motion.li>
                 ))}
               </ul>
-              <div className="mt-3 flex items-center justify-between border-t border-dashed border-slate-300 pt-3 text-sm"><span className="font-semibold text-fg">Balance due</span><span className="font-semibold text-fg">{money(balance)}</span></div>
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm ring-1 ring-brand/25"><span className="font-semibold text-brand-ink">Balance due</span><span className="text-base font-semibold tabular-nums text-brand-ink">{money(balance)}</span></div>
             </div>
 
             {/* payments so far */}
             {payments.length > 0 && (
-              <div className="rounded-3xl p-5 ring-1 ring-slate-200">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Payments</p>
+              <div className={CARD}>
+                <p className={`mb-3 ${EYEBROW}`}>Payments</p>
                 <ul className="divide-y divide-slate-100">
                   {payments.map((p) => (
                     <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2.5 text-sm">
                       <span className="min-w-0 flex-1 basis-40"><span className="block font-medium capitalize text-fg">{p.method}{p.reference ? <span className="break-all font-mono text-xs font-normal text-slate-500"> · {p.reference}</span> : null}</span><span className="block text-xs text-slate-500">{fmtDate(p.createdAt.slice(0, 10))}</span></span>
-                      <StatusPill status={p.status === 'pending' ? 'in review' : p.status} /><b className="ml-auto min-w-[5.5rem] text-right text-fg">{money(p.amount)}</b>
+                      <StatusPill status={p.status === 'pending' ? 'in review' : p.status} /><b className="ml-auto min-w-[5.5rem] text-right tabular-nums text-fg">{money(p.amount)}</b>
                     </li>
                   ))}
                 </ul>
-                {waiting > 0 && <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-700">{money(waiting)} is counted as paid for now and sent to our staff to verify. Your date stays held and the booking confirms once the advance is verified.</p>}
+                {waiting > 0 && <p className="mt-3 rounded-2xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-800 ring-1 ring-amber-200 dark:!bg-amber-500/10 dark:!text-amber-200 dark:!ring-amber-400/30">{money(waiting)} is counted as paid for now and sent to our staff to verify. Your date stays held and the booking confirms once the advance is verified.</p>}
               </div>
             )}
 
             {active && dueNow > 0 && (<>
             {/* online card payment (demo gateway) */}
-            <div className="relative overflow-hidden rounded-3xl bg-ink p-5 text-white sm:p-6">
+            <div className="relative overflow-hidden rounded-3xl bg-ink p-4 text-white ring-1 ring-white/10 sm:p-6">
               <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand/30 blur-3xl" />
-              <div className="relative flex flex-wrap items-center justify-between gap-4">
-                <div><p className="text-xs font-semibold uppercase tracking-widest text-white/60">Fastest way</p><p className="mt-1 text-lg font-semibold">Pay {advanceDue > 0 ? 'the advance' : 'the balance'} by card</p><p className="mt-0.5 text-sm text-white/60">Visa, Mastercard, Amex · {money(dueNow)} now</p></div>
-                <button onClick={() => setShowPay(true)} disabled={busy} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-slate-100 active:scale-95 disabled:opacity-60 sm:w-auto">Pay {money(dueNow)}</button>
+              <div className="relative flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+                <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-widest text-sky-300">Fastest way</p><p className="mt-1 text-lg font-semibold">Pay {advanceDue > 0 ? 'the advance' : 'the balance'} by card</p><p className="mt-0.5 text-sm text-white/60">Visa, Mastercard, Amex · {money(dueNow)} now</p></div>
+                <button onClick={() => setShowPay(true)} disabled={busy} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-glow ring-1 ring-white/20 transition hover:bg-brand-dark active:scale-95 disabled:opacity-60 sm:w-auto">Pay {money(dueNow)}</button>
               </div>
             </div>
 
             {/* manual payment */}
-            <div className="rounded-3xl p-5 ring-1 ring-slate-200">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Or pay manually · {money(dueNow)}</p>
-              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Payment method">
+            <div className={CARD}>
+              <p className={`mb-3 ${EYEBROW}`}>Or pay manually · {money(dueNow)}</p>
+              <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Payment method">
                 {PAYMENT.map((m) => (
-                  <button key={m.id} role="radio" aria-checked={method === m.id} onClick={() => setMethod(m.id)} className={`relative rounded-full px-4 py-2 text-sm font-semibold transition ${method === m.id ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                  <button key={m.id} role="radio" aria-checked={method === m.id} onClick={() => setMethod(m.id)} className={`relative rounded-full px-3 py-2 text-sm font-semibold ring-1 transition sm:px-4 ${method === m.id ? 'text-white ring-transparent' : 'bg-slate-100 text-slate-600 ring-slate-200 hover:bg-slate-200'}`}>
                     {method === m.id && <motion.span layoutId="pay-pill" className="absolute inset-0 rounded-full" style={{ background: m.color }} transition={{ type: 'spring', stiffness: 400, damping: 32 }} />}<span className="relative">{m.label}</span>
                   </button>
                 ))}
               </div>
               <AnimatePresence mode="wait" initial={false}>
-                <motion.div key={method} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm">
+                <motion.div key={method} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="mt-4 rounded-2xl bg-slate-50 p-3.5 text-sm ring-1 ring-slate-200 sm:p-4">
                   <p className="text-xs text-slate-500">{pay.kind}</p>
-                  <div className="mt-1 flex items-center justify-between gap-3"><p className="break-words font-semibold text-fg">{pay.value}</p>{method !== 'office' && <button onClick={() => copy(pay.value.split(' · ')[0].replace(/^A\/C /, ''), 'Number')} className="shrink-0 rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-brand-ink ring-1 ring-slate-200 active:scale-95">Copy</button>}</div>
+                  <div className="mt-1 flex items-center justify-between gap-3"><p className="break-words font-semibold text-fg">{pay.value}</p>{method !== 'office' && <button onClick={() => copy(pay.value.split(' · ')[0].replace(/^A\/C /, ''), 'Number')} className="shrink-0 rounded-full bg-surface px-3.5 py-1.5 text-xs font-semibold text-brand-ink ring-1 ring-brand/40 transition hover:ring-brand active:scale-95">Copy</button>}</div>
                   {method !== 'office' && <p className="mt-3 text-xs text-slate-500">Use <button onClick={() => copy(b.id, 'Booking ID')} className="font-mono font-semibold text-fg underline decoration-dotted">{b.id}</button> as the reference, then enter the transaction ID below.</p>}
                 </motion.div>
               </AnimatePresence>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                {method !== 'office' && <input value={trx} onChange={(e) => setTrx(e.target.value)} maxLength={60} placeholder="Transaction ID (TrxID)" enterKeyHint="send" autoCapitalize="characters" autoCorrect="off" className="min-w-0 flex-1 rounded-full border border-slate-200 bg-surface px-4 py-3 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/15" />}
-                <button onClick={submitManual} disabled={busy} className="btn-primary disabled:opacity-60">{busy ? 'Submitting…' : method === 'office' ? 'I will pay at the office' : 'Submit payment'}</button>
+                {method !== 'office' && <input value={trx} onChange={(e) => setTrx(e.target.value)} maxLength={60} placeholder="Transaction ID (TrxID)" enterKeyHint="send" autoCapitalize="characters" autoCorrect="off" className="h-11 min-w-0 flex-1 rounded-full border border-slate-300 bg-surface px-4 text-sm text-fg outline-none placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15" />}
+                <button onClick={submitManual} disabled={busy} className="btn-primary h-11 !py-0 disabled:opacity-60">{busy ? 'Submitting…' : method === 'office' ? 'I will pay at the office' : 'Submit payment'}</button>
               </div>
               <p className="mt-2 text-xs text-slate-500">Any transaction ID is accepted for now and your date stays held. Staff verify it against our account, then your booking is confirmed.</p>
             </div>
@@ -191,14 +196,19 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
         )}
       </AnimatePresence>
 
-      <div className="mt-5 grid gap-2.5 sm:grid-cols-3 sm:gap-3 pb-[env(safe-area-inset-bottom)]">
-        <a href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(waText(b, pay.label))}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 active:scale-95"><ChatIcon width={18} height={18} />Send payment proof</a>
-        <button onClick={ics} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-fg transition hover:bg-slate-200 active:scale-95"><DownloadIcon width={18} height={18} />Add to calendar</button>
-        <button onClick={() => setTab('invoice')} className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-fg transition hover:bg-slate-200 active:scale-95"><ClipboardIcon width={18} height={18} />View invoice</button>
+      <div className="mt-5 grid gap-2.5 pb-[env(safe-area-inset-bottom)] sm:grid-cols-3 sm:gap-3">
+        <Button as="a" size="lg" variant="success" href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(waText(b, pay.label))}`} target="_blank" rel="noreferrer" className="w-full !text-sm"><ChatIcon width={18} height={18} />Send payment proof</Button>
+        <Button size="lg" variant="outline" onClick={ics} className="w-full !text-sm"><DownloadIcon width={18} height={18} />Add to calendar</Button>
+        <Button size="lg" variant="outline" onClick={() => setTab('invoice')} className="w-full !text-sm"><ClipboardIcon width={18} height={18} />View invoice</Button>
       </div>
       <PaymentGateway open={showPay} onClose={() => setShowPay(false)} amount={dueNow} bookingId={b.id} payer={b.name}
         onPaid={(r) => submitPayment({ amount: dueNow, method: 'card', reference: r.ref })} />
-      <div className="mt-4 flex justify-center gap-5 text-sm font-medium text-brand">{onManage && <button onClick={onManage} className="hover:underline">My bookings</button>}{onNew && <button onClick={onNew} className="hover:underline">Book another date</button>}</div>
+      {(onManage || onNew) && (
+        <div className="mt-4 grid gap-2.5 border-t border-slate-200 pt-4 sm:grid-cols-2 sm:gap-3">
+          {onManage && <Button size="lg" variant="soft" onClick={onManage} className="w-full"><ClipboardIcon width={18} height={18} />My bookings</Button>}
+          {onNew && <Button size="lg" variant="primary" onClick={onNew} className="w-full"><PlusIcon width={18} height={18} />Book another date</Button>}
+        </div>
+      )}
     </div>
   )
 }
