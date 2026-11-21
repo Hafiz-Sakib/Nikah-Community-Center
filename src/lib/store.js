@@ -13,7 +13,10 @@ export function toast(message, type = 'success') {
 /* ---------- dates & availability ---------- */
 export const toISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 export const fromISO = (s) => new Date(`${s}T00:00:00`)
-export const tomorrowISO = () => { const d = new Date(); d.setDate(d.getDate() + 1); return toISO(d) }
+/* "today" is always the Bangladesh date (the server decides with Asia/Dhaka), so a visitor in another time zone sees the same cut-off. */
+export const todayISO = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Dhaka' }).format(new Date())
+export const plusDaysISO = (n, from = todayISO()) => { const d = new Date(`${from}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10) }
+export const tomorrowISO = () => plusDaysISO(1)
 export const fmtDate = (s, o = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) => fromISO(s).toLocaleDateString('en-GB', o)
 export const money = (n) => `৳${Math.round(n).toLocaleString('en-IN')}`
 
@@ -37,7 +40,7 @@ export const shiftFree = (shift, t) => (shift === 'full' ? !t.morning && !t.even
 /* ---------- pricing ---------- */
 export function quote({ pkg, shift, date, guests, addons = [], addonDefs, food = null }) {
   const mult = SHIFTS.find((s) => s.id === shift)?.mult ?? 1
-  const base = pkg.price * mult
+  const base = Math.round(pkg.price * mult)                     // same rounding as the server
   const weekend = date ? [5, 6].includes(fromISO(date).getDay()) : false // Fri & Sat
   const weekendFee = weekend ? Math.round(base * 0.15) : 0
   const lines = food ? [{ id: 'catering', label: `Hall catering · ${food.name} menu`, amount: food.price * guests, note: `${guests} guests × ${food.price}` }] : []

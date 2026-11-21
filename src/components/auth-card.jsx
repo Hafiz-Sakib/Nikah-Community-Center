@@ -117,7 +117,7 @@ function Field({ id, label, type = 'text', value, onChange, icon: Icon, autoComp
           aria-invalid={bad || undefined} aria-describedby={error ? errorId : undefined}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-          className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-fg outline-none placeholder:text-slate-400"
+          className="h-full min-w-0 flex-1 bg-transparent px-3 text-base text-fg outline-none placeholder:text-slate-400 sm:text-sm"
         />
         <div className="mr-3 flex shrink-0 items-center">
           {trailing}
@@ -133,7 +133,7 @@ function Field({ id, label, type = 'text', value, onChange, icon: Icon, autoComp
                 <IcAlert size={20} />
                 <AnimatePresence>
                   {tip && (
-                    <motion.span id={`${id}-tip`} role="tooltip" initial={{ opacity: 0, y: 4, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.16 }} className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 w-max max-w-[15rem] rounded-xl bg-slate-900 px-3 py-2 text-xs font-medium leading-snug text-surface shadow-lg">
+                    <motion.span id={`${id}-tip`} role="tooltip" initial={{ opacity: 0, y: 4, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.16 }} className="pointer-events-none absolute bottom-full right-0 z-20 mb-2 w-max max-w-[min(15rem,70vw)] rounded-xl bg-slate-900 px-3 py-2 text-xs font-medium leading-snug text-surface shadow-lg">
                       Enter a full email address like name@example.com
                     </motion.span>
                   )}
@@ -263,17 +263,17 @@ export function AuthCard({
   const cta = signup ? 'Create account' : 'Get started'
 
   return (
-    <div className={`w-full max-w-[26rem] rounded-[2rem] bg-surface p-6 shadow-dock ring-1 ring-slate-100 sm:p-7 ${className}`}>
+    <div className={`w-full max-w-[26rem] rounded-[1.75rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 min-[400px]:p-6 sm:rounded-[2rem] sm:p-7 ${className}`}>
       {/* brand mark, title, line */}
       <div className="flex flex-col items-center text-center">
         <motion.div animate={{ rotate: reduce ? 0 : spin * 60 }} transition={{ duration: 0.6, ease: EASE }} whileHover={reduce ? undefined : { rotate: spin * 60 + 10, scale: 1.05 }} className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-b from-slate-500 to-slate-800 shadow-md ring-1 ring-black/10">
           <Bloom />
         </motion.div>
-        <h2 className="mt-4 text-[1.55rem] font-semibold leading-tight tracking-tight text-fg"><Roll id={mode} reduce={reduce}>{title}</Roll></h2>
+        <h2 className="mt-3 text-[1.4rem] sm:mt-4 sm:text-[1.55rem] font-semibold leading-tight tracking-tight text-fg"><Roll id={mode} reduce={reduce}>{title}</Roll></h2>
         <p className="mt-1 text-sm text-slate-500"><Roll id={mode} reduce={reduce}>{line}</Roll></p>
       </div>
 
-      <form onSubmit={submit} noValidate className="mt-6" aria-label={signup ? 'Create account' : 'Sign in'}>
+      <form onSubmit={submit} noValidate className="mt-5 sm:mt-6" aria-label={signup ? 'Create account' : 'Sign in'}>
         <div>
           <AnimatePresence initial={false}>
             {signup && (
@@ -309,7 +309,7 @@ export function AuthCard({
           ) : (
             <motion.div key="forgot" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: reduce ? 0.01 : 0.3, ease: EASE }} className="overflow-hidden">
               <div className="flex justify-end px-3 pt-3">
-                <a href={forgotHref} onClick={(e) => { if (onForgot) { e.preventDefault(); onForgot() } }} className="group relative text-xs text-slate-600 transition hover:text-fg">
+                <a href={forgotHref} onClick={(e) => { if (onForgot) { e.preventDefault(); onForgot() } }} className="group relative inline-block py-1.5 text-xs text-slate-600 transition hover:text-fg sm:text-xs">
                   Forgot password?
                   <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-current transition-transform duration-300 group-hover:scale-x-100" />
                 </a>
@@ -374,7 +374,7 @@ export function AuthCard({
       </motion.button>
 
       {/* bottom line */}
-      <p className="mt-5 text-center text-sm text-slate-500">
+      <p className="mt-4 text-center text-sm text-slate-500 sm:mt-5">
         <Roll id={mode} reduce={reduce}>{signup ? 'Already have an account?' : 'Don’t have an account?'}</Roll>{' '}
         <button type="button" onClick={switchMode} className="font-semibold text-fg transition-opacity hover:opacity-60">
           <Roll id={mode} reduce={reduce}>{signup ? 'Sign in' : 'Sign up'}</Roll>

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { DownloadIcon } from './Icons'
+import { DownloadIcon, ClipboardIcon } from './Icons'
 import { toast } from '../lib/store'
 import { downloadInvoicePdf, invoiceNo } from '../lib/invoice'
 import Invoice from './Invoice'
@@ -9,17 +9,29 @@ import Invoice from './Invoice'
 export default function InvoiceView({ b }) {
   const full = useRef(null)
   const [busy, setBusy] = useState(false)
+  const [pdf, setPdf] = useState(false)           // the A4 copy only exists while the PDF is being made
   const save = async () => {
-    setBusy(true)
-    try { await downloadInvoicePdf(full.current, `${invoiceNo(b)}.pdf`); toast('Invoice downloaded') }
-    catch { toast('Could not create the PDF. Please try again.', 'error') }
-    setBusy(false)
+    setBusy(true); setPdf(true)
+    try {
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+      const imgs = [...(full.current?.querySelectorAll('img') ?? [])]
+      await Promise.all(imgs.map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r }))))
+      await downloadInvoicePdf(full.current, `${invoiceNo(b)}.pdf`); toast('Invoice downloaded')
+    } catch { toast('Could not create the PDF. Please try again.', 'error') }
+    setPdf(false); setBusy(false)
   }
+  const copyNo = async () => { try { await navigator.clipboard.writeText(invoiceNo(b)); toast('Invoice number copied') } catch { toast('Copy not available here', 'error') } }
   return (
     <div>
-      <div className="rounded-2xl bg-slate-100 p-1.5 ring-1 ring-slate-200 sm:p-4"><Invoice b={b} /></div>
-      <div aria-hidden style={{ position: 'fixed', left: -10000, top: 0, pointerEvents: 'none' }}><Invoice ref={full} b={b} pdf /></div>
-      <button onClick={save} disabled={busy} className="btn-primary mt-4 w-full disabled:opacity-60 sm:w-auto"><DownloadIcon width={18} height={18} />{busy ? 'Preparing PDF…' : 'Download invoice (PDF)'}</button>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2.5">
+        <p className="text-sm text-slate-500">Invoice <b className="font-mono text-fg">{invoiceNo(b)}</b></p>
+        <div className="flex gap-2">
+          <button type="button" onClick={copyNo} className="inline-flex h-10 items-center gap-2 rounded-full bg-surface px-4 text-sm font-semibold text-fg ring-1 ring-slate-300 transition hover:ring-slate-400 active:scale-95"><ClipboardIcon width={16} height={16} />Copy no.</button>
+          <button type="button" onClick={save} disabled={busy} className="btn-primary !h-10 !py-0 disabled:opacity-60"><DownloadIcon width={16} height={16} />{busy ? 'Preparing PDF…' : 'Download PDF'}</button>
+        </div>
+      </div>
+      <div className="rounded-3xl bg-slate-100 p-2 ring-1 ring-slate-200 sm:p-6"><Invoice b={b} /></div>
+      {pdf && <div aria-hidden style={{ position: 'fixed', left: -10000, top: 0, pointerEvents: 'none' }}><Invoice ref={full} b={b} pdf /></div>}
     </div>
   )
 }

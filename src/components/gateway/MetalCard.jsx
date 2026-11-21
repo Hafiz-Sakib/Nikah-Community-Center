@@ -34,14 +34,14 @@ function Plate({ finish, children }) {
 }
 const emboss = (f) => (f === 'gold' || f === 'titanium' ? '0 1px 0 rgba(255,255,255,0.55), 0 -1px 0 rgba(0,0,0,0.25)' : '0 1px 0 rgba(255,255,255,0.18), 0 -1px 0 rgba(0,0,0,0.6)')
 
-function Front({ finish, digits, brand, holder, expiry }) {
+function Front({ finish, digits, brand, holder, expiry, owner }) {
   const m = METALS[finish]
   return (
     <Plate finish={finish}>
       <div className="relative flex h-full flex-col px-5 pb-4 pt-4" style={{ textShadow: emboss(finish) }}>
         <div className="flex items-start justify-between">
-          <span className="text-base font-semibold uppercase tracking-[0.14em]">Nikah Pay</span>
-          <span className="text-xs font-medium uppercase tracking-[0.16em] opacity-70">Advance</span>
+          <span className="min-w-0 truncate text-base font-semibold uppercase tracking-[0.14em]">{owner || 'Cardholder'}</span>
+          <span className="ml-3 shrink-0 text-xs font-medium uppercase tracking-[0.16em] opacity-70">Advance</span>
         </div>
         <div className="mt-4 flex items-center justify-between">
           <div aria-hidden className="relative h-8 w-11 overflow-hidden rounded-[7px]" style={{ background: 'linear-gradient(135deg, #f6e3a8, #c79d4f 50%, #ecd38f)', boxShadow: 'inset 0 0 0 1px rgba(90,60,10,0.35), 0 1px 1px rgba(0,0,0,0.25)' }}>
@@ -57,7 +57,7 @@ function Front({ finish, digits, brand, holder, expiry }) {
           <span className="font-mono text-base tabular-nums">{expiry || 'MM/YY'}</span>
         </div>
         <div className="mt-auto flex items-end justify-between gap-3">
-          <span className="truncate text-sm font-medium uppercase tracking-[0.12em]">{holder || 'Your name'}</span>
+          <span className="truncate text-sm font-medium uppercase tracking-[0.12em]">{holder || owner || 'Your name'}</span>
           <span className="flex h-9 shrink-0 items-end" style={{ textShadow: 'none' }}><Network brand={brand} ink={m.ink} /></span>
         </div>
       </div>
@@ -81,7 +81,7 @@ function Back({ finish, cvc }) {
   )
 }
 
-export function MetalCard({ digits = '', brand = null, holder = '', expiry = '', cvc = '', flipped = false }) {
+export function MetalCard({ digits = '', brand = null, holder = '', expiry = '', cvc = '', flipped = false, owner = '' }) {
   const still = !!useReducedMotion()
   const root = useRef(null)
   const [fit, setFit] = useState(1)
@@ -116,7 +116,7 @@ export function MetalCard({ digits = '', brand = null, holder = '', expiry = '',
           <motion.div className="relative" style={{ width: W, height: H, transformStyle: 'preserve-3d' }}
             animate={{ rotateY: flipped ? 180 : 0 }} transition={still ? { duration: 0 } : { type: 'spring', stiffness: 120, damping: 17 }}>
             <div aria-hidden className="absolute inset-x-[3px] top-[3px] rounded-[18px] [backface-visibility:hidden]" style={{ height: H, background: METALS[finish].edge, transform: 'translateZ(-1px)' }} />
-            <div className={face}><Front finish={finish} digits={digits} brand={brand} holder={holder} expiry={expiry} /></div>
+            <div className={face}><Front finish={finish} digits={digits} brand={brand} holder={holder} expiry={expiry} owner={owner} /></div>
             <div className={face} style={{ transform: 'rotateY(180deg)' }}><Back finish={finish} cvc={cvc} /></div>
           </motion.div>
         </motion.div>

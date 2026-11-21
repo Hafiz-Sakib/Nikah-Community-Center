@@ -117,7 +117,14 @@
 .inv-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #64748b; font-weight: 600; }
 .inv-big { font-size: 16px; font-weight: 600; margin-top: 6px; overflow-wrap: anywhere; }
 .inv-sub { font-size: 12px; color: #64748b; margin-top: 2px; line-height: 1.6; overflow-wrap: anywhere; }
-.inv-table { width: calc(100% - 96px); margin: 26px 48px 0; border-collapse: collapse; }
+.inv-sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 48px 0; }
+.inv-sum > div { min-width: 0; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px 16px; background: #fff; }
+.inv-sum b { display: block; margin-top: 4px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.inv-stamp { position: absolute; right: 56px; top: 150px; transform: rotate(-10deg); border: 3px solid currentColor; border-radius: 10px; padding: 4px 14px; font-size: 20px; font-weight: 800; letter-spacing: .14em; opacity: .8; pointer-events: none; z-index: 2; }
+.inv-table { width: calc(100% - 96px); margin: 22px 48px 0; border-collapse: collapse; }
+.inv-table thead th { background: #fdf4f4; }
+.inv-table thead th:first-child { border-top-left-radius: 10px; } .inv-table thead th:last-child { border-top-right-radius: 10px; }
+.inv-table tbody tr:last-child td { border-bottom: 2px solid #0f172a; }
 .inv-table th { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #64748b; font-weight: 600; padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
 .inv-table td { padding: 12px; font-size: 13px; border-bottom: 1px solid #e2e8f0; vertical-align: top; overflow-wrap: anywhere; }
 .inv-table .inv-num { width: 36px; }
@@ -144,7 +151,7 @@
 /* tablet / small laptop window */
 @container inv (max-width: 700px) {
   .inv-head { padding: 28px 28px 0; }
-  .inv-info, .inv-totals-row, .inv-foot-grid { margin-inline: 28px; }
+  .inv-info, .inv-sum, .inv-totals-row, .inv-foot-grid { margin-inline: 28px; }
   .inv-table { width: calc(100% - 56px); margin-inline: 28px; }
   .inv-end { padding-inline: 28px; }
 }
@@ -156,6 +163,10 @@
   .inv-name { font-size: 18px; }
   .inv-logo { width: 52px; height: 52px; }
   .inv-info { grid-template-columns: 1fr; gap: 10px; margin: 20px 18px 0; }
+  .inv-sum { margin: 12px 18px 0; gap: 8px; }
+  .inv-sum > div { padding: 10px 10px; }
+  .inv-sum b { font-size: 14px; }
+  .inv-stamp { right: 18px; top: 92px; font-size: 15px; padding: 3px 10px; }
   .inv-box { padding: 14px 16px; }
   .inv-big { font-size: 15px; }
   .inv-table { width: calc(100% - 36px); margin: 20px 18px 0; }
@@ -175,3 +186,13 @@
 @supports (-webkit-touch-callout: none) {
   input:not([type='checkbox']):not([type='radio']), select, textarea { font-size: 16px !important; }
 }
+
+/* ---------- guest count range (Booking) ---------- */
+.range-brew { -webkit-appearance: none; appearance: none; width: 100%; height: 2.5rem; background: transparent; cursor: pointer; touch-action: pan-y; --p: 0%; }
+.range-brew:focus-visible { outline: none; }
+.range-brew::-webkit-slider-runnable-track { height: 10px; border-radius: 999px; background: linear-gradient(90deg, #3f87f5 var(--p), rgb(var(--s200)) var(--p)); }
+.range-brew::-moz-range-track { height: 10px; border-radius: 999px; background: linear-gradient(90deg, #3f87f5 var(--p), rgb(var(--s200)) var(--p)); }
+.range-brew::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; margin-top: -10px; border-radius: 999px; background: #fff; border: 0; box-shadow: 0 1px 2px rgba(0,0,0,.14), 0 6px 16px -6px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.06); transition: transform .15s; }
+.range-brew::-moz-range-thumb { width: 30px; height: 30px; border-radius: 999px; background: #fff; border: 0; box-shadow: 0 1px 2px rgba(0,0,0,.14), 0 6px 16px -6px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.06); }
+.range-brew:active::-webkit-slider-thumb { transform: scale(1.12); }
+.range-brew:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgb(63 135 245 / .45), 0 6px 16px -6px rgba(0,0,0,.35); }

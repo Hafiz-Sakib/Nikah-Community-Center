@@ -54,22 +54,22 @@ export default function AuthPage() {
         </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-black/20 lg:bg-gradient-to-r lg:from-black/45 lg:via-black/10 lg:to-black/35" />
 
-        <div className="container-x relative grid min-h-[calc(100svh-4rem)] items-end gap-8 py-8 lg:grid-cols-[1fr_26rem] lg:items-center lg:gap-16 lg:py-14">
+        <div className="container-x relative grid min-h-[calc(100svh-4rem)] grid-cols-1 content-center items-center gap-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:gap-8 sm:py-10 lg:grid-cols-[1fr_26rem] lg:gap-16 lg:py-14 xl:grid-cols-[1fr_28rem]">
           {/* caption on the photo */}
-          <div className="order-2 text-white lg:order-1 lg:self-end lg:pb-4">
+          <div className="order-2 text-center text-white lg:order-1 lg:self-end lg:pb-4 lg:text-left [@media(max-height:520px)_and_(orientation:landscape)]:hidden">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div key={mode} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
-                <p className="text-2xl font-semibold tracking-tight sm:text-4xl">{photo.line}</p>
-                <p className="mt-2 max-w-sm text-sm text-white/80 sm:text-base">{photo.sub}</p>
+                <p className="text-xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">{photo.line}</p>
+                <p className="mx-auto mt-2 max-w-sm text-sm text-white/80 sm:text-base lg:mx-0">{photo.sub}</p>
               </motion.div>
             </AnimatePresence>
-            <p className="mt-5 text-xs text-white/60"><Link to="/" className="hover:text-white">Nikah Community Center</Link>, Chattogram</p>
+            <p className="mt-3 text-xs text-white/60 sm:mt-5"><Link to="/" className="hover:text-white">Nikah Community Center</Link>, Chattogram</p>
           </div>
 
-          <div className="order-1 flex justify-center lg:order-2 lg:justify-end">
+          <div className="order-1 flex w-full justify-center lg:order-2 lg:justify-end">
             <AnimatePresence mode="wait" initial={false}>
               {sent ? (
-                <motion.div key="sent" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[26rem] rounded-[2rem] bg-surface p-7 text-center shadow-dock ring-1 ring-slate-100">
+                <motion.div key="sent" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[26rem] rounded-[1.75rem] bg-surface p-6 text-center sm:rounded-[2rem] sm:p-7 shadow-dock ring-1 ring-slate-100">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></div>
                   <h2 className="mt-4 text-2xl font-semibold tracking-tight text-fg">Check your email</h2>
                   <p className="mt-2 text-sm text-slate-500">We sent a confirmation link to <b className="text-fg">{sent}</b>. Open it to finish creating your account, then sign in.</p>

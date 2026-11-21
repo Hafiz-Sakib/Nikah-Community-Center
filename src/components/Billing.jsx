@@ -59,7 +59,7 @@ function FullPaid({ m, name, reduce, onInvoice }) {
   )
 }
 
-export default function Billing({ b: initial, fresh = false, onNew, onManage }) {
+export default function Billing({ b: initial, fresh = false, page = false, onNew, onManage, onAdvanceDone }) {
   const reduce = useReducedMotion()
   const { reload: reloadMine } = useMyBookings()
   const [b, setB] = useState(initial)
@@ -87,14 +87,20 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
   const inReview = b.status === 'pending' && waiting > 0
   const advanceCovered = !m.advanceReceived && m.needAdvance === 0   // advance fully submitted, only staff verification is left
   const dueNow = m.needAdvance > 0 ? m.needAdvance : m.room
-  const refresh = async () => { try { setB(await api(`/bookings/${b.id}`)) } catch {} reloadMine() }
+  const refresh = async () => { let next = null; try { next = await api(`/bookings/${b.id}`); setB(next) } catch {} reloadMine(); return next }
   useEffect(() => { if (!fresh) refresh() }, []) // eslint-disable-line
   useEffect(() => { if (stage === 0) { const t = setTimeout(() => setStage(1), 1500); return () => clearTimeout(t) } }, [stage])
   const ics = () => import('./ics').then((m) => m.downloadIcs(b))
   /* A payment is only a request until staff verify it (checked against the bKash/Nagad/bank statement). */
   const submitPayment = async (body) => {
     setBusy(true)
-    try { await api(`/bookings/${b.id}/payments`, { method: 'POST', body }); toast('Payment submitted — counted as paid, staff will verify it'); await refresh(); return true }
+    try {
+      const needed = m.needAdvance > 0                                           // this payment is (part of) the advance
+      await api(`/bookings/${b.id}/payments`, { method: 'POST', body }); toast('Payment submitted — counted as paid, staff will verify it')
+      const next = await refresh()
+      if (needed && next && onAdvanceDone && moneyOf(next).needAdvance === 0) onAdvanceDone(next)   // advance is covered -> on to My bookings
+      return true
+    }
     catch (e) { toast(e.message, 'error'); return false }
     finally { setBusy(false) }
   }
@@ -112,7 +118,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
 
   return (
     <div>
-      <div className="relative text-center">
+      <div className={`relative text-center ${page ? 'rounded-3xl bg-surface p-5 shadow-card ring-1 ring-slate-200 sm:p-8' : ''}`}>
         {fresh && <Confetti />}
         {fresh && (<>
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"><CheckIcon width={32} height={32} strokeWidth={3} /></motion.div>
@@ -135,7 +141,8 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
 
       <AnimatePresence mode="wait" initial={false}>
         {tab === 'bill' ? (
-          <motion.div key="bill" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="mt-5 space-y-4 sm:mt-6 sm:space-y-5">
+          <motion.div key="bill" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className={`mt-5 sm:mt-6 ${page ? 'grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start' : ''}`}>
+            <div className="min-w-0 space-y-4 sm:space-y-5">
             {/* totals */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1e4fbf] via-brand-dark to-brand p-4 text-white shadow-glow sm:p-6">
               <div aria-hidden className="pointer-events-none absolute -right-14 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
@@ -192,6 +199,8 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
               </div>
             )}
 
+            </div>
+            <div className={`min-w-0 space-y-4 sm:space-y-5 ${page ? 'lg:sticky lg:top-24' : 'mt-4 sm:mt-5 empty:hidden'}`}>
             {canPay && <PaymentHub ref={hubRef} bookingId={b.id} m={m} busy={busy} method={method} setMethod={setMethod} onCard={(a) => { setPayAmount(a); setShowPay(true) }} onSubmit={submitPayment} />}
             {fullSubmitted && (
               <div role="status" className="flex items-start gap-3 rounded-3xl bg-sky-50 p-4 text-sm text-sky-900 ring-1 ring-sky-300 dark:!bg-sky-500/10 dark:!text-fg dark:!ring-sky-400/30">
@@ -201,6 +210,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
             )}
             {fullPaidShown && m.overpaid && <RefundDue m={m} />}
             {fullPaidShown && !m.overpaid && <FullPaid m={m} name={b.name} reduce={reduce} onInvoice={() => setTab('invoice')} />}
+            </div>
           </motion.div>
         ) : (
           <motion.div key="inv" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="mt-6"><InvoiceView b={b} /></motion.div>
@@ -215,8 +225,8 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
       <AnimatePresence>
         {canPay && tab === 'bill' && !hubInView && !showPay && (
           <motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }} transition={{ type: 'spring', stiffness: 320, damping: 30 }} className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
-            <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-ink p-2.5 pl-4 text-white shadow-2xl ring-1 ring-white/15">
-              <div className="min-w-0 flex-1"><p className="text-[11px] text-white/60">{m.needAdvance > 0 ? 'Advance due now' : 'Balance to pay'}</p><p className="truncate text-lg font-semibold tabular-nums">{money(dueNow)}</p></div>
+            <div className="mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-surface p-2.5 pl-4 text-fg shadow-dock ring-1 ring-slate-200">
+              <div className="min-w-0 flex-1"><p className="text-[11px] text-slate-500">{m.needAdvance > 0 ? 'Advance due now' : 'Balance to pay'}</p><p className="truncate text-lg font-semibold tabular-nums">{money(dueNow)}</p></div>
               <button onClick={goPay} className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl bg-brand px-5 text-sm font-semibold text-white transition active:scale-95">Pay now</button>
             </div>
           </motion.div>

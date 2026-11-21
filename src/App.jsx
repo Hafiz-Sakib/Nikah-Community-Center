@@ -14,6 +14,7 @@ import EventsPage from './pages/EventsPage'
 import GalleryPage from './pages/GalleryPage'
 import PackagesPage from './pages/PackagesPage'
 import BookingPage from './pages/BookingPage'
+import BillingPage from './pages/BillingPage'
 import FoodPage from './pages/FoodPage'
 import NotFound from './pages/NotFound'
 import { InstallBanner } from './components/Install'
@@ -53,6 +54,7 @@ export default function App() {
               <Route path="/packages" element={<PackagesPage />} />
               <Route path="/booking" element={<BookingPage />} />
               <Route path="/my-bookings" element={<RequireAuth><MyBookings /></RequireAuth>} />
+              <Route path="/billing/:id" element={<RequireAuth><BillingPage /></RequireAuth>} />
               <Route path="/login" element={<AuthPage />} />
               <Route path="/signup" element={<AuthPage />} />
               <Route path="/auth/callback" element={<AuthCallback />} />

@@ -1,6 +1,6 @@
 import PageHero from './PageHero'
 
-export const field = 'w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm text-fg outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15'
+export const field = 'w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-base text-fg sm:text-sm outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15'
 
 export const GoogleG = (p) => (
   <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden {...p}>
@@ -15,7 +15,7 @@ export default function AuthShell({ title, text, children }) {
   return (
     <>
       <PageHero title={title} text={text} image="hero-13.webp" />
-      <section className="py-12 sm:py-16"><div className="container-x max-w-md"><div className="rounded-[2rem] bg-surface p-6 shadow-dock ring-1 ring-slate-100 sm:p-8">{children}</div></div></section>
+      <section className="py-12 sm:py-16"><div className="container-x max-w-md"><div className="rounded-[1.75rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 sm:rounded-[2rem] sm:p-8">{children}</div></div></section>
     </>
   )
 }

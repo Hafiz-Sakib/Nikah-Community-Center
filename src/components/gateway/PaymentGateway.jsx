@@ -105,7 +105,7 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
   const [res, setRes] = useState(null)
   const set = (patch) => { setErr(''); setV((p) => ({ ...p, ...patch })) }
 
-  useEffect(() => { if (open) { setV({ number: '', name: '', expiry: '', cvc: '' }); setPhase('idle'); setErr(''); setRes(null); setFocused(null) } }, [open])
+  useEffect(() => { if (open) { setV({ number: '', name: (payer || '').replace(/[^\p{L}\s'.-]/gu, '').slice(0, 40), expiry: '', cvc: '' }); setPhase('idle'); setErr(''); setRes(null); setFocused(null) } }, [open])
   useEffect(() => {
     if (!open) return
     const prev = document.body.style.overflow
@@ -164,7 +164,7 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
                 <h2 id={`${uid}-title`} className="mt-3 text-sm text-white/70">Your payment</h2>
                 <p className="mt-1 text-4xl font-semibold sm:text-5xl"><Rolling text={money(amount)} still={still} /></p>
                 <p className="mt-2 text-xs text-white/50">Booking <span className="font-mono text-white/80">{bookingId}</span></p>
-                <div className="mt-8"><MetalCard digits={shownDigits} brand={res ? res.brand : brand} holder={res ? '' : v.name.toUpperCase()} expiry={res ? '' : v.expiry} cvc={v.cvc} flipped={focused === 'cvc' && !res} /></div>
+                <div className="mt-8"><MetalCard owner={payer.toUpperCase()} digits={shownDigits} brand={res ? res.brand : brand} holder={res ? '' : v.name.toUpperCase()} expiry={res ? '' : v.expiry} cvc={v.cvc} flipped={focused === 'cvc' && !res} /></div>
                 <ul className="mt-8 space-y-2 text-xs text-white/60">
                   <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />Card number and CVC are never saved on this device</li>
                   <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />The balance is paid later, before the event</li>

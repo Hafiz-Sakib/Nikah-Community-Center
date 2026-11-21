@@ -22,7 +22,7 @@ export default function HoldReminder() {
     .filter(({ b, h }) => h && !h.paid && !h.review && h.left > 0 && h.left <= 24 * HOUR && !gone.includes(b.id))
     .sort((x, y) => x.h.left - y.h.left)[0], [bookings, now, gone])
 
-  const hidden = ['/my-bookings', '/booking', '/admin', '/login', '/signup'].includes(pathname)
+  const hidden = ['/my-bookings', '/booking', '/admin', '/login', '/signup'].includes(pathname) || pathname.startsWith('/billing/')
   const close = () => { const next = [...gone, urgent.b.id]; setGone(next); try { sessionStorage.setItem(KEY, JSON.stringify(next)) } catch {} }
 
   return (
@@ -35,7 +35,7 @@ export default function HoldReminder() {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-fg">Payment due — <span className="tabular-nums">{short(urgent.h.left)}</span> left</p>
               <p className="mt-0.5 text-xs text-slate-500">Booking <span className="font-mono">{urgent.b.id}</span> is cancelled automatically if the advance is not paid.</p>
-              <button onClick={() => navigate('/my-bookings')} className="mt-2 rounded-full bg-brand px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-dark active:scale-95">Pay now</button>
+              <button onClick={() => navigate(`/billing/${urgent.b.id}`)} className="mt-2 rounded-full bg-brand px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-dark active:scale-95">Pay now</button>
             </div>
             <button onClick={close} aria-label="Dismiss reminder" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-fg"><CloseIcon width={14} height={14} /></button>
           </div>

@@ -22,6 +22,7 @@ const Invoice = forwardRef(function Invoice({ b, pdf = false }, ref) {
     <div className="inv-wrap" style={pdf ? { width: 794 } : undefined}>
       <div ref={ref} className={`inv ${pdf ? 'inv-pdf' : ''}`}>
         <div className="inv-bar" />
+        {full && b.status !== 'cancelled' && <div className="inv-stamp" style={{ color: '#047857' }}>PAID</div>}
         <div className="inv-head">
           <div className="inv-brand">
             <img data-keep src={img('logo-mark.png')} alt="" width={64} height={64} className="inv-logo" />
@@ -49,6 +50,12 @@ const Invoice = forwardRef(function Invoice({ b, pdf = false }, ref) {
             <div className="inv-big">{b.eventType} · {fmtDate(b.date, { day: 'numeric', month: 'long', year: 'numeric' })}</div>
             <div className="inv-sub">{q.shiftLabel} · {q.shiftTime}<br />{b.guests} guests · {q.menuName ? `Hall catering (${q.menuName})` : 'Own caterer'}</div>
           </div>
+        </div>
+
+        <div className="inv-sum">
+          <div><div className="inv-label">Total</div><b>{money(q.total)}</b></div>
+          <div><div className="inv-label">Paid</div><b style={{ color: '#047857' }}>{money(paid)}</b></div>
+          <div><div className="inv-label">{balance === 0 ? 'Balance' : 'Balance due'}</div><b style={{ color: balance === 0 ? '#047857' : '#b45309' }}>{money(balance)}</b></div>
         </div>
 
         <table className="inv-table">

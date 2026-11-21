@@ -153,17 +153,17 @@ const PaymentHub = forwardRef(function PaymentHub({ bookingId, m, busy, method, 
       <AnimatePresence mode="wait" initial={false}>
         <motion.div key={pm.id} initial={reduce ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22, ease: GLIDE }} className="mt-4">
           {pm.id === 'card' && (
-            <div className="relative overflow-hidden rounded-2xl bg-ink p-4 text-white sm:p-5">
-              <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand/30 blur-3xl" />
+            <div className="relative overflow-hidden rounded-2xl bg-brand-soft p-4 text-fg ring-1 ring-brand/25 sm:p-5">
+              <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand/15 blur-3xl" />
               <div className="relative flex flex-wrap items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="flex items-center gap-1.5 text-xs font-medium text-sky-300"><LockIcon width={14} height={14} />Instant, secure checkout</p>
+                  <p className="flex items-center gap-1.5 text-xs font-medium text-brand-ink"><LockIcon width={14} height={14} />Instant, secure checkout</p>
                   <p className="mt-1 text-lg font-semibold">Pay {money(amount)} by card</p>
                   <div className="mt-3 flex flex-wrap gap-2">{['Visa', 'Mastercard', 'Amex', 'Discover'].map((b) => <BrandLogo key={b} brand={b} />)}</div>
                 </div>
                 <button type="button" onClick={() => amountOk && onCard(amount)} disabled={busy || !amountOk} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand px-7 text-sm font-semibold text-white shadow-glow ring-1 ring-white/20 transition hover:bg-brand-dark active:scale-95 disabled:opacity-60 sm:w-auto">Continue to card</button>
               </div>
-              <p className="relative mt-3 text-xs text-white/60">Card number and CVC are never saved. The booking confirms once staff verify the payment.</p>
+              <p className="relative mt-3 text-xs text-slate-500">Card number and CVC are never saved. The booking confirms once staff verify the payment.</p>
             </div>
           )}
 

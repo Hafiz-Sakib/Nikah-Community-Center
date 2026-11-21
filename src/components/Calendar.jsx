@@ -1,18 +1,17 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronLeft, ChevronRight } from './Icons'
-import { toISO, tomorrowISO, dayStatus } from '../lib/store'
+import { toISO, tomorrowISO, plusDaysISO, dayStatus } from '../lib/store'
 
 const DOW = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 const dot = { free: 'bg-emerald-500', partial: 'bg-amber-400', full: 'bg-red-400' }
 
 export default function Calendar({ value, onChange, map }) {
-  const start = value ? new Date(value + 'T00:00') : new Date()
+  const min = tomorrowISO()
+  const start = value ? new Date(value + 'T00:00') : new Date(min + 'T00:00')
   const [view, setView] = useState(new Date(start.getFullYear(), start.getMonth(), 1))
   const [dir, setDir] = useState(1)
-  const min = tomorrowISO()
-  const maxD = new Date(); maxD.setFullYear(maxD.getFullYear() + 1)
-  const max = toISO(maxD)
+  const max = plusDaysISO(365)
   const y = view.getFullYear(), m = view.getMonth()
   const first = new Date(y, m, 1).getDay()
   const days = new Date(y, m + 1, 0).getDate()
