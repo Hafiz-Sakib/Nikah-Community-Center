@@ -37,17 +37,17 @@ function Field({ id, label, value, onChange, focused, setFocused, icon, valid, e
   const inputId = `${uid}-${id}`
   return (
     <div className={className}>
-      <motion.div animate={shake} className={`relative h-14 rounded-full bg-slate-100 transition-colors duration-200 ${!isFocused && !disabled ? 'hover:bg-slate-200/70' : ''}`}>
+      <motion.div animate={shake} className={`relative h-[4.25rem] rounded-full bg-slate-100 transition-colors duration-200 ${!isFocused && !disabled ? 'hover:bg-slate-200/70' : ''}`}>
         {isFocused && <motion.span layoutId={`${uid}-ring`} aria-hidden className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-inset ring-fg" transition={still ? { duration: 0 } : RING} />}
         {showError && <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full" style={{ boxShadow: `inset 0 0 0 2px ${ERROR}80` }} />}
         <span aria-hidden className={`pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-200 ${isFocused ? 'text-fg' : 'text-slate-400'}`}>
           <motion.span className="grid" initial={false} animate={isFocused && !still ? { scale: [1, 1.18, 1], rotate: [0, -10, 6, 0] } : { scale: 1, rotate: 0 }} transition={{ duration: 0.45, ease: GLIDE }}>{icon}</motion.span>
         </span>
-        <motion.label htmlFor={inputId} className="pointer-events-none absolute left-[52px] top-1/2 origin-left -translate-y-1/2 text-sm text-slate-500" initial={false} animate={{ y: floated ? -11 : 0, scale: floated ? 12 / 14 : 1 }} transition={still ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 34 }}>{label}</motion.label>
+        <motion.label htmlFor={inputId} className="pointer-events-none absolute left-[52px] top-1/2 origin-left -translate-y-1/2 text-sm text-slate-500" initial={false} animate={{ y: floated ? -17 : 0, scale: floated ? 12 / 14 : 1 }} transition={still ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 34 }}>{label}</motion.label>
         <input id={inputId} ref={inputRef} value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)} onFocus={() => setFocused(id)}
           onBlur={() => { setFocused(null); if (value.length) setTouched(true); if (value.length && !valid && !still) shake.start({ x: [0, -6, 6, -4, 4, 0], transition: { duration: 0.4 } }) }}
           aria-invalid={showError || undefined} aria-describedby={showError ? `${inputId}-error` : undefined}
-          className={`absolute inset-0 w-full rounded-full bg-transparent pb-1.5 pl-[52px] pt-5 text-base tabular-nums text-fg outline-none placeholder:text-transparent disabled:cursor-not-allowed ${wide ? 'pr-32' : 'pr-12'}`} {...inputProps} />
+          className={`absolute inset-0 w-full rounded-full bg-transparent pb-2 pl-[52px] pt-7 text-base leading-6 tabular-nums text-fg outline-none placeholder:text-transparent disabled:cursor-not-allowed ${wide ? 'pr-32' : 'pr-12'}`} {...inputProps} />
         <span className="pointer-events-none absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2">
           {right}
           <AnimatePresence>
