@@ -148,7 +148,7 @@ export default function Admin() {
   const review = async (id, status) => { setReviewing(true); try { await act(() => api(`/admin/payments/${id}`, { method: 'PATCH', body: { status } }), `Payment ${status}`) } finally { setReviewing(false) } }
   const act = async (fn, msg) => { try { await fn(); toast(msg); changed() } catch (e) { toast(e.message, 'error') } }
   const setStatus = (b, status) => act(() => api(`/admin/bookings/${b.id}`, { method: 'PATCH', body: { status } }), `Booking ${status}`)
-  const remove = (b) => act(() => api(`/admin/bookings/${b.id}`, { method: 'DELETE' }), 'Booking deleted')   // guarded by hold-to-confirm
+  const remove = (b) => act(() => api(`/admin/bookings/${b.id}`, { method: 'DELETE' }), 'Booking deleted')   // hold-to-confirm; the server refuses confirmed / completed / paid bookings
   const openInvoice = (b) => setInv({ ...b, invoiceNo: 'INV-' + b.id.replace(/^NCC-/, '') })   // list rows already carry snapshot + payments
   const pages = Math.max(1, Math.ceil(data.total / PAGE))
   const filtered = filter !== 'all' || q || from || to
@@ -174,11 +174,13 @@ export default function Admin() {
       <section className="pb-16 pt-8 sm:pb-24">
         <div className="container-x min-[1536px]:!max-w-7xl min-[1920px]:!max-w-[96rem]">
           {/* stats */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
             <Stat icon={WalletIcon} tone="amber" label="Payments to verify" className="col-span-2 sm:col-span-1" onClick={() => { setFilter('verify'); setPage(1) }}>{stats ? <Odometer value={stats.toVerify ?? 0} /> : '–'}</Stat>
             <Stat icon={ClipboardIcon} label="Total bookings">{stats ? <Odometer value={stats.total} /> : '–'}</Stat>
             <Stat icon={UsersIcon} tone="amber" label="Waiting for action">{stats ? <Odometer value={stats.pending} /> : '–'}</Stat>
-            <Stat icon={WalletIcon} tone="emerald" label="Confirmed revenue">{stats ? <Odometer value={stats.revenue} prefix="৳" /> : '–'}</Stat>
+            <Stat icon={CheckIcon} tone="emerald" label="Confirmed bookings">{stats ? <Odometer value={stats.confirmed ?? 0} /> : '–'}</Stat>
+            <Stat icon={CheckIcon} tone="sky" label="Completed orders">{stats ? <Odometer value={stats.completed ?? 0} /> : '–'}</Stat>
+            <Stat icon={WalletIcon} tone="emerald" label="Revenue (confirmed + completed)">{stats ? <Odometer value={stats.revenue} prefix="৳" /> : '–'}</Stat>
             <Stat icon={CalendarIcon} tone="sky" label="Events in next 30 days">{stats ? <Odometer value={stats.upcoming} /> : '–'}</Stat>
           </div>
 
@@ -208,7 +210,7 @@ export default function Admin() {
                   {filtered && <Button className="mt-4" variant="outline" onClick={() => { setFilter('all'); setQInput(''); setFrom(''); setTo('') }}>Clear filters</Button>}
                 </div>
               ) : (
-                <ul className={`grid gap-4 transition-opacity min-[1536px]:grid-cols-2 ${loading ? 'opacity-60' : ''}`}>
+                <ul className={`grid grid-cols-1 gap-4 transition-opacity ${loading ? 'opacity-60' : ''}`}>
                   {data.items.map((b) => {
                     return (
                       <li key={b.id} className="min-w-0 rounded-3xl bg-surface p-4 ring-1 ring-slate-200 transition hover:ring-brand/40 sm:p-5">
@@ -243,12 +245,12 @@ export default function Admin() {
 
                         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
                           {b.status !== 'confirmed' && <Button size="sm" variant="success" onClick={() => setStatus(b, 'confirmed')}><CheckIcon width={14} height={14} />Confirm</Button>}
-                          {b.status !== 'cancelled' && b.status !== 'expired' && <Button size="sm" variant="outline" onClick={() => setStatus(b, 'cancelled')}>Cancel booking</Button>}
+                          {b.status !== 'cancelled' && b.status !== 'expired' && <Button size="sm" variant="danger" onClick={() => setStatus(b, 'cancelled')}>Cancel booking</Button>}
                           <Button size="sm" variant="outline" onClick={() => setEdit(b)}>Edit</Button>
                           <Button size="sm" variant={open === b.id ? 'primary' : 'soft'} aria-expanded={open === b.id} onClick={() => setOpen(open === b.id ? null : b.id)}>Payments ({b.payments?.length ?? 0})<ChevronDown width={14} height={14} className={`transition-transform ${open === b.id ? 'rotate-180' : ''}`} /></Button>
-                          <Button size="sm" variant="outline" onClick={() => openInvoice(b)}>Invoice</Button>
+                          <Button size="sm" variant="info" onClick={() => openInvoice(b)}>Invoice</Button>
                           <Button as="a" size="sm" variant="soft" href={`tel:${b.phone}`}><PhoneIcon width={14} height={14} />Call</Button>
-                          <HoldToConfirm className="ml-auto" label="Hold to delete" onConfirm={() => remove(b)} />
+                          {!['confirmed', 'completed'].includes(b.status) && !(b.paidAmount > 0) && <HoldToConfirm className="ml-auto" label="Hold to delete" onConfirm={() => remove(b)} />}
                         </div>
                         <AnimatePresence initial={false}>{open === b.id && <PaymentsPanel key="p" b={b} onChanged={changed} />}</AnimatePresence>
                       </li>

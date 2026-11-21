@@ -9,22 +9,36 @@ const defaultRange = () => {
   return [toISO(a), toISO(b)]
 }
 
+/* Several components on one page use this hook. They share ONE request per URL (and reuse it for 4 s),
+   otherwise a burst of identical calls fills the browser's connection limit and a booking request waits behind them. */
+const shared = new Map()   // url -> { at, promise }
+function fetchShared(url, force) {
+  const hit = shared.get(url)
+  if (hit && (hit.pending || (!force && Date.now() - hit.at < 4000))) return hit.promise
+  const entry = { at: Date.now(), pending: true }
+  entry.promise = api(url).finally(() => { entry.pending = false; entry.at = Date.now() })
+  shared.set(url, entry)
+  return entry.promise
+}
+
 export function useAvailability(fromISO, toISO_) {
   const [dflt] = useState(defaultRange)
   const from = fromISO ?? dflt[0], to = toISO_ ?? dflt[1]
   const [map, setMap] = useState({})
   const [loaded, setLoaded] = useState(false)
-  const load = useCallback(() => api(`/availability?from=${from}&to=${to}`)
+  const url = `/availability?from=${from}&to=${to}`
+  const load = useCallback((force = false) => fetchShared(url, force)
     .then((rows) => { setMap(Object.fromEntries(rows.map((r) => [r.date, { morning: r.morning, evening: r.evening }]))); setLoaded(true) })
-    .catch(() => {}), [from, to])
+    .catch(() => {}), [url])
   useEffect(() => { load() }, [load])
-  /* Slots held or booked by other people must disappear without a page refresh: re-check every 20 s and when the tab regains focus. */
+  /* Slots held or booked by other people must disappear without a page refresh: re-check every 30 s while the tab is visible and when it becomes visible again. */
   useEffect(() => {
     const tick = () => { if (!document.hidden) load() }
-    const t = setInterval(tick, 20_000)
+    const t = setInterval(tick, 30_000)
     document.addEventListener('visibilitychange', tick)
-    window.addEventListener('focus', tick)
-    return () => { clearInterval(t); document.removeEventListener('visibilitychange', tick); window.removeEventListener('focus', tick) }
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', tick) }
   }, [load])
-  return { map, reload: load, loaded }
+  /* callers (after a booking / cancel) ask for a fresh copy */
+  const reload = useCallback(() => load(true), [load])
+  return { map, reload, loaded }
 }

@@ -7,6 +7,7 @@ const VARIANTS = {
   ink: 'bg-slate-900 text-page ring-1 ring-slate-900 hover:bg-slate-800',
   white: 'bg-white text-ink ring-1 ring-white shadow-lg hover:bg-slate-100',
   outline: 'bg-surface text-fg ring-1 ring-slate-300 hover:bg-slate-100 hover:ring-slate-400 dark:ring-slate-400 dark:hover:ring-slate-500',
+  info: 'bg-sky-100 text-sky-800 ring-1 ring-sky-300 hover:bg-sky-200 dark:!bg-sky-400/15 dark:!text-sky-200 dark:!ring-sky-400/40',
   soft: 'bg-brand-soft text-brand-ink ring-1 ring-brand/40 hover:ring-brand',
   success: 'bg-emerald-600 text-white ring-1 ring-emerald-700/40 hover:bg-emerald-700',
   danger: 'bg-surface text-red-600 ring-1 ring-red-300 hover:bg-red-50 dark:text-red-300 dark:ring-red-400/50 dark:hover:bg-red-500/10',

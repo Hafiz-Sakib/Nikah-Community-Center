@@ -115,7 +115,7 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
               </div>
               <div className="relative mt-4 grid gap-2.5 sm:mt-5 sm:grid-cols-2 sm:gap-3">
                 <div className="min-w-0 rounded-2xl bg-white/12 p-3.5 ring-1 ring-white/20 sm:p-4"><p className="text-xs text-white/80">{advanceCovered ? 'Advance (30%) submitted' : advanceDue > 0 ? 'Advance due now (30%)' : 'Advance (30%) received'}</p><p className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl"><AnimatedNumber value={advanceCovered ? q.advance : advanceDue > 0 ? dueNow : q.advance} prefix="৳" /></p></div>
-                <div className="min-w-0 rounded-2xl bg-white/12 p-3.5 ring-1 ring-white/20 sm:p-4"><p className="text-xs text-white/80">{inReview ? 'Paid · staff verifying' : b.status === 'pending' && b.holdExpiresAt ? 'Pay within (48 h hold)' : 'Paid so far'}</p><p className="mt-1 break-words font-mono text-xl font-semibold tabular-nums sm:text-2xl">{inReview ? money(paid + waiting) : b.status === 'pending' && b.holdExpiresAt ? timer : money(paid)}</p></div>
+                <div className="min-w-0 rounded-2xl bg-white/12 p-3.5 ring-1 ring-white/20 sm:p-4"><p className="text-xs text-white/80">{inReview ? 'Paid · staff verifying' : b.status === 'pending' && b.holdExpiresAt ? `Pay within (${b.holdHours ?? 48} h hold)` : 'Paid so far'}</p><p className="mt-1 break-words font-mono text-xl font-semibold tabular-nums sm:text-2xl">{inReview ? money(paid + waiting) : b.status === 'pending' && b.holdExpiresAt ? timer : money(paid)}</p></div>
               </div>
             </div>
 
@@ -184,8 +184,8 @@ export default function Billing({ b: initial, fresh = false, onNew, onManage }) 
                 </motion.div>
               </AnimatePresence>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                {method !== 'office' && <input value={trx} onChange={(e) => setTrx(e.target.value)} maxLength={60} placeholder="Transaction ID (TrxID)" enterKeyHint="send" autoCapitalize="characters" autoCorrect="off" className="h-11 min-w-0 flex-1 rounded-full border border-slate-300 bg-surface px-4 text-sm text-fg outline-none placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15" />}
-                <button onClick={submitManual} disabled={busy} className="btn-primary h-11 !py-0 disabled:opacity-60">{busy ? 'Submitting…' : method === 'office' ? 'I will pay at the office' : 'Submit payment'}</button>
+                {method !== 'office' && <label className="block min-w-0 flex-1"><span className="mb-1.5 block text-xs font-medium text-slate-500 sm:sr-only">Transaction ID (TrxID)</span><input value={trx} onChange={(e) => setTrx(e.target.value)} maxLength={60} placeholder="Transaction ID (TrxID)" enterKeyHint="send" autoCapitalize="characters" autoCorrect="off" className="h-12 w-full min-w-0 flex-1 rounded-2xl border-2 border-slate-300 bg-surface px-4 text-base text-fg outline-none placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15 sm:h-11 sm:rounded-full sm:border sm:text-sm" /></label>}
+                <button onClick={submitManual} disabled={busy} className="btn-primary h-12 w-full !py-0 text-base disabled:opacity-60 sm:h-11 sm:w-auto sm:text-sm">{busy ? 'Submitting…' : method === 'office' ? 'I will pay at the office' : 'Submit payment'}</button>
               </div>
               <p className="mt-2 text-xs text-slate-500">Any transaction ID is accepted for now and your date stays held. Staff verify it against our account, then your booking is confirmed.</p>
             </div>

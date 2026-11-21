@@ -96,7 +96,7 @@ export default function MyBookings() {
                     ) : (
                       <motion.div key="actions" exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }} className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 sm:flex sm:flex-wrap sm:items-center">
                         {isActive(b) && <ActionButton variant="primary" icon={WalletIcon} attention={unpaid} delay={0.05} wrap="col-span-2 sm:order-2 sm:col-span-1" onClick={() => setBill(b)}>Pay / billing</ActionButton>}
-                        <ActionButton variant="soft" icon={ClipboardIcon} delay={0} wrap={`sm:order-1 ${canEdit ? '' : 'col-span-2'}`} onClick={() => openInvoice(b)}>Invoice</ActionButton>
+                        <ActionButton variant="info" icon={ClipboardIcon} delay={0} wrap={`sm:order-1 ${canEdit ? '' : 'col-span-2'}`} onClick={() => openInvoice(b)}>Invoice</ActionButton>
                         {canEdit && <ActionButton variant="neutral" icon={EditIcon} delay={0.1} wrap="sm:order-3" onClick={() => setEdit(b)}>Edit</ActionButton>}
                         {isActive(b) && !canEdit && <p className="col-span-2 inline-flex items-center gap-1.5 text-xs text-slate-400 sm:order-3 sm:col-span-1"><LockIcon width={13} height={13} />Edits close {EDIT_CUTOFF_DAYS} days before the event — call us</p>}
                         {canCancel && <ActionButton variant="danger" icon={CloseIcon} delay={0.15} wrap="col-span-2 sm:order-4 sm:col-span-1 sm:ml-auto" onClick={() => setConfirmId(b.id)}>Cancel booking</ActionButton>}

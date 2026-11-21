@@ -4,12 +4,19 @@ import { toast } from './store'
 const BASE = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/$/, '')
 let lastWake = 0
 
+const TIMEOUT_MS = 45_000   // a request that never answers must not leave a button spinning forever
+
 async function send(path, method, body, token) {
-  return fetch(`${BASE}/api${path}`, {
-    method,
-    headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  const ctl = new AbortController()
+  const t = setTimeout(() => ctl.abort(), TIMEOUT_MS)
+  try {
+    return await fetch(`${BASE}/api${path}`, {
+      method,
+      headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: ctl.signal,
+    })
+  } finally { clearTimeout(t) }
 }
 
 /* fetch wrapper: adds the Supabase JWT, retries once after a 401 with a refreshed session,
@@ -31,6 +38,6 @@ export async function api(path, { method = 'GET', body } = {}) {
     return json
   } catch (e) {
     if (e.status) throw e
-    throw Object.assign(new Error('Cannot reach the server. Please try again.'), { status: 0 })
+    throw Object.assign(new Error(e.name === 'AbortError' ? 'The server took too long to answer. Check My bookings before trying again.' : 'Cannot reach the server. Please try again.'), { status: 0 })
   } finally { clearTimeout(wake) }
 }
