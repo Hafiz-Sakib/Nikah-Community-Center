@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { packages, addons, eventTypes, CONTACT, foodPkgs, foodItems } from '../data'
+import { packages, addons, eventTypes, events, CONTACT, foodPkgs, foodItems } from '../data'
 import { addBooking, useBookings, takenSlots, shiftFree, SHIFTS, quote, newId, money, fmtDate, toast } from '../lib/store'
 import Calendar from './Calendar'
 import Billing from './Billing'
@@ -59,6 +59,14 @@ export default function Booking() {
   const [done, setDone] = useState(null)
   const [f, setF] = useState({ packageId: 'wedding-plus', eventType: 'Wedding', guests: 200, date: '', shift: '', addons: [], catering: 'own', menu: 'wedding-plus', name: '', phone: '', email: '', notes: '' })
   const set = (p) => setF((x) => ({ ...x, ...p }))
+  /* Picking an event type also selects the package that suits it (Milad -> Wedding Basic, Corporate -> Corporate Event...).
+     The package can still be changed afterwards; "Other" keeps whatever is selected. */
+  const pickEvent = (t) => setF((x) => {
+    const suggested = events.find((e) => e.slug === t)?.pkg
+    const packageId = suggested && packages.some((p) => p.id === suggested) ? suggested : x.packageId
+    const cap = Math.min(600, packages.find((p) => p.id === packageId).cap)
+    return { ...x, eventType: t, packageId, guests: Math.min(x.guests, cap) }
+  })
 
   useEffect(() => {
     const ev = sp.get('event'), pk = sp.get('package'), d = sp.get('date'), g = parseInt(sp.get('guests'), 10)
@@ -124,7 +132,7 @@ export default function Booking() {
                           <p className="mb-2 text-sm font-medium text-fg">Event type</p>
                           <div className="flex flex-wrap gap-2">
                             {eventTypes.map((t) => (
-                              <button key={t} type="button" onClick={() => set({ eventType: t })} className={`relative rounded-full px-4 py-2 text-sm font-medium transition ${f.eventType === t ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                              <button key={t} type="button" onClick={() => pickEvent(t)} className={`relative rounded-full px-4 py-2 text-sm font-medium transition ${f.eventType === t ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                                 {f.eventType === t && <motion.span layoutId="evt" className="absolute inset-0 rounded-full bg-brand" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />}
                                 <span className="relative">{t}</span>
                               </button>
