@@ -452,12 +452,12 @@ export default function Booking() {
               <div className="mx-auto flex max-w-6xl items-center justify-between gap-2.5 sm:gap-4">
                 <Button variant="outline" size="lg" onClick={() => go(-1)} disabled={step === 0} className="group !px-4 disabled:hidden sm:!px-7" aria-label="Back"><ChevronLeft width={18} height={18} className="transition-transform duration-200 group-hover:-translate-x-0.5" /><span className="hidden sm:inline">Back</span></Button>
                 <button type="button" onClick={() => setSheet(true)} className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl bg-brand-soft/70 px-3 py-2 text-left ring-1 ring-brand/15 sm:mr-auto sm:max-w-[17rem] sm:flex-none sm:px-3.5 sm:py-2.5 lg:cursor-default lg:pointer-events-none" aria-label="Show booking summary">
-                  <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-surface text-brand-ink ring-1 ring-brand/15 sm:h-10 sm:w-10"><StackIcon width={20} height={20} /></span>
-                  <span className="min-w-0"><span className="block truncate text-[11px] text-slate-500 sm:text-xs">{q.total ? 'Total' : 'Total (pick a shift)'}</span><Odometer value={q.total} prefix="৳" className="text-lg font-bold text-fg sm:text-xl" /></span>
+                  <span aria-hidden className="hidden h-9 w-9 shrink-0 place-items-center rounded-xl bg-surface text-brand-ink ring-1 ring-brand/15 sm:grid sm:h-10 sm:w-10"><StackIcon width={20} height={20} /></span>
+                  <span className="min-w-0"><span className="block truncate text-[11px] text-slate-500 sm:text-xs">{q.total ? 'Total' : 'Total (pick a shift)'}</span><Odometer value={q.total} prefix="৳" className="text-base font-bold text-fg min-[380px]:text-lg sm:text-xl" /></span>
                 </button>
                 {step < 3 ? <Button size="lg" onClick={() => go(1)} aria-disabled={!valid} className={`group !px-5 sm:!px-8 ${valid ? '' : 'opacity-80'}`}>Continue<ArrowRight className="transition-transform duration-200 group-hover:translate-x-1" /></Button>
-                  : user ? <Button size="lg" variant="success" onClick={confirm} disabled={busy || !agree} className="group"><CheckIcon width={18} height={18} />{busy ? 'Booking…' : 'Confirm booking'}</Button>
-                  : <Button size="lg" onClick={() => loginFirst(false)}>Log in to book</Button>}
+                  : user ? <Button size="lg" variant="success" onClick={confirm} disabled={busy || !agree} className="group !px-4 sm:!px-7"><CheckIcon width={18} height={18} />{busy ? 'Booking…' : <>Confirm<span className="hidden sm:inline">&nbsp;booking</span></>}</Button>
+                  : <Button size="lg" onClick={() => loginFirst(false)} className="!px-4 sm:!px-7">Log in<span className="hidden sm:inline">&nbsp;to book</span></Button>}
               </div>
             </div>
           </div>

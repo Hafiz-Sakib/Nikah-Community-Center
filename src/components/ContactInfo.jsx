@@ -26,7 +26,7 @@ export default function ContactInfo() {
   return (
     <section className="py-12 sm:py-20">
       <div className="container-x grid gap-8 lg:grid-cols-[1fr_1.1fr]">
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
           {items.map(({ Icon, label, value, href }, i) => {
             const C = href ? 'a' : 'div'
             return (

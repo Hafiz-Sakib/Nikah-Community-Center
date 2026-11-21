@@ -92,7 +92,7 @@ export default function EditBooking({ booking, map, admin = false, onClose, onSa
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
             <span className={lab}>Food</span>
-            <div className="flex gap-2">{[['own', 'Own caterer'], ['hall', 'Hall catering']].map(([id, l]) => <button key={id} type="button" aria-pressed={f.catering === id} onClick={() => set({ catering: id })} className={`flex-1 rounded-xl px-3 py-2 text-sm font-medium ring-1 ${f.catering === id ? 'bg-brand-soft ring-2 ring-brand text-brand-ink' : 'ring-slate-300 text-slate-700'}`}>{l}</button>)}</div>
+            <div className="flex gap-2">{[['own', 'Own caterer'], ['hall', 'Hall catering']].map(([id, l]) => <button key={id} type="button" aria-pressed={f.catering === id} onClick={() => set({ catering: id, ...(id === 'hall' && !foodPkgs.some((m) => m.id === f.menu) ? { menu: (foodPkgs.find((m) => m.id === f.packageId) ?? foodPkgs[0]).id } : {}) })} className={`flex-1 rounded-xl px-3 py-2 text-sm font-medium ring-1 ${f.catering === id ? 'bg-brand-soft ring-2 ring-brand text-brand-ink' : 'ring-slate-300 text-slate-700'}`}>{l}</button>)}</div>
             <AnimatePresence initial={false}>{f.catering === 'hall' && <motion.select initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className={`${inp} mt-2`} value={f.menu} onChange={(e) => set({ menu: e.target.value })}>{foodPkgs.map((m) => <option key={m.id} value={m.id}>{m.name} menu · {money(m.price)}/guest</option>)}</motion.select>}</AnimatePresence>
           </div>
           <div>

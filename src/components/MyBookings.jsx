@@ -76,8 +76,8 @@ export default function MyBookings() {
               return (
                 <motion.li key={b.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="rounded-2xl p-4 ring-1 ring-slate-200">
                   <div className="flex items-start justify-between gap-3">
-                    <div><p className="font-semibold text-fg">{b.eventType} · {fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })}</p><p className="text-xs text-slate-500">{s.label} · {s.time}</p><EventTimer b={b} className="mt-2" /></div>
-                    <div className="flex flex-col items-end gap-1.5"><StatusPill status={shownStatus(b)} />{m.paidInFull && !m.overpaid && showMoney && <StatusPill status="fully paid" />}</div>
+                    <div className="min-w-0"><p className="font-semibold text-fg">{b.eventType} · {fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })}</p><p className="text-xs text-slate-500">{s.label} · {s.time}</p><EventTimer b={b} className="mt-2" /></div>
+                    <div className="flex shrink-0 flex-col items-end gap-1.5"><StatusPill status={shownStatus(b)} />{m.paidInFull && !m.overpaid && showMoney && <StatusPill status="fully paid" />}</div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-slate-600">
                     <span className="tabular-nums text-xs">{b.id}</span><span>{p?.name} · {b.guests} guests</span><b className="text-fg">{money(b.total)}</b>

@@ -58,8 +58,8 @@ export function CostEstimator() {
   return (
     <section className="bg-slate-50 py-16 sm:py-24"><div className="container-x">
       <SectionHead eyebrow="Estimate" title="What will it cost?" text="Slide your guest count and watch the estimate update. The final price is confirmed in your booking summary." />
-      <div className="mx-auto mt-12 grid max-w-5xl gap-5 lg:grid-cols-[1.1fr_1fr]">
-        <div className="rounded-3xl bg-surface p-6 shadow-card ring-1 ring-slate-200/80 sm:p-8">
+      <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <div className="min-w-0 rounded-3xl bg-surface p-6 shadow-card ring-1 ring-slate-200/80 sm:p-8">
           <div className="space-y-4">
             <div className="overflow-x-auto"><PillTabs label="Package" value={pkgId} onValueChange={setPkgId} tabs={packages.map((x) => ({ id: x.id, label: x.name.replace('Wedding ', '').replace(' Event', '') }))} /></div>
             <div className="flex flex-wrap gap-3">

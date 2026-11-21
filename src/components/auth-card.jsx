@@ -165,7 +165,7 @@ function Field({ id, label, type = 'text', value, onChange, icon: Icon, autoComp
         <AnimatePresence>
           {malformed && !reduce && (
             <motion.span key="comet" aria-hidden initial={{ opacity: 1 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pointer-events-none absolute inset-0 overflow-hidden rounded-full p-px" style={{ WebkitMask: 'linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)', WebkitMaskComposite: 'xor', mask: 'linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)', maskComposite: 'exclude' }}>
-              <motion.span className="absolute left-1/2 top-1/2 block aspect-square w-[260%] -translate-x-1/2 -translate-y-1/2" style={{ background: 'conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgb(248 113 113 / .0) 305deg, rgb(248 113 113) 355deg, rgb(254 202 202) 360deg)' }}
+              <motion.span className="absolute left-1/2 top-1/2 block aspect-square w-[260%]" style={{ x: '-50%', y: '-50%', background: 'conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgb(248 113 113 / .0) 305deg, rgb(248 113 113) 355deg, rgb(254 202 202) 360deg)' }}
                 initial={{ rotate: 0, opacity: 1 }} animate={{ rotate: 360, opacity: [1, 1, 0] }} transition={{ duration: 1.7, ease: 'easeInOut', times: [0, 0.8, 1] }} />
             </motion.span>
           )}
@@ -357,7 +357,7 @@ export function AuthCard({
             <motion.span aria-hidden className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent" initial={{ x: '-120%' }} animate={{ x: '420%' }} transition={{ duration: 1.3, repeat: Infinity, ease: 'easeInOut' }} />
           )}
           {status === 'done' && !reduce && (
-            <motion.span aria-hidden className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/70" initial={{ scale: 0.4, opacity: 0.9 }} animate={{ scale: 9, opacity: 0 }} transition={{ duration: 0.9, ease: 'easeOut' }} />
+            <motion.span aria-hidden className="absolute left-1/2 top-1/2 h-10 w-10 rounded-full border-2 border-white/70" style={{ x: '-50%', y: '-50%' }} initial={{ scale: 0.4, opacity: 0.9 }} animate={{ scale: 9, opacity: 0 }} transition={{ duration: 0.9, ease: 'easeOut' }} />
           )}
           <AnimatePresence mode="wait" initial={false}>
             {status === 'idle' && (

@@ -110,7 +110,8 @@ const PaymentHub = forwardRef(function PaymentHub({ bookingId, m, busy, method, 
   const [touched, setTouched] = useState(false)
   const [copied, copy] = useCopy()
   const pm = PAYMENT.find((x) => x.id === method) || PAYMENT[1]
-  const trxOk = trx.replace(/[^a-z0-9]/gi, '').length >= 6
+  const isBookingId = /^NCC-[A-Z0-9]{6}$/.test(trx)                          // people paste the Booking ID here by mistake
+  const trxOk = trx.replace(/[^a-z0-9]/gi, '').length >= 6 && !isBookingId
   const showErr = touched && !trxOk
   const pick = (id) => { setMethod(id); setTouched(false) }
   const onKey = (e) => {
@@ -126,7 +127,7 @@ const PaymentHub = forwardRef(function PaymentHub({ bookingId, m, busy, method, 
     if (busy) return
     if (amount > m.room) { toast(`You can pay at most ${money(m.room)} on this booking`, 'error'); return }
     if (!amountOk) { toast('Choose a valid amount', 'error'); return }
-    if (!trxOk) { setTouched(true); toast('Enter the transaction ID', 'error'); return }
+    if (!trxOk) { setTouched(true); toast(isBookingId ? 'That is the Booking ID, not the TrxID' : 'Enter the transaction ID', 'error'); return }
     const ok = await onSubmit({ amount, method: pm.id, ...(trx.trim() ? { reference: trx.trim() } : {}) })
     if (ok) { setTrx(''); setTouched(false) }
   }
@@ -208,12 +209,12 @@ const PaymentHub = forwardRef(function PaymentHub({ bookingId, m, busy, method, 
                 <label className="block min-w-0 flex-1">
                   <span className="mb-1.5 block text-xs font-medium text-slate-500">{wallet ? 'Transaction ID (TrxID)' : 'Transfer / slip reference'}</span>
                   <span className="relative block">
-                    <input value={trx} onChange={(e) => setTrx(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''))} onBlur={() => trx && setTouched(true)} maxLength={60} placeholder={wallet ? 'e.g. 9A7K2M4XQP' : 'e.g. TRF123456'} enterKeyHint="send" autoCapitalize="characters" autoCorrect="off" autoComplete="off" aria-invalid={showErr || undefined} aria-describedby="trx-hint"
-                      className={`h-12 w-full min-w-0 rounded-2xl border-2 bg-surface pl-4 pr-11 tabular-nums text-base tracking-wider text-fg outline-none placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-400 focus:ring-4 sm:text-sm ${showErr ? 'border-red-400 focus:border-red-500 focus:ring-red-500/15' : trxOk ? 'border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500/15' : 'border-slate-300 focus:border-brand focus:ring-brand/15'}`} />
-                    <AnimatePresence>{trxOk && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="absolute right-3.5 top-1/2 grid h-5 w-5 -translate-y-1/2 place-items-center rounded-full bg-emerald-500 text-white" aria-hidden><CheckIcon width={12} height={12} strokeWidth={3.5} /></motion.span>}</AnimatePresence>
+                    <input value={trx} onChange={(e) => setTrx(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''))} onBlur={() => trx && setTouched(true)} maxLength={60} placeholder={wallet ? 'e.g. 9A7K2M4XQP' : 'e.g. TRF123456'} enterKeyHint="send" autoCapitalize="characters" autoCorrect="off" spellCheck={false} autoComplete="off" aria-invalid={showErr || undefined} aria-describedby="trx-hint"
+                      className={`block h-12 w-full min-w-0 rounded-2xl border-2 bg-surface pl-4 pr-11 tabular-nums text-base tracking-wider text-fg outline-none placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-400 focus:ring-4 sm:text-sm ${showErr ? 'border-red-400 focus:border-red-500 focus:ring-red-500/15' : trxOk ? 'border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500/15' : 'border-slate-300 focus:border-brand focus:ring-brand/15'}`} />
+                    <span aria-hidden className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center"><AnimatePresence>{trxOk && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="grid h-5 w-5 place-items-center rounded-full bg-emerald-500 text-white"><CheckIcon width={12} height={12} strokeWidth={3.5} /></motion.span>}</AnimatePresence></span>
                   </span>
                   {!amountOk && <span className="mt-1.5 block text-xs font-medium text-red-600 dark:text-red-300">Fix the amount above first. You cannot pay more than {money(m.room)}.</span>}
-                  <span id="trx-hint" className={`mt-1.5 block text-xs ${showErr ? 'text-red-600 dark:text-red-300' : 'text-slate-500'}`}>{showErr ? 'Enter at least 6 letters or digits from the receipt.' : 'Found on the confirmation message or receipt.'}</span>
+                  <span id="trx-hint" className={`mt-1.5 block text-xs ${showErr ? 'text-red-600 dark:text-red-300' : 'text-slate-500'}`}>{showErr ? (isBookingId ? 'That is your Booking ID. Enter the TrxID from the bKash / Nagad / bank receipt.' : 'Enter at least 6 letters or digits from the receipt.') : 'Found on the confirmation message or receipt.'}</span>
                 </label>
                 <button type="submit" disabled={busy || !amountOk} aria-disabled={!trxOk || !amountOk} className={`mt-0 inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold text-white transition active:scale-95 disabled:opacity-60 sm:mt-[1.375rem] sm:w-auto ${trxOk && amountOk ? 'shadow-lg' : 'opacity-80'} disabled:cursor-not-allowed`} style={{ background: pm.color }}>
                   {busy ? <><motion.span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white" animate={{ rotate: 360 }} transition={{ duration: 0.8, ease: 'linear', repeat: Infinity }} />Submitting…</> : <><ShieldIcon width={16} height={16} />Submit payment</>}

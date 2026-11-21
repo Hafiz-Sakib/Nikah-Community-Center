@@ -43,7 +43,7 @@ function Field({ id, label, value, onChange, focused, setFocused, icon, valid, e
         <span aria-hidden className={`pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-200 ${isFocused ? 'text-fg' : 'text-slate-400'}`}>
           <motion.span className="grid" initial={false} animate={isFocused && !still ? { scale: [1, 1.18, 1], rotate: [0, -10, 6, 0] } : { scale: 1, rotate: 0 }} transition={{ duration: 0.45, ease: GLIDE }}>{icon}</motion.span>
         </span>
-        <motion.label htmlFor={inputId} className="pointer-events-none absolute left-[52px] top-1/2 origin-left -translate-y-1/2 text-sm text-slate-500" initial={false} animate={{ y: floated ? -17 : 0, scale: floated ? 12 / 14 : 1 }} transition={still ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 34 }}>{label}</motion.label>
+        <span className="pointer-events-none absolute left-[52px] top-1/2 -translate-y-1/2"><motion.label htmlFor={inputId} className="block origin-left text-sm text-slate-500" initial={false} animate={{ y: floated ? -7 : 0, scale: floated ? 12 / 14 : 1 }} transition={still ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 34 }}>{label}</motion.label></span>
         <input id={inputId} ref={inputRef} value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)} onFocus={() => setFocused(id)}
           onBlur={() => { setFocused(null); if (value.length) setTouched(true); if (value.length && !valid && !still) shake.start({ x: [0, -6, 6, -4, 4, 0], transition: { duration: 0.4 } }) }}
           aria-invalid={showError || undefined} aria-describedby={showError ? `${inputId}-error` : undefined}
