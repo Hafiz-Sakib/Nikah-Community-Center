@@ -21,9 +21,10 @@ export default {
       keyframes: {
         marquee: { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(-50%)' } },
         drift: { '0%,100%': { transform: 'translate3d(-8%,-6%,0) scale(1)' }, '50%': { transform: 'translate3d(8%,6%,0) scale(1.15)' } },
+        float: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-5px)' } },
         'ping-soft': { '0%': { transform: 'scale(1)', opacity: '.5' }, '100%': { transform: 'scale(2.2)', opacity: '0' } },
       },
-      animation: { marquee: 'marquee 32s linear infinite', drift: 'drift 9s ease-in-out infinite' },
+      animation: { marquee: 'marquee 32s linear infinite', drift: 'drift 9s ease-in-out infinite', 'spin-slow': 'spin-slow 8s linear infinite', float: 'float 3.6s ease-in-out infinite' },
       boxShadow: { glow: '0 30px 50px -20px rgba(63,135,245,.45)', dock: 'var(--shadow-dock)', card: 'var(--shadow-card)' },
     },
   },

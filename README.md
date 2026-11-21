@@ -1,29 +1,89 @@
-# Nikah Community Center
-React + Vite + Tailwind CSS + Motion (motion/react) + React Router (HashRouter)
+<div align="center">
 
-    npm install
-    npm run dev
-    npm run build
+# Nikah Community Center
+
+**Online booking website for a wedding & events venue in Chattogram, Bangladesh**
+
+[**Live site →**](https://nikah-convention.vercel.app/) · [GitHub repo](https://github.com/Hafiz-Sakib/Nikah-Community-Center)
+
+![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite&logoColor=white) ![Tailwind](https://img.shields.io/badge/Tailwind-3-38bdf8?logo=tailwindcss&logoColor=white) ![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8)
+
+![Nikah Community Center home page](docs/screenshots/home.png)
+
+</div>
+
+## Overview
+
+A complete venue website: guests browse events, packages, food menus and facilities, check live availability, book a date, pay the advance and download an invoice. Works on phones, installs as an app, and has a day / night theme.
+
+- **Live:** https://nikah-convention.vercel.app/
+- **Source:** https://github.com/Hafiz-Sakib/Nikah-Community-Center
+
+## Features
+
+- **Hero carousel** with 11 slides, focus points so faces stay in frame, swipe and keyboard support
+- **Booking system** (demo, localStorage): step-by-step wizard, live availability calendar, weekend surcharge, 30% advance, booking ID, `.ics` calendar file, WhatsApp share
+- **Payment demo** with a card checkout modal (no real charge) and an animated bill
+- **PDF invoice** with a Code 128 barcode of the booking ID
+- **Packages** with animated cards, Shift / Full-day price switch and a compare table
+- **Facilities** page: amenity strip, interactive venue tour, included checklist, safety section
+- **Food menu** with Bengali wedding dishes and per-package variations
+- **My bookings** page and a staff dashboard (`/admin`)
+- **Day / night mode** with a circle-reveal animation, remembers your choice
+- **PWA**: installable, works offline after the first visit; install icon sits next to the menu on mobile
+- **Clean URLs** such as `/events` and `/packages`
+
+## Screenshots
+
+| Packages | Facilities | Mobile |
+|---|---|---|
+| ![Packages](docs/screenshots/packages.jpg) | ![Facilities](docs/screenshots/facilities.jpg) | <img src="docs/screenshots/mobile.jpg" width="220" alt="Mobile home"> |
+
+## Tech stack
+
+React 18 · Vite 5 · Tailwind CSS 3 · Motion (`motion/react`) · React Router 7 (BrowserRouter) · vite-plugin-pwa · jsPDF + html2canvas
+
+## Getting started
+
+```bash
+git clone https://github.com/Hafiz-Sakib/Nikah-Community-Center.git
+cd Nikah-Community-Center
+npm install
+npm run dev       # http://localhost:5173
+npm run build     # production build in dist/
+npm run preview   # preview the build
+```
 
 ## Pages
-/ (Home) · /about (About + Contact, /contact scrolls to it) · /food · /facilities · /events · /gallery · /packages · /booking · /my-bookings · /contact · /admin (staff)
-Booking accepts query params: /booking?event=Wedding&package=wedding-plus&date=2026-12-05&guests=200
 
-## PWA
-Installable (manifest + service worker via vite-plugin-pwa), works offline after first visit. Icons in `public/` (favicon.svg/.ico, pwa-192/512, maskable, apple-touch-icon). Install button in footer / mobile menu, plus a one-time banner. Needs HTTPS to install (localhost is fine).
+| Route | Page |
+|---|---|
+| `/` | Home |
+| `/events` | Events |
+| `/food` | Food menus |
+| `/packages` | Packages & pricing |
+| `/facilities` | Facilities |
+| `/gallery` | Photo gallery |
+| `/about` | About us |
+| `/contact` | Contact |
+| `/booking` | Booking wizard (`?event=Wedding&package=wedding-plus&date=2026-12-05&guests=200`) |
+| `/my-bookings` | Look up or cancel a booking |
+| `/admin` | Staff dashboard (passcode in `src/data.js`) |
 
-## Dark mode
-Toggle in the navbar (circle-reveal animation). Follows system setting on first visit, then remembers the choice. Colours are CSS variables in `src/index.css`.
+Old links like `/#/events` redirect to `/events` automatically.
 
-## Navigation
-Desktop: Home, Events, Food, Packages and a "Venue" dropdown (Facilities, Gallery, About). Mobile: hamburger menu only (no bottom bar).
+## Deployment (Vercel)
 
-## Billing & invoice
-After booking: animated bill (count-up total, cost breakdown bar, payment-method picker, 24h hold timer) and a downloadable A4 PDF invoice with a Code 128 barcode of the booking ID (also in My bookings). Put your real bKash/Nagad/bank details in `PAYMENT` in `src/data.js`.
+`vercel.json` rewrites every path to `index.html`, so direct links such as `/events` work after a refresh. Import the repo in Vercel (framework: Vite, build `npm run build`, output `dist`).
 
-## Booking system (demo, localStorage)
-Wizard, live availability, weekend surcharge, 30% advance, booking ID, .ics, WhatsApp, My bookings, staff dashboard (passcode in src/data.js, default admin123).
-Replace functions in `src/lib/store.js` with real API calls for production.
+## Customising
 
-## Your real info
-Edit `src/data.js`: CONTACT, packages/prices (BDT), add-ons, facilities, events, FAQs.
+- Contact details, packages, prices, facilities, events, FAQs: `src/data.js`
+- Payment numbers: `PAYMENT` in `src/data.js`
+- Hero slides and their focus points: `slides` in `src/data.js` (`pos` = `object-position`, `side: 'right'` moves text right)
+- Photos: `public/images` (see `IMAGES.md`)
+- Booking logic is a localStorage demo in `src/lib/store.js`; replace it with real API calls for production
+
+## License
+
+Personal / portfolio project by [Hafiz Sakib](https://github.com/Hafiz-Sakib).

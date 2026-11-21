@@ -1,79 +1,90 @@
 import { useState } from 'react'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
-import { packages, compare } from '../data'
+import { packages, compare, img } from '../data'
 import { ICONS2, CheckIcon, ArrowRight } from './Icons'
 import Odometer from './Odometer'
 
-/* Pricing card in a soft shell (idea: Motion Brew "Pricing card").
-   Hover: the shell glows with a drifting gradient and the quiet note rolls up; the price rolls like an odometer when you switch to Full day. */
+/* Pricing card: a small photo on top, a floating icon, a hover lift, a slowly turning light border on the popular plan,
+   a Shift / Full day segmented switch (the price rolls like an odometer) and a button with a shine sweep.
+   Everything wraps instead of overlapping, so it stays tidy from 320px phones to wide desktops. */
+const CARD_R = 'rounded-[2rem]'
 function PackageCard({ p, index }) {
   const [full, setFull] = useState(false)
+  const reduce = useReducedMotion()
   const Ico = ICONS2[p.icon]
   const price = Math.round(p.price * (full ? 1.7 : 1))
 
   return (
-    <motion.li initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ delay: index * 0.1, type: 'spring', stiffness: 100, damping: 16 }} className="h-full">
-      <div className={`group relative flex h-full flex-col rounded-[2rem] p-1.5 ring-1 transition-shadow duration-500 hover:shadow-card ${p.popular ? 'bg-brand-soft ring-brand/30' : 'bg-slate-100 ring-fg/5'}`}>
-        {/* drifting glow, visible on hover */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[2rem] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-          <div className="absolute -inset-1/4 animate-drift motion-reduce:animate-none" style={{ background: 'radial-gradient(38% 38% at 28% 30%, rgba(63,135,245,.42), transparent 70%), radial-gradient(36% 36% at 76% 72%, rgba(167,139,250,.34), transparent 70%), radial-gradient(30% 30% at 70% 20%, rgba(56,189,248,.28), transparent 70%)' }} />
-        </div>
+    <motion.li initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ delay: index * 0.12, type: 'spring', stiffness: 100, damping: 16 }} className="h-full min-w-0">
+      <motion.div whileHover={reduce ? undefined : { y: -8 }} transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+        className={`group relative h-full p-[2px] ${CARD_R} ${p.popular ? 'shadow-glow' : 'shadow-card'} transition-shadow duration-500 hover:shadow-dock`}>
+        {/* border: a soft ring, or a turning light for the popular plan */}
+        <span aria-hidden className={`pointer-events-none absolute inset-0 overflow-hidden ${CARD_R} ${p.popular ? '' : 'bg-fg/5'}`}>
+          {p.popular && <span className="absolute left-1/2 top-1/2 block aspect-square w-[160%] -translate-x-1/2 -translate-y-1/2 animate-spin-slow motion-reduce:animate-none" style={{ background: 'conic-gradient(from 0deg, rgba(63,135,245,.15), #3f87f5, #a78bfa, #38bdf8, rgba(63,135,245,.15))' }} />}
+        </span>
 
-        {/* strip above the card */}
-        <div className="relative z-10 flex h-10 items-center justify-between px-4 text-[13px] font-medium text-slate-600">
-          <span className="relative block h-4 overflow-hidden whitespace-nowrap">
-            <span className="flex flex-col transition-transform duration-500 ease-out group-hover:-translate-y-1/2 motion-reduce:transition-none">
-              <span className="block h-4 leading-4">{p.ideal}</span>
-              <span className="block h-4 leading-4 text-brand-ink">Up to {p.cap} guests</span>
-            </span>
-          </span>
-          {p.popular && <span className="shrink-0 whitespace-nowrap rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">Most booked</span>}
-        </div>
-
-        <div className={`relative z-10 flex flex-1 flex-col rounded-3xl bg-surface p-5 shadow-card ${p.popular ? 'ring-1 ring-brand/40' : ''}`}>
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-fg"><Ico width={20} height={20} /></span>
-            <h3 className="text-lg font-semibold text-fg">{p.name}</h3>
-          </div>
-          <p className="mt-3 text-[15px] leading-snug text-slate-600">{p.desc}</p>
-
-          <div className="mt-5">
-            <Odometer value={price} prefix="৳" className="text-[2.6rem] font-bold leading-none text-fg" />
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <span className="text-[15px] text-slate-600">/ {full ? 'full day' : 'shift'}</span>
-              <label className="flex cursor-pointer items-center gap-2 text-[13px] font-medium text-slate-600">
-                Full day
-                <button type="button" role="switch" aria-checked={full} aria-label={`Full day price for ${p.name}`} onClick={() => setFull((f) => !f)}
-                  className={`relative h-6 w-10 rounded-full transition-colors duration-300 ${full ? 'bg-brand' : 'bg-slate-200'}`}>
-                  <motion.span layout transition={{ type: 'spring', stiffness: 500, damping: 32 }} className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow ${full ? 'left-[1.15rem]' : 'left-0.5'}`} />
-                </button>
-              </label>
+        <div className={`relative flex h-full flex-col overflow-hidden rounded-[calc(2rem-2px)] bg-surface`}>
+          {/* photo */}
+          <div className="relative h-36 shrink-0 overflow-hidden bg-ink sm:h-40">
+            <img src={img(p.photo)} alt="" loading="lazy" decoding="async" draggable={false} style={{ objectPosition: p.photoPos }}
+              className="h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-110 motion-reduce:transition-none" />
+            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/20" />
+            <span aria-hidden className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-white/25 opacity-0 blur-md transition-all duration-1000 group-hover:left-full group-hover:opacity-100 motion-reduce:hidden" />
+            <div className="absolute inset-x-3 top-3 flex flex-wrap items-start justify-between gap-2">
+              {p.popular
+                ? <span className="inline-flex items-center gap-1.5 rounded-full bg-brand px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white"><span className="relative flex h-1.5 w-1.5"><span className="absolute inset-0 animate-ping rounded-full bg-white/80 motion-reduce:animate-none" /><span className="relative h-1.5 w-1.5 rounded-full bg-white" /></span>Most booked</span>
+                : <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md">{p.tag}</span>}
+              <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md">Up to {p.cap} guests</span>
             </div>
-            <p className="mt-2 text-[13px] text-slate-600">{full ? 'Morning + Evening · about 15% cheaper' : 'Billed per shift · Fri & Sat +15%'}</p>
           </div>
 
-          <motion.div whileHover="hover" whileTap={{ scale: 0.98 }} className="mt-5">
-            <Link to={`/booking?package=${p.id}`} className={`flex items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-semibold transition-colors ${p.popular ? 'bg-brand text-white hover:bg-brand-dark' : 'bg-slate-100 text-fg hover:bg-fg hover:text-surface'}`}>
-              Book this package <motion.span variants={{ hover: { x: 4 } }} className="inline-flex"><ArrowRight /></motion.span>
-            </Link>
-          </motion.div>
-          <p className="mt-3 text-center text-[13px] text-slate-600">30% advance confirms your date</p>
+          <div className="relative flex min-w-0 flex-1 flex-col px-5 pb-5 pt-0">
+            {/* floating icon sits on the photo edge */}
+            <span className="-mt-6 mb-3 flex h-12 w-12 animate-float items-center justify-center rounded-2xl bg-surface text-brand-ink shadow-card ring-1 ring-fg/5 motion-reduce:animate-none"><Ico width={22} height={22} /></span>
+            <h3 className="text-xl font-semibold leading-tight text-fg">{p.name}</h3>
+            <p className="mt-1 text-[13px] font-medium text-brand-ink">{p.ideal}</p>
+            <p className="mt-2 text-[15px] leading-snug text-slate-600">{p.desc}</p>
 
-          <div className="my-5 h-px bg-slate-200/80" />
-          <motion.ul initial="hidden" whileInView="show" viewport={{ once: true }} variants={{ show: { transition: { staggerChildren: 0.07, delayChildren: 0.2 } } }} className="space-y-4">
-            {p.items.map((it) => {
-              const I = ICONS2[it.icon]
-              return (
-                <motion.li key={it.title} variants={{ hidden: { opacity: 0, x: -10 }, show: { opacity: 1, x: 0 } }} className="flex items-start gap-3">
-                  <I width={18} height={18} className="mt-0.5 shrink-0 text-brand-ink" />
-                  <span><span className="block text-[15px] font-medium leading-tight text-fg">{it.title}</span><span className="mt-0.5 block text-[13px] leading-snug text-slate-600">{it.text}</span></span>
-                </motion.li>
-              )
-            })}
-          </motion.ul>
+            <div className="mt-5 flex flex-wrap items-end gap-x-2 gap-y-1">
+              <Odometer value={price} prefix="৳" className="text-[2.5rem] font-bold leading-none text-fg" />
+              <span className="pb-1 text-[15px] text-slate-600">/ {full ? 'full day' : 'shift'}</span>
+            </div>
+
+            {/* Shift / Full day */}
+            <div role="radiogroup" aria-label={`Billing for ${p.name}`} className="relative mt-4 grid grid-cols-2 rounded-full bg-slate-100 p-1">
+              {[[false, 'Per shift'], [true, 'Full day']].map(([v, label]) => (
+                <button key={label} type="button" role="radio" aria-checked={full === v} onClick={() => setFull(v)}
+                  className={`relative z-10 rounded-full px-2 py-2 text-[13px] font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand ${full === v ? 'text-fg' : 'text-slate-500 hover:text-fg'}`}>
+                  {full === v && <motion.span layoutId={`bill-${p.id}`} transition={{ type: 'spring', stiffness: 500, damping: 34 }} className="absolute inset-0 -z-10 rounded-full bg-surface shadow-card" />}
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-[13px] leading-snug text-slate-600">{full ? 'Morning + Evening · about 15% cheaper' : 'Billed per shift · Fri & Sat +15%'}</p>
+
+            <Link to={`/booking?package=${p.id}`} className={`group/btn relative mt-5 flex items-center justify-center gap-2 overflow-hidden rounded-2xl px-4 py-3.5 text-center text-sm font-semibold transition-all active:scale-[0.98] ${p.popular ? 'bg-brand text-white shadow-glow hover:bg-brand-dark' : 'bg-slate-100 text-fg hover:bg-fg hover:text-surface'}`}>
+              <span aria-hidden className="absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-white/30 transition-all duration-700 group-hover/btn:left-[130%] motion-reduce:hidden" />
+              <span className="relative">Book this package</span>
+              <span className="relative transition-transform duration-300 group-hover/btn:translate-x-1"><ArrowRight /></span>
+            </Link>
+            <p className="mt-3 text-center text-[13px] text-slate-600">30% advance confirms your date</p>
+
+            <div className="my-5 h-px bg-slate-200/80" />
+            <motion.ul initial="hidden" whileInView="show" viewport={{ once: true }} variants={{ show: { transition: { staggerChildren: 0.08, delayChildren: 0.25 } } }} className="space-y-3.5">
+              {p.items.map((it) => {
+                const I = ICONS2[it.icon]
+                return (
+                  <motion.li key={it.title} variants={{ hidden: { opacity: 0, x: -14 }, show: { opacity: 1, x: 0 } }} className="group/item flex min-w-0 items-start gap-3">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-ink transition-transform duration-300 group-hover/item:scale-110 group-hover/item:-rotate-6"><I width={16} height={16} /></span>
+                    <span className="min-w-0"><span className="block text-[15px] font-medium leading-tight text-fg">{it.title}</span><span className="mt-0.5 block text-[13px] leading-snug text-slate-600">{it.text}</span></span>
+                  </motion.li>
+                )
+              })}
+            </motion.ul>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </motion.li>
   )
 }

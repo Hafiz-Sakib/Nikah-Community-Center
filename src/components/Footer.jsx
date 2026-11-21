@@ -24,7 +24,7 @@ export default function Footer() {
       </div>
       <div className="container-x mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/50">
         <p>© 2020 Nikah Community Center. All rights reserved by <a className="text-brand hover:underline" href="https://www.facebook.com/Sakib1056" target="_blank" rel="noreferrer">Mohammad Hafizur Rahman Sakib</a></p>
-        <div className="flex items-center gap-4"><ThemeToggle /><Link to="/my-bookings" className="hover:text-white">My bookings</Link><Link to="/admin" className="hover:text-white">Staff login</Link></div>
+        <div className="flex items-center gap-4"><ThemeToggle className="!bg-white/10 hover:!bg-white/20" /><Link to="/my-bookings" className="hover:text-white">My bookings</Link><Link to="/admin" className="hover:text-white">Staff login</Link></div>
       </div>
     </footer>
   )

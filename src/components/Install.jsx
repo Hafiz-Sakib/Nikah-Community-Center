@@ -31,6 +31,17 @@ export function InstallButton({ className = '', children = 'Install app' }) {
   return <button onClick={install} className={className}><DownloadIcon width={18} height={18} />{children}</button>
 }
 
+/* Icon-only install button (used in the mobile navbar, left of the hamburger) */
+export function InstallIconButton({ className = '' }) {
+  const { available, install } = useInstall()
+  if (!available) return null
+  return (
+    <button type="button" onClick={install} aria-label="Install app" title="Install app" className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-brand-ink outline-none transition hover:bg-slate-200 focus-visible:ring-2 focus-visible:ring-brand active:scale-90 ${className}`}>
+      <DownloadIcon width={19} height={19} />
+    </button>
+  )
+}
+
 /* Small install card, shown once per session when the browser offers install */
 export function InstallBanner() {
   const { available, install } = useInstall()

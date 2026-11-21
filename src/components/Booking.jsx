@@ -214,7 +214,7 @@ export default function Booking() {
                                     )
                                   })}
                                 </div>
-                                <a href="#/food" target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-semibold text-brand hover:underline">See full menu with photos →</a>
+                                <a href="/food" target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-semibold text-brand hover:underline">See full menu with photos →</a>
                               </motion.div>
                             )}
                           </AnimatePresence>

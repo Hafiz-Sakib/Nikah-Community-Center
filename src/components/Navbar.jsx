@@ -5,7 +5,7 @@ import { nav } from '../data'
 import { MenuIcon, CloseIcon, ArrowRight, ClipboardIcon, ChevronDown, ICONS2, HomeIcon, PhoneIcon } from './Icons'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
-import { InstallButton } from './Install'
+import { InstallIconButton } from './Install'
 
 const NAV_ICONS = { ...ICONS2, home: HomeIcon, phone: PhoneIcon }
 const isOn = (to, pathname, isActive) => isActive
@@ -85,8 +85,9 @@ export default function Navbar({ count }) {
             <VenueMenu pathname={pathname} />
             <li><NavLink to={contact.to} className={({ isActive }) => linkCls(isActive)}>{({ isActive }) => (<>{isActive && pill}{contact.label}</>)}</NavLink></li>
           </ul>
-          <div className="flex items-center gap-2">
-            <ThemeToggle className="hidden sm:block" />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <ThemeToggle />
+            <InstallIconButton className="lg:hidden" />
             <Link to="/my-bookings" aria-label="My bookings" title="My bookings" className="relative hidden h-10 w-10 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100 lg:flex">
               <ClipboardIcon width={20} height={20} />
               {count > 0 && <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{count}</span>}
@@ -105,7 +106,6 @@ export default function Navbar({ count }) {
         {open && (
           <motion.div className="fixed inset-0 z-[55] bg-surface pt-20 lg:hidden" initial={{ clipPath: 'inset(0 0 100% 0)' }} animate={{ clipPath: 'inset(0 0 0% 0)' }} exit={{ clipPath: 'inset(0 0 100% 0)' }} transition={{ duration: 0.45, ease: [0.76, 0, 0.24, 1] }}>
             <motion.ul initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.05, delayChildren: 0.2 } } }} className="container-x max-h-full space-y-1 overflow-y-auto pb-24">
-              <motion.li variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }} className="flex items-center justify-between rounded-2xl bg-slate-100 px-4 py-3 sm:hidden"><span className="font-medium text-fg">Dark mode</span><ThemeToggle /></motion.li>
               {[...nav, { to: '/my-bookings', label: 'My bookings', icon: 'clipboard', hint: 'Look up or cancel a booking' }].map((n) => {
                 const Ico = NAV_ICONS[n.icon]
                 return (
@@ -118,7 +118,7 @@ export default function Navbar({ count }) {
                   </motion.li>
                 )
               })}
-              <motion.li variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }} className="space-y-3 pt-4"><Link to="/booking" className="btn-primary w-full !py-4 text-base">Book your date</Link><InstallButton className="flex w-full items-center justify-center gap-2 rounded-full bg-slate-100 py-3.5 text-sm font-semibold text-fg">Install app</InstallButton></motion.li>
+              <motion.li variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }} className="space-y-3 pt-4"><Link to="/booking" className="btn-primary w-full !py-4 text-base">Book your date</Link></motion.li>
             </motion.ul>
           </motion.div>
         )}

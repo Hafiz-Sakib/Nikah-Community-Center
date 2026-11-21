@@ -16,31 +16,39 @@ export const PAYMENT = [
 ]
 export const img = (n) => `${import.meta.env.BASE_URL}images/${n}`
 
+/* Hero carousel. `pos` = object-position (the point of the photo that must stay in frame: faces, couple, stage),
+   `side: 'right'` moves the text to the right when the couple stands on the left of the photo. */
 export const slides = [
-  { image: 'hero-1.webp', eyebrow: 'Chattogram’s favourite venue', title: 'The perfect venue for your next event', text: 'Best decorated, clean and budget-friendly community center. Check a date and book in minutes.' },
-  { image: 'hero-6.webp', eyebrow: 'Weddings & receptions', title: 'Where your story begins beautifully', text: 'Elegant stage décor, bridal rooms and a dedicated team for your biggest day.' },
-  { image: 'hero-3.webp', eyebrow: 'Holud & celebrations', title: 'Make every moment unforgettable', text: 'A spacious, air-conditioned hall for up to 600 guests with easy parking.' },
-  { image: 'hero-2.webp', eyebrow: 'Engagements & Nikah', title: 'Small details, handled with care', text: 'From flowers to flow of the day — one team looks after everything.' },
-  { image: 'hero-4.webp', eyebrow: 'In-house catering', title: 'Fresh, generous menus for every guest', text: 'Experienced chefs and serving staff, with menus to suit your budget.' },
+  { image: 'hero-1.webp', pos: '50% 42%', eyebrow: 'Chattogram’s favourite venue', title: 'The perfect venue for your next event', text: 'Best decorated, clean and budget-friendly community center. Check a date and book in minutes.' },
+  { image: 'hero-6.webp', pos: '45% 20%', side: 'right', eyebrow: 'Weddings & receptions', title: 'Where your story begins beautifully', text: 'Elegant stage décor, bridal rooms and a dedicated team for your biggest day.' },
+  { image: 'hero-3.webp', pos: '50% 50%', eyebrow: 'Holud & celebrations', title: 'Make every moment unforgettable', text: 'A spacious, air-conditioned hall for up to 600 guests with easy parking.' },
+  { image: 'hero-2.webp', pos: '60% 30%', eyebrow: 'Engagements & Nikah', title: 'Small details, handled with care', text: 'From flowers to flow of the day — one team looks after everything.' },
+  { image: 'hero-4.webp', pos: '62% 50%', eyebrow: 'In-house catering', title: 'Fresh, generous menus for every guest', text: 'Experienced chefs and serving staff, with menus to suit your budget.' },
+  { image: 'hero-12.webp', pos: '55% 42%', eyebrow: 'Bridal moments', title: 'Every bride deserves the perfect stage', text: 'Floral backdrops, royal seating and soft light, set up just the way you imagined.' },
+  { image: 'hero-8.webp', pos: '72% 28%', eyebrow: 'Couple portraits', title: 'Memories made in beautiful places', text: 'Portraits before and after the ceremony, with a team that knows the best light.' },
+  { image: 'hero-5.webp', pos: '58% 26%', eyebrow: 'Bridal portraits', title: 'Elegance in every little detail', text: 'Candle-lit pillars, soft florals and a stage made for beautiful photographs.' },
+  { image: 'hero-9.webp', pos: '58% 38%', eyebrow: 'Nikah day', title: 'Two hearts, one beautiful day', text: 'Calm, respectful and joyful — a setting for the moments you will keep forever.' },
+  { image: 'hero-11.webp', pos: '54% 52%', side: 'right', eyebrow: 'Grand receptions', title: 'Dress up, celebrate and be remembered', text: 'Room for the whole family, warm hospitality and a hall that feels like a celebration.' },
+  { image: 'hero-13.webp', pos: '62% 60%', eyebrow: 'Love stories', title: 'Begin forever, together', text: 'From the first look to the last dance, we keep your day beautiful from start to finish.' },
 ]
 
 export const eventTypes = ['Wedding', 'Reception', 'Holud', 'Corporate', 'Birthday', 'Milad', 'Other']
 export const marquee = ['Weddings', 'Holud', 'Receptions', 'Aqiqah', 'Milad', 'Corporate Events', 'Seminars', 'Birthdays', 'Engagements', 'Book Fairs']
 
 export const packages = [
-  { id: 'wedding-basic', icon: 'heart', tag: 'Simple & elegant', ideal: 'Ideal for simple weddings', price: 55000, name: 'Wedding Basic', desc: 'Weddings with a basic plan and limited items.', cap: 400, items: [
+  { id: 'wedding-basic', photo: 'g-couple-stage.webp', photoPos: '50% 22%', icon: 'heart', tag: 'Simple & elegant', ideal: 'Ideal for simple weddings', price: 55000, name: 'Wedding Basic', desc: 'Weddings with a basic plan and limited items.', cap: 400, items: [
     { icon: 'building', title: 'Full space access', text: 'The entire hall and entrance' },
     { icon: 'utensils', title: 'Food arrangement', text: 'Menus arranged with our kitchen' },
     { icon: 'users', title: 'Management support', text: 'On-the-day coordination' },
     { icon: 'sparkles', title: 'Decoration design', text: 'Standard stage and seating' },
     { icon: 'wallet', title: 'Billed per shift', text: 'Morning or evening' } ] },
-  { id: 'wedding-plus', icon: 'sparkles', tag: 'Most booked', ideal: 'Ideal for grand weddings', price: 85000, name: 'Wedding Plus', desc: 'Most weddings with premium plans.', cap: 600, popular: true, items: [
+  { id: 'wedding-plus', photo: 'hero-12.webp', photoPos: '55% 55%', icon: 'sparkles', tag: 'Most booked', ideal: 'Ideal for grand weddings', price: 85000, name: 'Wedding Plus', desc: 'Most weddings with premium plans.', cap: 600, popular: true, items: [
     { icon: 'building', title: 'Full space access', text: 'The entire hall, entrance and rooms' },
     { icon: 'shield', title: 'Security facility', text: 'Guards and parking attendants' },
     { icon: 'users', title: 'Dedicated team', text: 'A coordinator for your event' },
     { icon: 'crown', title: 'Premium decoration', text: 'Themed stage, entrance and seating' },
     { icon: 'wallet', title: 'Pay as per plan', text: 'A flexible payment schedule' } ] },
-  { id: 'corporate', icon: 'building', tag: 'Teams & brands', ideal: 'Ideal for corporate events', price: 120000, name: 'Corporate Event', desc: 'Dedicated team for corporate events.', cap: 500, items: [
+  { id: 'corporate', photo: 'corporate.webp', photoPos: '50% 45%', icon: 'building', tag: 'Teams & brands', ideal: 'Ideal for corporate events', price: 120000, name: 'Corporate Event', desc: 'Dedicated team for corporate events.', cap: 500, items: [
     { icon: 'building', title: 'Full space access', text: 'Hall, lobby and breakout areas' },
     { icon: 'utensils', title: 'Buffet food', text: 'Served by trained staff' },
     { icon: 'crown', title: 'Premium decoration', text: 'Branding-friendly stage setup' },
@@ -63,6 +71,12 @@ export const facilities = [
   { icon: 'bolt', title: 'Backup generator', text: 'Uninterrupted power for lights, sound and cooling.' },
   { icon: 'crown', title: 'Bridal & green rooms', text: 'Private, mirrored rooms for the couple and the family.' },
   { icon: 'utensils', title: 'In-house kitchen', text: 'Experienced chefs and serving staff, with menus to suit your budget.' },
+  { icon: 'wifi', title: 'Free Wi-Fi', text: 'Guest Wi-Fi for your team, vendors and photographers.' },
+  { icon: 'camera', title: 'CCTV monitoring', text: 'Cameras at the entrance, lobby and parking on every event day.' },
+  { icon: 'access', title: 'Accessible entry', text: 'A step-free entrance and ramp for elders and wheelchair users.' },
+  { icon: 'music', title: 'Sound & stage lights', text: 'A built-in sound system and stage lighting, with an LED wall as an add-on.' },
+  { icon: 'moon', title: 'Prayer space', text: 'A quiet space for prayer, with wudu facilities close by.' },
+  { icon: 'sparkles', title: 'Spotless housekeeping', text: 'The hall is cleaned, set and checked before and after every shift.' },
 ]
 
 export const stats = [

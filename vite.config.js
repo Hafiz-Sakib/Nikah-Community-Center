@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  base: './',
+  base: '/',
   resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
   build: {
     target: 'es2020',
@@ -25,8 +25,8 @@ export default defineConfig({
         short_name: 'Nikah CC',
         description: 'Book weddings, receptions, milad and corporate events at Nikah Community Center, Chattogram.',
         id: 'nikah-community-center',
-        start_url: './',
-        scope: './',
+        start_url: '/',
+        scope: '/',
         display: 'standalone',
         orientation: 'portrait-primary',
         lang: 'en',
@@ -41,9 +41,9 @@ export default defineConfig({
           { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' },
         ],
         shortcuts: [
-          { name: 'Book a date', short_name: 'Book', url: './#/booking', icons: [{ src: 'pwa-192.png', sizes: '192x192' }] },
-          { name: 'My bookings', short_name: 'Bookings', url: './#/my-bookings', icons: [{ src: 'pwa-192.png', sizes: '192x192' }] },
-          { name: 'Packages', short_name: 'Packages', url: './#/packages', icons: [{ src: 'pwa-192.png', sizes: '192x192' }] },
+          { name: 'Book a date', short_name: 'Book', url: '/booking', icons: [{ src: 'pwa-192.png', sizes: '192x192' }] },
+          { name: 'My bookings', short_name: 'Bookings', url: '/my-bookings', icons: [{ src: 'pwa-192.png', sizes: '192x192' }] },
+          { name: 'Packages', short_name: 'Packages', url: '/packages', icons: [{ src: 'pwa-192.png', sizes: '192x192' }] },
         ],
       },
       workbox: {
