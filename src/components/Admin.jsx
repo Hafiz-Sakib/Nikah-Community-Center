@@ -62,7 +62,7 @@ export function PaymentsPanel({ b, onChanged }) {
           {cell('Total', money(m.total))}{cell('Received', money(m.paid), 'text-emerald-600 dark:text-emerald-300')}{cell('Waiting to verify', money(m.waiting), m.waiting ? 'text-amber-700 dark:text-amber-300' : 'text-fg')}{cell('Balance due', money(m.balance), m.balance ? 'text-fg' : 'text-emerald-600 dark:text-emerald-300')}
         </div>
         <div className="mt-2.5 flex h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden><span className="h-full bg-emerald-500 transition-all" style={{ width: `${Math.min(100, (m.paid / m.total) * 100)}%` }} /><span className="h-full bg-amber-400 transition-all" style={{ width: `${Math.max(0, Math.min(100 - (m.paid / m.total) * 100, (m.waiting / m.total) * 100))}%` }} /></div>
-        {m.overpaid && <p className="mt-2 rounded-xl bg-red-50 p-2.5 text-xs text-red-700 ring-1 ring-red-200 dark:!bg-red-500/10 dark:!text-red-200">Total is now lower than received: refund {money(m.refundDue)} to the customer and note it. No more payments can be added.</p>}
+        {m.overpaid && <p className="mt-2 rounded-xl bg-red-50 p-2.5 text-xs text-red-700 ring-1 ring-red-200 dark:!bg-red-500/10 dark:!text-red-200">{m.closed ? `This booking is cancelled: refund ${money(m.refundDue)} to the customer. No more payments can be added.` : `Total is now lower than received: refund ${money(m.refundDue)} to the customer and note it. No more payments can be added.`}</p>}
 
         {b.payments?.length ? (
           <ul className="mt-3 divide-y divide-slate-200">
