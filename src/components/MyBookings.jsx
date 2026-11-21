@@ -20,6 +20,7 @@ import ActionButton from './brew/ActionButton'
 import { ClipboardIcon, CloseIcon, WalletIcon, EditIcon, LockIcon, CheckIcon } from './Icons'
 
 const EDIT_CUTOFF_DAYS = 3   // same as the server's EDIT_CUTOFF_DAYS
+const CANCEL_CUTOFF_DAYS = 3 // fallback; the server sends its own cancelCutoffDays with every booking
 const plusDays = (n) => plusDaysISO(n)
 
 export default function MyBookings() {
@@ -31,7 +32,7 @@ export default function MyBookings() {
   const [inv, setInv] = useState(null)       // invoice booking (fresh from /invoice)
   const [edit, setEdit] = useState(null)
   const [busy, setBusy] = useState(false)
-  const today = plusDays(0), editFrom = plusDays(EDIT_CUTOFF_DAYS)
+  const editFrom = plusDays(EDIT_CUTOFF_DAYS)
   const list = useMemo(() => all.slice().sort((a, b) => b.date.localeCompare(a.date)), [all])
 
   const cancel = async (id) => {
@@ -66,7 +67,8 @@ export default function MyBookings() {
               const s = SHIFTS.find((x) => x.id === b.shift)
               const p = packages.find((x) => x.id === b.packageId)
               const canEdit = isActive(b) && b.date >= editFrom
-              const canCancel = isActive(b) && b.date >= today
+              const cutoff = b.cancelCutoffDays ?? CANCEL_CUTOFF_DAYS
+              const canCancel = isActive(b) && b.date > plusDays(cutoff)      // closes `cutoff` days before the event
               const m = moneyOf(b)
               const done = statusOf(b) === 'completed'                         // shift is over
               const showMoney = isActive(b) || done
@@ -90,6 +92,7 @@ export default function MyBookings() {
                   {done && m.paidInFull && !m.overpaid && <p className="mt-2 flex items-center gap-2 rounded-xl bg-sky-50 px-3 py-2 text-xs font-medium text-sky-800 ring-1 ring-sky-200 dark:!bg-sky-500/10 dark:!text-sky-200 dark:!ring-sky-400/30"><CheckIcon width={14} height={14} strokeWidth={3} className="shrink-0" />This event was completed successfully. Thank you for celebrating with us.</p>}
                   {owes && <p className="mt-2 rounded-xl bg-red-50 p-3 text-xs text-red-700 ring-1 ring-red-200 dark:!bg-red-500/10 dark:!text-red-200 dark:!ring-red-400/30">The event is over and {money(m.balance)} is still unpaid. Pay it online or at our office.</p>}
                   {b.status === 'pending' && <HoldWarning b={b} onPay={() => navigate(`/billing/${b.id}`)} onExpire={() => { toast('An unpaid booking was cancelled automatically', 'error'); reload(); reloadMap() }} />}
+                  {m.closed && m.refunded && <p className="mt-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:!bg-emerald-500/10 dark:!text-emerald-300 dark:!ring-emerald-400/30">This booking is cancelled · {money(m.refundedAmount)} has been refunded to you</p>}
                   {m.closed && m.refundDue > 0 && <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 ring-1 ring-amber-200 dark:!bg-amber-500/10 dark:!text-amber-200 dark:!ring-amber-400/30">This booking is cancelled · {money(m.refundDue)} you paid is to be refunded (our team will contact you)</p>}
                   {b.status === 'expired' && <p className="mt-2 rounded-xl bg-orange-50 p-3 text-xs text-orange-700 ring-1 ring-orange-200 dark:!bg-white/5 dark:!text-fg dark:!ring-white/15">Cancelled — the advance was not paid within {b.holdHours ?? 48} hours, so the date was released. This record stays here for your reference; you can book the date again if it is still available.</p>}
                   <AnimatePresence mode="wait" initial={false}>
@@ -108,7 +111,7 @@ export default function MyBookings() {
                         {canBill && <ActionButton variant={m.paidInFull ? 'info' : 'primary'} icon={m.paidInFull ? CheckIcon : WalletIcon} attention={unpaid || owes} delay={0.05} wrap="col-span-2 sm:order-2 sm:col-span-1" onClick={() => navigate(`/billing/${b.id}`)}>{m.paidInFull ? 'Billing · Full paid' : b.status === 'pending' ? 'Pay / billing' : done && m.paidInFull ? 'Billing' : 'Pay balance'}</ActionButton>}
                         <ActionButton variant="info" icon={ClipboardIcon} delay={0} wrap={`sm:order-1 ${canEdit ? '' : 'col-span-2'}`} onClick={() => openInvoice(b)}>Invoice</ActionButton>
                         {canEdit && <ActionButton variant="neutral" icon={EditIcon} delay={0.1} wrap="sm:order-3" onClick={() => setEdit(b)}>Edit</ActionButton>}
-                        {isActive(b) && !canEdit && <p className="col-span-2 inline-flex items-center gap-1.5 text-xs text-slate-400 sm:order-3 sm:col-span-1"><LockIcon width={13} height={13} />Edits close {EDIT_CUTOFF_DAYS} days before the event — call us</p>}
+                        {isActive(b) && !canCancel && <p className="col-span-2 inline-flex items-center gap-1.5 text-xs text-slate-400 sm:order-3 sm:col-span-1"><LockIcon width={13} height={13} />{canEdit ? `Cancellation closes ${cutoff} days before the event — call us` : `Edits and cancellation close ${EDIT_CUTOFF_DAYS} days before the event — call us`}</p>}
                         {canCancel && <ActionButton variant="danger" icon={CloseIcon} delay={0.15} wrap="col-span-2 sm:order-4 sm:col-span-1 sm:ml-auto" onClick={() => setConfirmId(b.id)}>Cancel booking</ActionButton>}
                       </motion.div>
                     )}

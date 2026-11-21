@@ -62,6 +62,7 @@ export function PaymentsPanel({ b, onChanged }) {
           {cell('Total', money(m.total))}{cell('Received', money(m.paid), 'text-emerald-600 dark:text-emerald-300')}{cell('Waiting to verify', money(m.waiting), m.waiting ? 'text-amber-700 dark:text-amber-300' : 'text-fg')}{cell('Balance due', money(m.balance), m.balance ? 'text-fg' : 'text-emerald-600 dark:text-emerald-300')}
         </div>
         <div className="mt-2.5 flex h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden><span className="h-full bg-emerald-500 transition-all" style={{ width: `${Math.min(100, (m.paid / m.total) * 100)}%` }} /><span className="h-full bg-amber-400 transition-all" style={{ width: `${Math.max(0, Math.min(100 - (m.paid / m.total) * 100, (m.waiting / m.total) * 100))}%` }} /></div>
+        {m.closed && m.refunded && <p className="mt-2 rounded-xl bg-emerald-50 p-2.5 text-xs text-emerald-700 ring-1 ring-emerald-200 dark:!bg-emerald-500/10 dark:!text-emerald-300">Cancelled booking: {money(m.refundedAmount)} has been refunded to the customer.</p>}
         {m.overpaid && <p className="mt-2 rounded-xl bg-red-50 p-2.5 text-xs text-red-700 ring-1 ring-red-200 dark:!bg-red-500/10 dark:!text-red-200">{m.closed ? `This booking is cancelled: refund ${money(m.refundDue)} to the customer. No more payments can be added.` : `Total is now lower than received: refund ${money(m.refundDue)} to the customer and note it. No more payments can be added.`}</p>}
 
         {b.payments?.length ? (
@@ -131,7 +132,7 @@ function CancelDialog({ b, onClose, onDone }) {
   return (
     <Modal size="sm" title="Cancel this booking?" onClose={onClose}>
       <p className="text-sm text-slate-600"><b className="text-fg">{b.name}</b> · {b.eventType} · {fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })}<span className="mt-0.5 block text-xs tabular-nums text-slate-400">{b.id}</span></p>
-      <p className="mt-2 text-sm text-slate-500">The date goes back on sale. A cancelled booking cannot be confirmed or re-opened.</p>
+      <p className="mt-2 text-sm text-slate-500">The date goes back on sale and the customer can book it again. A cancelled booking cannot be edited, confirmed or re-opened. You can delete it permanently afterwards.</p>
 
       {m.paid > 0 ? (
         <div role="status" className="mt-4 rounded-2xl bg-red-50 p-4 ring-1 ring-red-200 dark:!bg-red-500/10 dark:!ring-red-400/30">
@@ -152,6 +153,31 @@ function CancelDialog({ b, onClose, onDone }) {
         <HoldToConfirm size="md" duration={1.2} confirmDelay={0.8} label="Hold to cancel booking" doneLabel="Cancelled" onConfirm={go} />
       </div>
       <p className="mt-2 text-center text-xs text-slate-400 sm:text-right">Press and hold the red button</p>
+    </Modal>
+  )
+}
+
+/* Staff confirm that the money of a cancelled booking has really been paid back. Only then can the booking be deleted. */
+function RefundDialog({ b, onClose, onDone }) {
+  const m = moneyOf(b)
+  const [busy, setBusy] = useState(false)
+  const go = async () => {
+    setBusy(true)
+    try { await api(`/admin/bookings/${b.id}/refund`, { method: 'POST', body: {} }); toast(`Refund of ${money(m.paid)} recorded`); onDone(); onClose() }
+    catch (e) { toast(e.message, 'error') } finally { setBusy(false) }
+  }
+  return (
+    <Modal size="sm" title="Mark refund as paid?" onClose={onClose}>
+      <p className="text-sm text-slate-600"><b className="text-fg">{b.name}</b> · <span className="tabular-nums text-xs text-slate-400">{b.id}</span></p>
+      <div role="status" className="mt-4 rounded-2xl bg-red-50 p-4 ring-1 ring-red-200 dark:!bg-red-500/10 dark:!ring-red-400/30">
+        <p className="text-xs font-semibold uppercase tracking-wider text-red-700 dark:!text-red-200">Refund to the customer</p>
+        <p className="mt-1 text-3xl font-semibold tabular-nums text-red-700 dark:!text-red-200">{money(m.paid)}</p>
+      </div>
+      <p className="mt-3 text-sm text-slate-500">Press confirm only after you have really paid this back to the customer (bKash, bank, card or cash). It cannot be undone.</p>
+      <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5">
+        <Button variant="outline" onClick={onClose}>Not yet</Button>
+        <Button variant="success" disabled={busy} onClick={go}><CheckIcon width={14} height={14} />{busy ? 'Saving…' : 'Yes, refund paid'}</Button>
+      </div>
     </Modal>
   )
 }
@@ -209,6 +235,7 @@ export default function Admin() {
   const [open, setOpen] = useState(null)       // booking id whose payments panel is open
   const [edit, setEdit] = useState(null)       // booking | 'new'
   const [inv, setInv] = useState(null)
+  const [refunding, setRefunding] = useState(null)     // cancelled booking whose refund is being marked as paid
   const [cancelling, setCancelling] = useState(null)   // booking whose cancel dialog is open
 
   useEffect(() => { const t = setTimeout(() => { setQ(qInput); setPage(1) }, 350); return () => clearTimeout(t) }, [qInput])
@@ -238,7 +265,7 @@ export default function Admin() {
   const [reviewing, setReviewing] = useState(false)
   const review = async (id, status) => { setReviewing(true); try { await act(() => api(`/admin/payments/${id}`, { method: 'PATCH', body: { status } }), `Payment ${status}`) } finally { setReviewing(false) } }
   const act = async (fn, msg) => { try { await fn(); toast(msg); changed() } catch (e) { toast(e.message, 'error') } }
-  const remove = (b) => act(() => api(`/admin/bookings/${b.id}`, { method: 'DELETE' }), 'Booking deleted')   // hold-to-confirm; the server refuses confirmed / completed / paid bookings
+  const remove = (b) => act(() => api(`/admin/bookings/${b.id}`, { method: 'DELETE' }), 'Booking deleted permanently')   // hold-to-confirm; the server only deletes cancelled bookings whose money is settled
   const openInvoice = (b) => setInv({ ...b, invoiceNo: 'INV-' + b.id.replace(/^NCC-/, '') })   // list rows already carry snapshot + payments
   const pages = Math.max(1, Math.ceil(data.total / PAGE))
   const filtered = filter !== 'all' || q || from || to
@@ -302,6 +329,10 @@ export default function Admin() {
               ) : (
                 <ul className={`grid grid-cols-1 gap-4 transition-opacity ${loading ? 'opacity-60' : ''}`}>
                   {data.items.map((b) => {
+                    const mo = moneyOf(b)
+                    const isClosed = ['cancelled', 'expired'].includes(b.status)
+                    const refundOpen = isClosed && mo.overpaid                        // money still to be paid back
+                    const delBlock = !isClosed ? null : mo.waiting > 0 ? 'Reject the payment waiting for verification before deleting.' : refundOpen ? 'Refund the customer and mark it as refunded before deleting.' : null
                     return (
                       <li key={b.id} className="min-w-0 rounded-3xl bg-surface p-4 ring-1 ring-slate-200 transition hover:ring-brand/40 sm:p-5">
                         <div className="flex gap-4">
@@ -325,7 +356,7 @@ export default function Admin() {
                               <span className="text-slate-500">Total <b className="text-fg">{money(b.total)}</b></span>
                               <span className="text-slate-500">Advance <b className="text-fg">{money(b.advance)}</b></span>
                               <span className="text-slate-500">Paid <b className={b.paidAmount >= b.advance ? 'text-emerald-600 dark:text-emerald-300' : 'text-fg'}>{money(b.paidAmount)}</b></span>
-                              {moneyOf(b).overpaid ? <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:!bg-red-500/15 dark:!text-red-200">Refund due {money(moneyOf(b).refundDue)}</span> : moneyOf(b).paidInFull ? <StatusPill status="fully paid" /> : moneyOf(b).closed ? null : <span className="text-slate-500">Due <b className={b.status === 'completed' ? 'text-red-600 dark:text-red-300' : 'text-fg'}>{money(moneyOf(b).balance)}</b></span>}
+                              {moneyOf(b).refunded ? <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:!bg-emerald-500/15 dark:!text-emerald-300">Refunded {money(moneyOf(b).refundedAmount)}</span> : moneyOf(b).overpaid ? <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:!bg-red-500/15 dark:!text-red-200">Refund due {money(moneyOf(b).refundDue)}</span> : moneyOf(b).paidInFull ? <StatusPill status="fully paid" /> : moneyOf(b).closed ? null : <span className="text-slate-500">Due <b className={b.status === 'completed' ? 'text-red-600 dark:text-red-300' : 'text-fg'}>{money(moneyOf(b).balance)}</b></span>}
                               <span className="tabular-nums text-xs text-slate-400">{b.id}</span>
                             </div>
                             <div className="mt-2.5"><EventTimer b={b} /></div>
@@ -338,12 +369,18 @@ export default function Admin() {
 
                         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
                           {['pending', 'confirmed'].includes(b.status) && <Button size="sm" variant="danger" onClick={() => setCancelling(b)}>Cancel booking</Button>}
-                          <Button size="sm" variant="outline" onClick={() => setEdit(b)}>Edit</Button>
+                          {!isClosed && <Button size="sm" variant="outline" onClick={() => setEdit(b)}>Edit</Button>}
                           <Button size="sm" variant={open === b.id ? 'primary' : 'soft'} aria-expanded={open === b.id} onClick={() => setOpen(open === b.id ? null : b.id)}>Payments ({b.payments?.length ?? 0})<ChevronDown width={14} height={14} className={`transition-transform ${open === b.id ? 'rotate-180' : ''}`} /></Button>
                           <Button size="sm" variant="info" onClick={() => openInvoice(b)}>Invoice</Button>
                           <Button as="a" size="sm" variant="soft" href={`tel:${b.phone}`}><PhoneIcon width={14} height={14} />Call</Button>
-                          {!['confirmed', 'completed'].includes(b.status) && !(b.paidAmount > 0) && <HoldToConfirm className="ml-auto" label="Hold to delete" onConfirm={() => remove(b)} />}
+                          {isClosed && (
+                            <span className="ml-auto flex flex-wrap items-center justify-end gap-2">
+                              {refundOpen && <Button size="sm" variant="success" onClick={() => setRefunding(b)}><CheckIcon width={14} height={14} />Mark refunded</Button>}
+                              <HoldToConfirm size="sm" duration={1.2} confirmDelay={0.8} label="Hold to delete" doneLabel="Deleted" disabled={!!delBlock} onConfirm={() => remove(b)} />
+                            </span>
+                          )}
                         </div>
+                        {delBlock && <p className="mt-2 text-right text-xs text-slate-500">{delBlock}</p>}
                         <AnimatePresence initial={false}>{open === b.id && <PaymentsPanel key="p" b={b} onChanged={changed} />}</AnimatePresence>
                       </li>
                     )
@@ -366,6 +403,7 @@ export default function Admin() {
 
         <AnimatePresence>
           {edit && <EditBooking key={edit === 'new' ? 'new' : edit.id} booking={edit === 'new' ? null : edit} admin map={map} onClose={() => setEdit(null)} onSaved={changed} />}
+          {refunding && <RefundDialog key="refund" b={refunding} onClose={() => setRefunding(null)} onDone={changed} />}
           {cancelling && <CancelDialog key="cancel" b={cancelling} onClose={() => setCancelling(null)} onDone={changed} />}
           {inv && <Modal key="inv" size="lg" title={`Invoice ${inv.invoiceNo}`} onClose={() => setInv(null)}><InvoiceView b={inv} /></Modal>}
         </AnimatePresence>
