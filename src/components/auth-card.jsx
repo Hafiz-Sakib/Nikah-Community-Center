@@ -2,6 +2,7 @@
    Ported to JSX, themed with this site's tokens (day + night), trimmed to email + Google. */
 import * as React from 'react'
 import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from 'motion/react'
+import { LogoMark } from './Logo'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 const EASE = [0.22, 1, 0.36, 1]
@@ -49,16 +50,33 @@ function Roll({ id, children, className = '', reduce, as: Tag = 'span' }) {
   )
 }
 
-function Bloom({ size = 26 }) {
+/* The venue's own emblem (the couple under the sunburst) on a round seal.
+   It pulses softly, a dashed ring turns slowly round it, and the disc turns over each time you switch between sign in and sign up. */
+function Seal({ spin, reduce }) {
   return (
-    <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden>
-      {[0, 60, 120, 180, 240, 300].map((r) => (
-        <ellipse key={r} cx="20" cy="10.6" rx="4.6" ry="8" fill="#fff" fillOpacity=".96" transform={`rotate(${r} 20 20)`} />
+    <div className="relative grid h-[76px] w-[76px] place-items-center" style={{ perspective: 400 }}>
+      {!reduce && [0, 1].map((i) => (
+        <motion.span key={i} aria-hidden className="absolute inset-1 rounded-full ring-1 ring-brand/40"
+          initial={{ scale: 0.85, opacity: 0.55 }} animate={{ scale: 1.5, opacity: 0 }} transition={{ duration: 2.8, repeat: Infinity, delay: i * 1.4, ease: 'easeOut' }} />
       ))}
-      <circle cx="20" cy="20" r="2.6" fill="#9ca3af" />
-    </svg>
+      <motion.svg aria-hidden viewBox="0 0 76 76" className="absolute inset-0 text-brand/60" animate={reduce ? undefined : { rotate: 360 }} transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}>
+        <circle cx="38" cy="38" r="36" fill="none" stroke="currentColor" strokeWidth="1.3" strokeDasharray="1.5 6.5" strokeLinecap="round" />
+      </motion.svg>
+      <motion.div
+        initial={reduce ? false : { scale: 0.4, opacity: 0, rotate: -25 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.1 }}>
+        <motion.div animate={{ rotateY: reduce ? 0 : spin * 360 }} transition={{ duration: 0.8, ease: EASE }} whileHover={reduce ? undefined : { scale: 1.06 }}
+          className="grid h-14 w-14 place-items-center rounded-full bg-surface shadow-md ring-1 ring-slate-200">
+          <LogoMark size={40} />
+        </motion.div>
+      </motion.div>
+    </div>
   )
 }
+
+/* Each block of the card rises into place one after another when the card first appears. */
+const Rise = ({ i = 0, reduce, className = '', children }) => (
+  <motion.div className={className} initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: EASE, delay: 0.12 + i * 0.075 }}>{children}</motion.div>
+)
 
 function Spinner({ className = '' }) {
   return <span className={`inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent ${className}`} aria-hidden />
@@ -263,14 +281,14 @@ export function AuthCard({
   const cta = signup ? 'Create account' : 'Get started'
 
   return (
-    <div className={`w-full max-w-[26rem] rounded-[1.75rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 min-[400px]:p-6 sm:rounded-[2rem] sm:p-7 ${className}`}>
+    <motion.div initial={reduce ? false : { opacity: 0, y: 28, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.7, ease: EASE }} className={`w-full max-w-[26rem] rounded-[1.75rem] bg-surface p-5 shadow-dock ring-1 ring-slate-100 min-[400px]:p-6 sm:rounded-[2rem] sm:p-7 ${className}`}>
       {/* brand mark, title, line */}
       <div className="flex flex-col items-center text-center">
-        <motion.div animate={{ rotate: reduce ? 0 : spin * 60 }} transition={{ duration: 0.6, ease: EASE }} whileHover={reduce ? undefined : { rotate: spin * 60 + 10, scale: 1.05 }} className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-b from-slate-500 to-slate-800 shadow-md ring-1 ring-black/10">
-          <Bloom />
-        </motion.div>
-        <h2 className="mt-3 text-[1.4rem] sm:mt-4 sm:text-[1.55rem] font-semibold leading-tight tracking-tight text-fg"><Roll id={mode} reduce={reduce}>{title}</Roll></h2>
-        <p className="mt-1 text-sm text-slate-500"><Roll id={mode} reduce={reduce}>{line}</Roll></p>
+        <Seal spin={spin} reduce={reduce} />
+        <Rise i={1} reduce={reduce}>
+          <h2 className="mt-2 text-[1.4rem] sm:mt-3 sm:text-[1.55rem] font-semibold leading-tight tracking-tight text-fg"><Roll id={mode} reduce={reduce}>{title}</Roll></h2>
+          <p className="mt-1 text-sm text-slate-500"><Roll id={mode} reduce={reduce}>{line}</Roll></p>
+        </Rise>
       </div>
 
       <form onSubmit={submit} noValidate className="mt-5 sm:mt-6" aria-label={signup ? 'Create account' : 'Sign in'}>
@@ -284,7 +302,8 @@ export function AuthCard({
               </motion.div>
             )}
           </AnimatePresence>
-          <div className="pb-3"><Field id={`${uid}-email`} label="Email" type="email" value={v.email} onChange={setField('email')} icon={IcAt} autoComplete="email" error={errors.email} errorId={`${uid}-email-err`} shakeKey={shakeKey} reduce={reduce} validate={(x) => EMAIL_RE.test(x.trim())} /></div>
+          <Rise i={2} reduce={reduce} className="pb-3"><Field id={`${uid}-email`} label="Email" type="email" value={v.email} onChange={setField('email')} icon={IcAt} autoComplete="email" error={errors.email} errorId={`${uid}-email-err`} shakeKey={shakeKey} reduce={reduce} validate={(x) => EMAIL_RE.test(x.trim())} /></Rise>
+          <Rise i={3} reduce={reduce}>
           <Field
             id={`${uid}-password`} label="Password" type={show ? 'text' : 'password'} value={v.password} onChange={setField('password')} icon={IcLock}
             autoComplete={signup ? 'new-password' : 'current-password'} error={errors.password} errorId={`${uid}-password-err`} shakeKey={shakeKey} reduce={reduce}
@@ -298,6 +317,7 @@ export function AuthCard({
               </button>
             }
           />
+          </Rise>
         </div>
 
         {/* forgot link (sign in) folds into the strength meter (sign up) */}
@@ -327,6 +347,7 @@ export function AuthCard({
         </AnimatePresence>
 
         {/* submit */}
+        <Rise i={4} reduce={reduce}>
         <motion.button
           type="submit" disabled={busy} aria-busy={status === 'loading'}
           whileTap={reduce || busy ? undefined : { scale: 0.97 }}
@@ -359,8 +380,10 @@ export function AuthCard({
             )}
           </AnimatePresence>
         </motion.button>
+        </Rise>
       </form>
 
+      <Rise i={5} reduce={reduce}>
       {/* divider */}
       <div className="my-5 flex items-center gap-3 text-xs text-slate-400" role="separator">
         <motion.span className="h-px flex-1 origin-right bg-slate-200" initial={{ scaleX: reduce ? 1 : 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.7, ease: EASE, delay: 0.2 }} />
@@ -380,8 +403,9 @@ export function AuthCard({
           <Roll id={mode} reduce={reduce}>{signup ? 'Sign in' : 'Sign up'}</Roll>
         </button>
       </p>
+      </Rise>
       <style>{`@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}60%{transform:rotate(10deg)}}`}</style>
-    </div>
+    </motion.div>
   )
 }
 

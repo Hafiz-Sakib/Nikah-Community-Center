@@ -14,7 +14,7 @@ import Button from './brew/Button'
 import { TiltCard } from './brew/TiltCard'
 import { Rolling } from './brew/AmountSlider'
 import Odometer from './Odometer'
-import { CalendarIcon, CheckIcon, ClockIcon, MinusIcon, PlusIcon, ArrowRight, ChevronLeft, EditIcon, ShieldIcon, UsersIcon, SparklesIcon, MusicIcon, CameraIcon, HeartIcon, ICONS2 } from './Icons'
+import { CalendarIcon, CheckIcon, ClockIcon, MinusIcon, PlusIcon, ArrowRight, ChevronLeft, EditIcon, ShieldIcon, UsersIcon, StackIcon, SparklesIcon, MusicIcon, CameraIcon, HeartIcon, ICONS2 } from './Icons'
 
 /* Booking flow: Event -> Date & shift -> Details -> Confirm.
    Money rules (price, 30% advance, 48 h hold) are decided by the server; the numbers on screen use the same
@@ -245,7 +245,7 @@ export default function Booking() {
                   <div className="space-y-7">
                     <div>
                       <Heading title="What are you celebrating?" />
-                      <div role="radiogroup" aria-label="Event type" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      <div role="radiogroup" aria-label="Event type" className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
                         {eventTypes.map((t) => {
                           const on = f.eventType === t
                           const Ico = ICONS2[events.find((e) => e.slug === t)?.icon] ?? SparklesIcon
@@ -266,9 +266,9 @@ export default function Booking() {
                           const on = f.packageId === p.id
                           return (
                             <TiltCard key={p.id} maxTilt={5} hoverScale={1.015} className={`!rounded-3xl ring-1 transition-colors ${on ? '!bg-brand-soft !ring-2 ring-brand' : 'ring-slate-200'}`}>
-                              <button type="button" onClick={() => set({ packageId: p.id })} aria-pressed={on} className="flex h-full w-full flex-col p-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
-                                <span className="flex items-start justify-between gap-2"><b className="text-base text-fg">{p.name}</b>{p.popular && <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">Popular</span>}</span>
-                                <span className="mt-2 block text-2xl font-semibold tracking-tight text-fg">{money(p.price)}<span className="ml-1 text-xs font-normal text-slate-500">/ shift</span></span>
+                              <button type="button" onClick={() => set({ packageId: p.id })} aria-pressed={on} className="flex h-full w-full flex-col p-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand sm:p-4 xl:p-5">
+                                <span className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1"><b className="text-base text-fg">{p.name}</b>{p.popular && <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">Popular</span>}</span>
+                                <span className="mt-2 block text-xl font-semibold tracking-tight text-fg xl:text-2xl">{money(p.price)}<span className="ml-1 text-xs font-normal text-slate-500">/ shift</span></span>
                                 <span className="mt-1 block text-xs text-slate-500">Up to {capOf(p).toLocaleString('en-IN')} guests</span>
                                 <ul className="mt-3 space-y-1.5 text-xs text-slate-600">
                                   {(p.items ?? []).slice(0, 3).map((it) => <li key={it.title} className="flex items-start gap-2"><CheckIcon width={13} height={13} strokeWidth={3} className="mt-0.5 shrink-0 text-emerald-500" />{it.title}</li>)}
@@ -280,25 +280,37 @@ export default function Booking() {
                         })}
                       </div>
                     </div>
-                    <div className="rounded-3xl bg-surface p-4 shadow-card ring-1 ring-slate-200 sm:p-6">
-                      <div className="flex items-center gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand-ink"><UsersIcon width={20} height={20} /></span><div><p className="text-sm font-semibold text-fg">Expected guests</p><p className="text-xs text-slate-500">Up to {cap.toLocaleString('en-IN')} on this package · hall holds {HALL_CAP.toLocaleString('en-IN')}</p></div></div>
-                      <div className="mt-5 flex items-center justify-center gap-4 sm:gap-6">
-                        <button type="button" aria-label="Fewer guests" disabled={f.guests <= 20} onClick={() => set({ guests: Math.max(20, f.guests - 10) })} className="grid h-12 w-12 place-items-center rounded-full bg-slate-100 text-fg transition hover:bg-slate-200 active:scale-90 disabled:opacity-35"><MinusIcon width={20} height={20} /></button>
-                        <p className="min-w-[7rem] text-center text-5xl font-semibold leading-none tracking-tight text-fg sm:min-w-[9rem] sm:text-6xl"><Rolling text={f.guests.toLocaleString('en-IN')} still={reduce} /></p>
-                        <button type="button" aria-label="More guests" disabled={f.guests >= cap} onClick={() => set({ guests: Math.min(cap, f.guests + 10) })} className="grid h-12 w-12 place-items-center rounded-full bg-brand text-white shadow-glow transition hover:bg-brand-dark active:scale-90 disabled:opacity-35"><PlusIcon width={20} height={20} /></button>
+                    <div className="relative overflow-hidden rounded-[1.75rem] bg-surface p-4 shadow-card ring-1 ring-slate-200 sm:p-7">
+                      <div aria-hidden className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-brand/10 blur-3xl" />
+                      <div className="relative flex items-center gap-3.5">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand-ink ring-1 ring-brand/15 sm:h-12 sm:w-12"><UsersIcon width={22} height={22} /></span>
+                        <div className="min-w-0"><h3 className="text-base font-semibold text-fg sm:text-lg">Expected guests</h3><p className="text-xs text-slate-500 sm:text-sm">Up to {cap.toLocaleString('en-IN')} on this package · hall holds {HALL_CAP.toLocaleString('en-IN')}</p></div>
                       </div>
-                      <input type="range" aria-label="Expected guests" min={20} max={cap} step={10} value={f.guests} onChange={(e) => set({ guests: +e.target.value })} className="range-brew mt-5" style={{ '--p': `${pct}%` }} />
-                      <div className="flex justify-between text-xs font-medium tabular-nums text-slate-500"><span>20</span><span>{cap.toLocaleString('en-IN')}</span></div>
-                      <div className="mt-4 flex flex-wrap justify-center gap-2" role="group" aria-label="Quick guest counts">
-                        {chips.map((n) => <button key={n} type="button" onClick={() => set({ guests: n })} aria-pressed={f.guests === n} className={`h-9 rounded-full px-4 text-xs font-semibold ring-1 transition active:scale-95 ${f.guests === n ? 'bg-brand text-white ring-brand' : 'bg-surface text-slate-600 ring-slate-300 hover:ring-brand/60'}`}>{n.toLocaleString('en-IN')}</button>)}
+
+                      <div className="relative mt-6 flex flex-col items-center sm:mt-7">
+                        <div className="flex w-full max-w-md items-center justify-between rounded-full bg-slate-50 px-2.5 pb-5 pt-2.5 ring-1 ring-slate-200 shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)] sm:px-3.5 sm:pb-6 sm:pt-3.5">
+                          <button type="button" aria-label="Fewer guests" disabled={f.guests <= 20} onClick={() => set({ guests: Math.max(20, f.guests - 10) })} className="group grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-surface text-slate-500 ring-1 ring-slate-200 transition hover:text-fg hover:ring-slate-300 active:scale-90 disabled:opacity-40 sm:h-14 sm:w-14"><MinusIcon width={20} height={20} className="transition-transform duration-300 group-hover:scale-x-125" /></button>
+                          <p className="min-w-0 flex-1 text-center text-5xl font-bold leading-none tracking-tight text-fg sm:text-6xl"><Rolling text={f.guests.toLocaleString('en-IN')} still={reduce} /></p>
+                          <button type="button" aria-label="More guests" disabled={f.guests >= cap} onClick={() => set({ guests: Math.min(cap, f.guests + 10) })} className={`group grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-white ring-1 ring-brand-dark/40 transition hover:bg-brand-dark active:scale-90 disabled:opacity-40 sm:h-14 sm:w-14 bg-brand shadow-glow`}><PlusIcon width={22} height={22} className="transition-transform duration-300 group-hover:rotate-90 group-active:rotate-90" /></button>
+                        </div>
+                        <span className="relative z-10 -mt-3.5 inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-4 py-1.5 text-xs font-semibold text-brand-ink ring-4 ring-surface sm:text-sm"><UsersIcon width={15} height={15} /><span className="tabular-nums">{f.guests.toLocaleString('en-IN')}</span> {f.guests === 1 ? 'guest' : 'guests'}</span>
+                      </div>
+
+                      <div className="relative mt-5 sm:mt-6">
+                        <input type="range" aria-label="Expected guests" min={20} max={cap} step={10} value={f.guests} onChange={(e) => set({ guests: +e.target.value })} className="range-brew" style={{ '--pn': pct / 100 }} />
+                        <div className="-mt-1 flex justify-between px-0.5 text-xs font-medium tabular-nums text-slate-500"><span>20</span><span>{cap.toLocaleString('en-IN')}</span></div>
+                      </div>
+
+                      <div className="relative mt-5 flex flex-wrap justify-center gap-2" role="group" aria-label="Quick guest counts">
+                        {chips.map((n) => <button key={n} type="button" onClick={() => set({ guests: n })} aria-pressed={f.guests === n} className={`h-9 min-w-[3.5rem] rounded-full px-4 text-xs font-semibold tabular-nums ring-1 transition active:scale-95 sm:text-[13px] ${f.guests === n ? 'bg-brand-soft text-brand-ink ring-2 ring-brand' : 'bg-surface text-slate-600 ring-slate-300 hover:ring-brand/60'}`}>{n.toLocaleString('en-IN')}</button>)}
                       </div>
                     </div>
                   </div>
                 )}
 
                 {step === 1 && (
-                  <div className="grid gap-7 md:grid-cols-[1fr_1fr] md:gap-8">
-                    <div><Heading title="Pick a date" text="Green is free, amber has one shift left." /><Calendar value={f.date} onChange={(d) => set({ date: d })} map={map} /></div>
+                  <div className="grid gap-7 md:grid-cols-2 md:gap-8 lg:grid-cols-1 xl:grid-cols-2">
+                    <div className="min-w-0"><Heading title="Pick a date" text="Green is free, amber has one shift left." /><div className="lg:max-w-md xl:max-w-none"><Calendar value={f.date} onChange={(d) => set({ date: d })} map={map} /></div></div>
                     <div>
                       <Heading title={f.date ? fmtDate(f.date, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Then choose a shift'} text={f.date ? 'Hall price per shift for your package.' : 'Select a date to see which shifts are free.'} />
                       <LayoutGroup><div className="space-y-2.5" role="group" aria-label="Shift">
@@ -337,31 +349,39 @@ export default function Booking() {
                       </div>
                       <AnimatePresence initial={false}>
                         {f.catering === 'hall' && (
-                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                            <p className="mb-2 mt-5 text-sm font-medium text-fg">Choose a food package</p>
-                            <div className="grid gap-2.5 sm:grid-cols-3">
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="-mx-1 overflow-hidden px-1 pb-1">
+                            <div className="mb-2.5 mt-5"><h4 className="text-sm font-semibold text-fg sm:text-base">Choose a food package <span className="text-xs font-normal text-slate-500 sm:text-sm">· priced per guest</span></h4></div>
+                            <div role="radiogroup" aria-label="Food package" className="grid gap-2">
                               {foodPkgs.map((m) => {
                                 const on = menu?.id === m.id
                                 const dishes = foodItems.filter((i) => i.by[m.id])
                                 return (
-                                  <Choice key={m.id} on={on} onClick={() => set({ menu: m.id })} className="flex flex-col !p-3.5">
-                                    <b className="text-sm text-fg">{m.name} menu</b>
-                                    <span className="text-xs text-slate-600">{m.text}</span>
-                                    <span className="mt-1 text-sm font-semibold text-brand-ink">{money(m.price)} <span className="text-xs font-normal text-slate-600">/ guest</span></span>
-                                    <span className="mt-1 text-xs text-slate-600">{dishes.length} dishes · {money(m.price * f.guests)} for {f.guests}</span>
-                                    <span className="mt-2 text-xs leading-snug text-slate-500">{dishes.slice(0, 4).map((d) => d.name).join(', ')}…</span>
-                                  </Choice>
+                                  <button key={m.id} type="button" role="radio" aria-checked={on} onClick={() => set({ menu: m.id })}
+                                    className={`group relative flex w-full min-w-0 items-start gap-3 rounded-2xl p-3 text-left outline-none ring-1 transition-[box-shadow,background-color] focus-visible:ring-2 focus-visible:ring-brand sm:p-3.5 ${on ? 'bg-brand-soft ring-2 ring-brand' : 'bg-surface ring-slate-200 hover:ring-brand/50'}`}>
+                                    <span className="mt-0.5"><Tick on={on} /></span>
+                                    <span className="min-w-0 flex-1">
+                                      <span className="flex items-baseline justify-between gap-3">
+                                        <b className="min-w-0 truncate text-sm text-fg sm:text-[15px]">{m.name} <span className="font-medium text-slate-500">menu</span></b>
+                                        <span className="shrink-0 text-base font-semibold tabular-nums text-brand-ink sm:text-lg">{money(m.price)}<span className="ml-0.5 text-[11px] font-normal text-slate-500">/guest</span></span>
+                                      </span>
+                                      <span className="mt-0.5 flex flex-wrap items-center justify-between gap-x-3 text-xs text-slate-500">
+                                        <span>{m.text} · {dishes.length} dishes</span>
+                                        <span className="tabular-nums">{money(m.price * f.guests)} for {f.guests.toLocaleString('en-IN')}</span>
+                                      </span>
+                                      <span className="mt-1.5 block truncate text-[11px] text-slate-400 sm:text-xs">{dishes.slice(0, 4).map((d) => d.name).join(' · ')}{dishes.length > 4 ? ` +${dishes.length - 4} more` : ''}</span>
+                                    </span>
+                                  </button>
                                 )
                               })}
                             </div>
-                            <a href="/food" target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-semibold text-brand-ink underline-offset-2 hover:underline">See full menu with photos →</a>
+                            <a href="/food" target="_blank" rel="noreferrer" className="group mt-3 inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-soft px-4 text-[13px] font-semibold text-brand-ink ring-1 ring-brand/25 transition hover:ring-brand active:scale-95">See full menu with photos<ArrowRight width={15} height={15} className="transition-transform duration-200 group-hover:translate-x-1" /></a>
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
                     <div>
                       <Heading title="Optional extras" text="Tap to add. Priced once per event." />
-                      <div className="grid gap-2.5 sm:grid-cols-2">
+                      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                         {addons.filter((a) => a.id !== 'catering').map((a) => {
                           const on = f.addons.includes(a.id)
                           const Ico = ADDON_ICON[a.id] ?? SparklesIcon
@@ -427,16 +447,16 @@ export default function Booking() {
               </motion.div>
             </AnimatePresence>
 
-            {/* nav: a bar pinned to the bottom on phones (total always in view), inline on larger screens */}
-            <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-surface/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:static sm:z-auto sm:mt-8 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
-              <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-                <Button variant="outline" size="lg" onClick={() => go(-1)} disabled={step === 0} className="!px-4 disabled:invisible sm:!px-7" aria-label="Back"><ChevronLeft width={18} height={18} /><span className="hidden sm:inline">Back</span></Button>
-                <button type="button" onClick={() => setSheet(true)} className="min-w-0 flex-1 text-left sm:flex-none sm:cursor-default lg:pointer-events-none" aria-label="Show booking summary">
-                  <span className="block text-[11px] text-slate-500">{q.total ? 'Total' : 'Total (pick a shift)'}</span>
-                  <Odometer value={q.total} prefix="৳" className="text-lg font-semibold text-fg sm:text-xl" />
+            {/* nav: a bar pinned to the bottom on phones (total always in view), a footer row inside the card on larger screens */}
+            <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-surface/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur sm:static sm:z-auto sm:mt-8 sm:border-slate-200 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-6 sm:backdrop-blur-none">
+              <div className="mx-auto flex max-w-6xl items-center justify-between gap-2.5 sm:gap-4">
+                <Button variant="outline" size="lg" onClick={() => go(-1)} disabled={step === 0} className="group !px-4 disabled:hidden sm:!px-7" aria-label="Back"><ChevronLeft width={18} height={18} className="transition-transform duration-200 group-hover:-translate-x-0.5" /><span className="hidden sm:inline">Back</span></Button>
+                <button type="button" onClick={() => setSheet(true)} className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl bg-brand-soft/70 px-3 py-2 text-left ring-1 ring-brand/15 sm:mr-auto sm:max-w-[17rem] sm:flex-none sm:px-3.5 sm:py-2.5 lg:cursor-default lg:pointer-events-none" aria-label="Show booking summary">
+                  <span aria-hidden className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-surface text-brand-ink ring-1 ring-brand/15 sm:h-10 sm:w-10"><StackIcon width={20} height={20} /></span>
+                  <span className="min-w-0"><span className="block truncate text-[11px] text-slate-500 sm:text-xs">{q.total ? 'Total' : 'Total (pick a shift)'}</span><Odometer value={q.total} prefix="৳" className="text-lg font-bold text-fg sm:text-xl" /></span>
                 </button>
-                {step < 3 ? <Button size="lg" onClick={() => go(1)} aria-disabled={!valid} className={valid ? '' : 'opacity-80'}>Continue<ArrowRight /></Button>
-                  : user ? <Button size="lg" variant="success" onClick={confirm} disabled={busy || !agree}><CheckIcon width={18} height={18} />{busy ? 'Booking…' : 'Confirm booking'}</Button>
+                {step < 3 ? <Button size="lg" onClick={() => go(1)} aria-disabled={!valid} className={`group !px-5 sm:!px-8 ${valid ? '' : 'opacity-80'}`}>Continue<ArrowRight className="transition-transform duration-200 group-hover:translate-x-1" /></Button>
+                  : user ? <Button size="lg" variant="success" onClick={confirm} disabled={busy || !agree} className="group"><CheckIcon width={18} height={18} />{busy ? 'Booking…' : 'Confirm booking'}</Button>
                   : <Button size="lg" onClick={() => loginFirst(false)}>Log in to book</Button>}
               </div>
             </div>

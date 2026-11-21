@@ -6,14 +6,14 @@ export const CONTACT = {
   hours: 'Daily, 9:00 AM – 9:00 PM',
   mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Community+Center+Chattogram',
 }
-/* Advance-payment details shown on the billing screen & invoice. Replace the placeholders with your real numbers. */
+/* Advance-payment details shown on the billing screen & invoice. Real numbers: bKash / Nagad 01516195904, City Bank A/C 173510104325671 (the first part of `value`, before ' · ', is what the Copy button copies). */
 export const PAYMENT = [
   { id: 'card', label: 'Card', kind: 'Visa, Mastercard, Amex', color: '#3f87f5', online: true },
-  { id: 'bkash', label: 'bKash', kind: 'Send Money (personal)', value: '01700-000000', color: '#e2136e', logo: { src: 'pay/bkash.svg', w: 720, h: 329 },
+  { id: 'bkash', label: 'bKash', kind: 'Send Money (personal)', value: '01516195904', color: '#e2136e', logo: { src: 'pay/bkash.svg', w: 720, h: 329 },
     steps: ['Open the bKash app and tap Send Money.', 'Enter the number above and the amount shown.', 'Add your Booking ID as the reference and confirm with your PIN.', 'Copy the TrxID from the confirmation and paste it below.'] },
-  { id: 'nagad', label: 'Nagad', kind: 'Send Money (personal)', value: '01700-000000', color: '#ee2d24', logo: { src: 'pay/nagad.png', w: 720, h: 252 },
+  { id: 'nagad', label: 'Nagad', kind: 'Send Money (personal)', value: '01516195904', color: '#ee2d24', logo: { src: 'pay/nagad.png', w: 720, h: 252 },
     steps: ['Open the Nagad app and tap Send Money.', 'Enter the number above and the amount shown.', 'Add your Booking ID as the reference and confirm with your PIN.', 'Copy the Transaction ID from the receipt and paste it below.'] },
-  { id: 'bank', label: 'Bank', kind: 'Bank transfer / deposit', value: 'A/C 0000000000000 · Nikah Community Center · Your Bank, Chattogram', color: '#0b9a4b', logo: { src: 'pay/bangladesh-bank.png', w: 358, h: 360 },
+  { id: 'bank', label: 'Bank', kind: 'Bank transfer / deposit', value: 'A/C 173510104325671 · City Bank, GEC Branch · Routing No: 1728273', color: '#0b9a4b', logo: { src: 'pay/bangladesh-bank.png', w: 358, h: 360 },
     steps: ['Transfer or deposit the amount to the account above.', 'Write your Booking ID in the remark or on the deposit slip.', 'Enter the transfer or slip reference number below.'] },
   { id: 'office', label: 'At office', kind: 'Pay in cash or card', value: 'Nikah Community Center, Chattogram · Daily 9 AM – 9 PM', color: '#64748b' },
 ]

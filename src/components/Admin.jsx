@@ -69,7 +69,7 @@ export function PaymentsPanel({ b, onChanged }) {
             {b.payments.map((p) => (
               <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5">
                 <PayLogo id={p.method} size="sm" />
-                <span className="min-w-0 flex-1 basis-44 text-sm text-slate-600"><b className="text-fg">{label(p.method)}</b> · <b className="tabular-nums text-fg">{money(p.amount)}</b>{p.reference && <span className="ml-1 break-all font-mono text-xs text-slate-500">· {p.reference}</span>}<span className="block text-xs text-slate-500">{fmtWhen(p.createdAt)}{p.note ? ` · ${p.note}` : ''}</span></span>
+                <span className="min-w-0 flex-1 basis-44 text-sm text-slate-600"><b className="text-fg">{label(p.method)}</b> · <b className="tabular-nums text-fg">{money(p.amount)}</b>{p.reference && <span className="ml-1 break-all tabular-nums text-xs text-slate-500">· {p.reference}</span>}<span className="block text-xs text-slate-500">{fmtWhen(p.createdAt)}{p.note ? ` · ${p.note}` : ''}</span></span>
                 <StatusPill status={p.status} />
                 {p.status !== 'verified' && <Button size="sm" variant="success" disabled={busy} onClick={() => review(p.id, 'verified')}><CheckIcon width={14} height={14} />Verify</Button>}
                 {p.status === 'pending' && <Button size="sm" variant="danger" disabled={busy} onClick={() => review(p.id, 'rejected')}>Reject</Button>}
@@ -128,7 +128,7 @@ function VerifyBox({ b, busy, onReview }) {
           <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5 first:pt-1 last:pb-0">
             <span className="min-w-0 flex-1 basis-48 text-sm text-slate-600">
               <b className="text-fg">{money(p.amount)}</b> · <span className="font-semibold text-fg">{PAYMENT.find((x) => x.id === p.method)?.label ?? p.method}</span>
-              <span className="mt-0.5 block text-xs text-slate-500">{p.reference ? <>TrxID <span className="break-all font-mono text-fg">{p.reference}</span></> : 'No reference'} · {fmtWhen(p.createdAt)}</span>
+              <span className="mt-0.5 block text-xs text-slate-500">{p.reference ? <>TrxID <span className="break-all tabular-nums text-fg">{p.reference}</span></> : 'No reference'} · {fmtWhen(p.createdAt)}</span>
             </span>
             <span className="flex w-full gap-2 sm:w-auto">
               <Button size="sm" variant="success" disabled={busy} className="flex-1 sm:flex-none" onClick={() => onReview(p.id, 'verified')}><CheckIcon width={14} height={14} />Verify</Button>
@@ -284,7 +284,7 @@ export default function Admin() {
                               <span className="text-slate-500">Advance <b className="text-fg">{money(b.advance)}</b></span>
                               <span className="text-slate-500">Paid <b className={b.paidAmount >= b.advance ? 'text-emerald-600 dark:text-emerald-300' : 'text-fg'}>{money(b.paidAmount)}</b></span>
                               {moneyOf(b).overpaid ? <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:!bg-red-500/15 dark:!text-red-200">Refund due {money(moneyOf(b).refundDue)}</span> : moneyOf(b).paidInFull ? <StatusPill status="fully paid" /> : <span className="text-slate-500">Due <b className={b.status === 'completed' ? 'text-red-600 dark:text-red-300' : 'text-fg'}>{money(moneyOf(b).balance)}</b></span>}
-                              <span className="font-mono text-xs text-slate-400">{b.id}</span>
+                              <span className="tabular-nums text-xs text-slate-400">{b.id}</span>
                             </div>
                             <div className="mt-2.5"><EventTimer b={b} /></div>
                             {b.status === 'expired' && <p className="mt-2 text-xs text-red-600 dark:text-red-300">Auto-cancelled: advance not paid in time</p>}

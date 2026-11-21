@@ -2,16 +2,16 @@ import { motion, useReducedMotion } from 'motion/react'
 import { CheckIcon } from './Icons'
 
 /* Where the booking is on its way to confirmed. Derived from real data, nothing is faked. */
-export default function PayProgress({ submitted, verified, confirmed }) {
+export default function PayProgress({ submitted, verified, confirmed, completed = false, className = 'mt-5' }) {
   const reduce = useReducedMotion()
-  const done = [true, submitted || verified || confirmed, verified || confirmed, confirmed]
-  const labels = ['Requested', 'Advance paid', 'Verified', 'Confirmed']
+  const done = [true, submitted || verified || confirmed || completed, verified || confirmed || completed, confirmed || completed, completed]
+  const labels = ['Requested', 'Advance paid', 'Verified', 'Confirmed', 'Completed']
   const active = done.findIndex((d) => !d)
-  const reach = (active === -1 ? 3 : Math.max(0, active - 1)) / 3   // 0..1 along the line between first and last dot
+  const reach = (active === -1 ? 4 : Math.max(0, active - 1)) / 4   // 0..1 along the line between first and last dot
   return (
-    <ol aria-label="Booking progress" className="relative mx-auto mt-5 grid max-w-xl grid-cols-4 text-center">
-      <span aria-hidden className="absolute left-[12.5%] right-[12.5%] top-[13px] h-0.5 rounded-full bg-slate-200" />
-      <motion.span aria-hidden className="absolute left-[12.5%] top-[13px] h-0.5 origin-left rounded-full bg-emerald-500" style={{ width: '75%' }} initial={{ scaleX: 0 }} animate={{ scaleX: reach }} transition={{ duration: reduce ? 0 : 0.9, ease: [0.22, 1, 0.36, 1] }} />
+    <ol aria-label="Booking progress" className={`relative mx-auto grid max-w-2xl grid-cols-5 text-center ${className}`}>
+      <span aria-hidden className="absolute left-[10%] right-[10%] top-[13px] h-0.5 rounded-full bg-slate-200" />
+      <motion.span aria-hidden className="absolute left-[10%] top-[13px] h-0.5 origin-left rounded-full bg-emerald-500" style={{ width: '80%' }} initial={{ scaleX: 0 }} animate={{ scaleX: reach }} transition={{ duration: reduce ? 0 : 0.9, ease: [0.22, 1, 0.36, 1] }} />
       {labels.map((l, i) => {
         const on = done[i], now = i === active
         return (

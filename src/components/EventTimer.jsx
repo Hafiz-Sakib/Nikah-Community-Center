@@ -1,4 +1,5 @@
 import { ClockIcon } from './Icons'
+import { statusOf } from '../lib/bookings'
 import { useNow, eventWindow, parts, pad, DAY } from '../lib/countdown'
 import { fmtDate, SHIFTS } from '../lib/store'
 
@@ -14,7 +15,7 @@ const DARK = 'dark:!bg-white/10 dark:!ring-white/20 dark:!text-fg'
 
 export default function EventTimer({ b, compact = false, className = '' }) {
   const now = useNow()
-  if (!b || (b.status !== 'pending' && b.status !== 'confirmed')) return null
+  if (!b || (b.status !== 'pending' && b.status !== 'confirmed') || statusOf(b) === 'completed') return null
   const { start, end } = eventWindow(b)
   const left = start - now
   const shift = SHIFTS.find((s) => s.id === b.shift)

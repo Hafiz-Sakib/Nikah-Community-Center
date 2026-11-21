@@ -3,6 +3,7 @@ import { CONTACT, img } from '../data'
 import { fmtDate, money } from '../lib/store'
 import { billRows, invoiceNo, paidOf } from '../lib/invoice'
 import Barcode from './Barcode'
+import { statusOf } from '../lib/bookings'
 
 /* Printable invoice. Colours are fixed hex (not theme tokens) so it always looks the same, light or dark, on screen or in the PDF.
    Layout lives in index.css (.inv-*): on screen the paper is fluid and re-flows with container queries (phone, tablet, desktop, TV);
@@ -14,7 +15,7 @@ const Invoice = forwardRef(function Invoice({ b, pdf = false }, ref) {
   const waiting = payList.filter((p) => p.status === 'pending').reduce((s, p) => s + p.amount, 0)
   const inReview = b.status === 'pending' && waiting > 0
   const full = q.total > 0 && paid >= q.total
-  const status = b.status === 'cancelled' ? ['CANCELLED', '#b91c1c', '#fef2f2'] : b.status === 'expired' ? ['EXPIRED', '#9a3412', '#fff7ed'] : full ? ['PAID IN FULL', '#047857', '#ecfdf5'] : b.status === 'completed' ? ['COMPLETED', '#0369a1', '#f0f9ff'] : b.status === 'confirmed' ? ['CONFIRMED', '#047857', '#ecfdf5'] : inReview ? ['PAYMENT IN REVIEW', '#0369a1', '#f0f9ff'] : ['ADVANCE PENDING', '#b45309', '#fffbeb']
+  const status = b.status === 'cancelled' ? ['CANCELLED', '#b91c1c', '#fef2f2'] : b.status === 'expired' ? ['EXPIRED', '#9a3412', '#fff7ed'] : full && statusOf(b) === 'completed' ? ['EVENT COMPLETED', '#0369a1', '#f0f9ff'] : full ? ['PAID IN FULL', '#047857', '#ecfdf5'] : statusOf(b) === 'completed' ? ['COMPLETED', '#0369a1', '#f0f9ff'] : b.status === 'confirmed' ? ['CONFIRMED', '#047857', '#ecfdf5'] : inReview ? ['PAYMENT IN REVIEW', '#0369a1', '#f0f9ff'] : ['ADVANCE PENDING', '#b45309', '#fffbeb']
   const advanceDue = Math.max(0, q.advance - paid)
   const advanceSubmitted = advanceDue > 0 && waiting >= advanceDue
   const balance = Math.max(0, q.total - paid)

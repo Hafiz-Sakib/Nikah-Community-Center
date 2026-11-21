@@ -163,7 +163,7 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
                 <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/60"><svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor" aria-hidden><path d="M5 7V5.25a3 3 0 0 1 6 0V7" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" /><rect x="3.25" y="7" width="9.5" height="7" rx="1.75" /></svg>Secure checkout</p>
                 <h2 id={`${uid}-title`} className="mt-3 text-sm text-white/70">Your payment</h2>
                 <p className="mt-1 text-4xl font-semibold sm:text-5xl"><Rolling text={money(amount)} still={still} /></p>
-                <p className="mt-2 text-xs text-white/50">Booking <span className="font-mono text-white/80">{bookingId}</span></p>
+                <p className="mt-2 text-xs text-white/50">Booking <span className="tabular-nums text-white/80">{bookingId}</span></p>
                 <div className="mt-8"><MetalCard owner={payer.toUpperCase()} digits={shownDigits} brand={res ? res.brand : brand} holder={res ? '' : v.name.toUpperCase()} expiry={res ? '' : v.expiry} cvc={v.cvc} flipped={focused === 'cvc' && !res} /></div>
                 <ul className="mt-8 space-y-2 text-xs text-white/60">
                   <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />Card number and CVC are never saved on this device</li>

@@ -18,15 +18,16 @@ function useCopy() {
   return [done, copy]
 }
 
-function CopyBtn({ on, onClick, label }) {
+function CopyBtn({ on, onClick, label, compact = false }) {
   return (
-    <button type="button" onClick={onClick} aria-label={label} className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-xs font-semibold ring-1 transition active:scale-95 ${on ? 'bg-emerald-500 text-white ring-emerald-500' : 'bg-surface text-brand-ink ring-brand/40 hover:ring-brand'}`}>
+    <button type="button" onClick={onClick} aria-label={on ? `${label} (copied)` : label} title={label}
+      className={`inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full text-xs font-semibold ring-1 transition active:scale-95 ${compact ? 'w-9' : 'w-[5.5rem]'} ${on ? 'bg-emerald-500 text-white ring-emerald-500' : 'bg-surface text-brand-ink ring-brand/40 hover:ring-brand'}`}>
       <AnimatePresence mode="wait" initial={false}>
         <motion.span key={on ? 'ok' : 'cp'} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }} transition={{ duration: 0.14 }} className="grid">
           {on ? <CheckIcon width={14} height={14} strokeWidth={3} /> : <ClipboardIcon width={14} height={14} />}
         </motion.span>
       </AnimatePresence>
-      {on ? 'Copied' : 'Copy'}
+      {!compact && (on ? 'Copied' : 'Copy')}
     </button>
   )
 }
@@ -36,7 +37,7 @@ function Tile({ m, selected, onSelect, onKey, reduce }) {
     <button type="button" role="radio" aria-checked={selected} tabIndex={selected ? 0 : -1} onClick={onSelect} onKeyDown={onKey} data-pay={m.id}
       className="group relative flex h-full w-full min-w-0 flex-col items-center gap-2 rounded-2xl p-2.5 pb-2 text-center outline-none ring-1 ring-slate-200 transition-colors hover:ring-slate-300 focus-visible:ring-2 focus-visible:ring-brand sm:p-3">
       {selected && <motion.span layoutId="pay-sel" aria-hidden className="absolute inset-0 rounded-2xl" style={{ background: tint(m.color, '12'), boxShadow: `inset 0 0 0 2px ${m.color}` }} transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 34 }} />}
-      <motion.span className="relative" whileHover={reduce ? undefined : { y: -2 }} whileTap={reduce ? undefined : { scale: 0.94 }}><PayLogo id={m.id} size="md" /></motion.span>
+      <motion.span className="relative flex w-full justify-center" whileHover={reduce ? undefined : { y: -2 }} whileTap={reduce ? undefined : { scale: 0.94 }}><PayLogo id={m.id} size="tile" /></motion.span>
       <span className={`relative text-xs font-semibold sm:text-[13px] ${selected ? 'text-fg' : 'text-slate-600 group-hover:text-fg'}`}>{m.label}</span>
       <AnimatePresence>
         {selected && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 24 }} className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full text-white ring-2 ring-surface" style={{ background: m.color }} aria-hidden><CheckIcon width={11} height={11} strokeWidth={3.5} /></motion.span>}
@@ -52,14 +53,14 @@ function AmountPicker({ m, choice, setChoice, custom, setCustom, opts, amount, o
   return (
     <div className="mt-4">
       <p className="text-xs font-medium text-slate-500">How much would you like to pay now?</p>
-      <div role="radiogroup" aria-label="Amount to pay" className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div role="radiogroup" aria-label="Amount to pay" className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(7.5rem,1fr))]">
         {opts.map((o) => {
           const sel = choice === o.id
           return (
-            <button key={o.id} type="button" role="radio" aria-checked={sel} onClick={() => setChoice(o.id)} className="relative flex min-h-[3.75rem] min-w-0 flex-col items-start justify-center rounded-2xl px-3.5 py-2 text-left outline-none ring-1 ring-slate-200 transition-colors hover:ring-slate-300 focus-visible:ring-2 focus-visible:ring-brand">
+            <button key={o.id} type="button" role="radio" aria-checked={sel} onClick={() => setChoice(o.id)} className="relative flex min-h-[3.5rem] min-w-0 flex-col items-start justify-center rounded-2xl px-3.5 py-2 text-left outline-none ring-1 ring-slate-200 transition-colors hover:ring-slate-300 focus-visible:ring-2 focus-visible:ring-brand">
               {sel && <motion.span layoutId="amt-sel" aria-hidden className="absolute inset-0 rounded-2xl bg-brand-soft ring-2 ring-inset ring-brand" transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 34 }} />}
               <span className="relative text-xs text-slate-500">{o.label}</span>
-              <span className="relative truncate text-base font-semibold tabular-nums text-fg">{o.id === 'custom' ? 'Type amount' : money(o.value)}</span>
+              <span className="relative truncate text-[15px] font-semibold tabular-nums text-fg">{o.id === 'custom' ? 'Type amount' : money(o.value)}</span>
             </button>
           )
         })}
@@ -123,22 +124,25 @@ const PaymentHub = forwardRef(function PaymentHub({ bookingId, m, busy, method, 
   const submit = async (e) => {
     e.preventDefault()
     if (busy) return
+    if (amount > m.room) { toast(`You can pay at most ${money(m.room)} on this booking`, 'error'); return }
     if (!amountOk) { toast('Choose a valid amount', 'error'); return }
     if (!trxOk) { setTouched(true); toast('Enter the transaction ID', 'error'); return }
     const ok = await onSubmit({ amount, method: pm.id, ...(trx.trim() ? { reference: trx.trim() } : {}) })
     if (ok) { setTrx(''); setTouched(false) }
   }
   const wallet = pm.id === 'bkash' || pm.id === 'nagad'
-  const num = (pm.value || '').split(' · ')[0].replace(/^A\/C /, '')
+  const [numPart, bankLine = '', routePart = ''] = (pm.value || '').split(' · ')
+  const num = numPart.replace(/^A\/C /, '')
+  const routing = routePart.replace(/^Routing No:?\s*/i, '')
 
   return (
-    <section ref={ref} id="pay-hub" aria-labelledby="pay-hub-title" className="scroll-mt-24 rounded-3xl bg-surface p-4 ring-1 ring-slate-200 shadow-card sm:p-6">
+    <section ref={ref} id="pay-hub" aria-labelledby="pay-hub-title" className="scroll-mt-24 rounded-3xl bg-surface p-4 ring-1 ring-slate-200 shadow-card sm:p-5">
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
         <div className="min-w-0">
-          <h3 id="pay-hub-title" className="text-lg font-semibold tracking-tight text-fg">{m.needAdvance > 0 ? 'Pay the advance' : 'Pay the balance'}</h3>
+          <h3 id="pay-hub-title" className="text-base font-semibold tracking-tight text-fg sm:text-lg">{m.needAdvance > 0 ? 'Pay the advance' : 'Pay the balance'}</h3>
           <p className="mt-0.5 text-sm text-slate-500">{m.needAdvance > 0 ? 'Pay the advance to confirm your date, or pay in full.' : 'Your advance is in. Pay the rest in parts or all at once.'}</p>
         </div>
-        <p className="rounded-full bg-brand-soft px-3.5 py-1.5 text-sm font-semibold tabular-nums text-brand-ink ring-1 ring-brand/30">{m.needAdvance > 0 ? money(m.needAdvance) : money(m.room)} <span className="font-medium opacity-70">{m.needAdvance > 0 ? 'advance due' : 'balance'}</span></p>
+        <p className="rounded-full bg-brand-soft px-3 py-1 text-[13px] font-semibold tabular-nums text-brand-ink ring-1 ring-brand/30">{m.needAdvance > 0 ? money(m.needAdvance) : money(m.room)} <span className="font-medium opacity-70">{m.needAdvance > 0 ? 'advance due' : 'balance'}</span></p>
       </div>
 
       <AmountPicker m={m} opts={opts} choice={choice} setChoice={setChoice} custom={custom} setCustom={setCustom} amount={amount} ok={amountOk} reduce={reduce} />
@@ -175,12 +179,21 @@ const PaymentHub = forwardRef(function PaymentHub({ bookingId, m, busy, method, 
                   <div className="min-w-0"><p className="text-xs text-slate-500">{pm.kind}</p><p className="text-base font-semibold text-fg sm:text-lg">Send {money(amount)} to</p></div>
                 </div>
                 <div className="mt-3.5 flex items-center justify-between gap-3 rounded-xl bg-surface p-3 ring-1 ring-slate-200 sm:p-3.5">
-                  <p className={`min-w-0 break-words font-semibold text-fg ${wallet ? 'text-xl tabular-nums tracking-wide sm:text-2xl' : 'text-sm leading-relaxed'}`}>{pm.value}</p>
-                  <CopyBtn on={copied === 'num'} onClick={() => copy(num, 'num', wallet ? 'Number' : 'Account number')} label={`Copy ${pm.label} number`} />
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-slate-500">{wallet ? `${pm.label} number` : 'Account number'}</p>
+                    <p className="mt-0.5 break-all text-xl font-semibold tabular-nums tracking-wide text-fg">{num}</p>
+                  </div>
+                  <CopyBtn on={copied === 'num'} onClick={() => copy(num, 'num', wallet ? 'Number' : 'Account number')} label={`Copy ${pm.label} ${wallet ? 'number' : 'account number'}`} />
                 </div>
+                {!wallet && (
+                  <dl className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
+                    <div className="rounded-xl bg-surface px-3.5 py-2.5 ring-1 ring-slate-200"><dt className="text-[11px] text-slate-500">Bank & branch</dt><dd className="mt-0.5 text-sm font-semibold text-fg">{bankLine}</dd></div>
+                    <div className="flex items-center justify-between gap-3 rounded-xl bg-surface px-3.5 py-2.5 ring-1 ring-slate-200"><div className="min-w-0"><dt className="text-[11px] text-slate-500">Routing number</dt><dd className="mt-0.5 text-sm font-semibold tabular-nums text-fg">{routing}</dd></div><CopyBtn compact on={copied === 'rt'} onClick={() => copy(routing, 'rt', 'Routing number')} label="Copy routing number" /></div>
+                  </dl>
+                )}
                 <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
-                  <div className="flex items-center justify-between gap-3 rounded-xl bg-surface px-3.5 py-2.5 ring-1 ring-slate-200"><span className="min-w-0"><span className="block text-[11px] text-slate-500">Amount</span><b className="block tabular-nums text-fg">{money(amount)}</b></span><CopyBtn on={copied === 'amt'} onClick={() => copy(String(amount), 'amt', 'Amount')} label="Copy amount" /></div>
-                  <div className="flex items-center justify-between gap-3 rounded-xl bg-surface px-3.5 py-2.5 ring-1 ring-slate-200"><span className="min-w-0"><span className="block text-[11px] text-slate-500">Reference</span><b className="block truncate font-mono text-fg">{bookingId}</b></span><CopyBtn on={copied === 'ref'} onClick={() => copy(bookingId, 'ref', 'Booking ID')} label="Copy booking ID" /></div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl bg-surface px-3.5 py-2.5 ring-1 ring-slate-200"><span className="min-w-0"><span className="block text-[11px] text-slate-500">Amount</span><b className="block tabular-nums text-fg">{money(amount)}</b></span><CopyBtn compact on={copied === 'amt'} onClick={() => copy(String(amount), 'amt', 'Amount')} label="Copy amount" /></div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl bg-surface px-3.5 py-2.5 ring-1 ring-slate-200"><span className="min-w-0"><span className="block text-[11px] text-slate-500">Reference (Booking ID)</span><b className="block break-all text-sm tabular-nums text-fg">{bookingId}</b></span><CopyBtn compact on={copied === 'ref'} onClick={() => copy(bookingId, 'ref', 'Booking ID')} label="Copy booking ID" /></div>
                 </div>
                 <ol className="mt-4 space-y-2.5">
                   {pm.steps.map((t, i) => (
@@ -196,12 +209,13 @@ const PaymentHub = forwardRef(function PaymentHub({ bookingId, m, busy, method, 
                   <span className="mb-1.5 block text-xs font-medium text-slate-500">{wallet ? 'Transaction ID (TrxID)' : 'Transfer / slip reference'}</span>
                   <span className="relative block">
                     <input value={trx} onChange={(e) => setTrx(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''))} onBlur={() => trx && setTouched(true)} maxLength={60} placeholder={wallet ? 'e.g. 9A7K2M4XQP' : 'e.g. TRF123456'} enterKeyHint="send" autoCapitalize="characters" autoCorrect="off" autoComplete="off" aria-invalid={showErr || undefined} aria-describedby="trx-hint"
-                      className={`h-12 w-full min-w-0 rounded-2xl border-2 bg-surface pl-4 pr-11 font-mono text-base tracking-wider text-fg outline-none placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-400 focus:ring-4 sm:text-sm ${showErr ? 'border-red-400 focus:border-red-500 focus:ring-red-500/15' : trxOk ? 'border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500/15' : 'border-slate-300 focus:border-brand focus:ring-brand/15'}`} />
+                      className={`h-12 w-full min-w-0 rounded-2xl border-2 bg-surface pl-4 pr-11 tabular-nums text-base tracking-wider text-fg outline-none placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-400 focus:ring-4 sm:text-sm ${showErr ? 'border-red-400 focus:border-red-500 focus:ring-red-500/15' : trxOk ? 'border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500/15' : 'border-slate-300 focus:border-brand focus:ring-brand/15'}`} />
                     <AnimatePresence>{trxOk && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="absolute right-3.5 top-1/2 grid h-5 w-5 -translate-y-1/2 place-items-center rounded-full bg-emerald-500 text-white" aria-hidden><CheckIcon width={12} height={12} strokeWidth={3.5} /></motion.span>}</AnimatePresence>
                   </span>
+                  {!amountOk && <span className="mt-1.5 block text-xs font-medium text-red-600 dark:text-red-300">Fix the amount above first. You cannot pay more than {money(m.room)}.</span>}
                   <span id="trx-hint" className={`mt-1.5 block text-xs ${showErr ? 'text-red-600 dark:text-red-300' : 'text-slate-500'}`}>{showErr ? 'Enter at least 6 letters or digits from the receipt.' : 'Found on the confirmation message or receipt.'}</span>
                 </label>
-                <button type="submit" disabled={busy} aria-disabled={!trxOk} className={`mt-0 inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold text-white transition active:scale-95 disabled:opacity-60 sm:mt-[1.375rem] sm:w-auto ${trxOk ? 'shadow-lg' : 'opacity-80'}`} style={{ background: pm.color }}>
+                <button type="submit" disabled={busy || !amountOk} aria-disabled={!trxOk || !amountOk} className={`mt-0 inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold text-white transition active:scale-95 disabled:opacity-60 sm:mt-[1.375rem] sm:w-auto ${trxOk && amountOk ? 'shadow-lg' : 'opacity-80'} disabled:cursor-not-allowed`} style={{ background: pm.color }}>
                   {busy ? <><motion.span className="h-4 w-4 rounded-full border-2 border-white/40 border-t-white" animate={{ rotate: 360 }} transition={{ duration: 0.8, ease: 'linear', repeat: Infinity }} />Submitting…</> : <><ShieldIcon width={16} height={16} />Submit payment</>}
                 </button>
               </div>

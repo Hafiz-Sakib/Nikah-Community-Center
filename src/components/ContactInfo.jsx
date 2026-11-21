@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import { CONTACT } from '../data'
+import { CONTACT, eventTypes } from '../data'
 import { PhoneIcon, MapPinIcon, ClockIcon, MailIcon, ChatIcon, SendIcon } from './Icons'
 import Reveal from './Reveal'
 
@@ -14,12 +14,13 @@ const items = [
 const input = 'w-full rounded-2xl border border-slate-200 bg-surface px-4 py-3 text-sm text-fg outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15'
 
 export default function ContactInfo() {
-  const [f, setF] = useState({ name: '', phone: '', msg: '' })
+  const [f, setF] = useState({ name: '', phone: '', event: '', date: '', guests: '', msg: '' })
   const ok = f.name.trim() && f.msg.trim()
   const send = (e) => {
     e.preventDefault()
     if (!ok) return
-    const text = encodeURIComponent(`Hello! I'm ${f.name.trim()}${f.phone ? ` (${f.phone.trim()})` : ''}.\n${f.msg.trim()}`)
+    const plan = [f.event && `Event: ${f.event}`, f.date && `Date: ${f.date}`, f.guests && `Guests: about ${f.guests}`].filter(Boolean).join(' · ')
+    const text = encodeURIComponent(`Hello! I'm ${f.name.trim()}${f.phone ? ` (${f.phone.trim()})` : ''}.${plan ? `\n${plan}` : ''}\n${f.msg.trim()}`)
     window.open(`https://wa.me/${CONTACT.whatsapp}?text=${text}`, '_blank', 'noopener')
   }
   return (
@@ -45,7 +46,17 @@ export default function ContactInfo() {
             <div className="mt-6 space-y-4">
               <input className={input} placeholder="Your name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoComplete="name" />
               <input className={input} placeholder="Mobile number (optional)" inputMode="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} autoComplete="tel" />
-              <textarea className={`${input} resize-none`} rows={5} placeholder="How can we help? Date, event type, number of guests…" value={f.msg} onChange={(e) => setF({ ...f, msg: e.target.value })} />
+              <div>
+                <p className="mb-2 ml-1 text-xs font-medium text-slate-500">What are you planning? (optional)</p>
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Event type">
+                  {eventTypes.map((t) => { const on = f.event === t; return <button key={t} type="button" aria-pressed={on} onClick={() => setF({ ...f, event: on ? '' : t })} className={`rounded-full px-3.5 py-1.5 text-xs font-semibold ring-1 transition active:scale-95 ${on ? 'bg-brand text-white ring-brand' : 'bg-surface text-slate-600 ring-slate-200 hover:ring-brand/60'}`}>{t}</button> })}
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block"><span className="mb-1.5 ml-1 block text-xs font-medium text-slate-500">Preferred date (optional)</span><input className={input} type="date" min={new Date().toISOString().slice(0, 10)} value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} /></label>
+                <label className="block"><span className="mb-1.5 ml-1 block text-xs font-medium text-slate-500">Guests (optional)</span><input className={input} inputMode="numeric" placeholder="e.g. 400" value={f.guests} onChange={(e) => setF({ ...f, guests: e.target.value.replace(/[^\d]/g, '').slice(0, 4) })} /></label>
+              </div>
+              <textarea className={`${input} resize-none`} rows={4} placeholder="Anything else we should know? Questions, special requests…" value={f.msg} onChange={(e) => setF({ ...f, msg: e.target.value })} />
             </div>
             <motion.button whileTap={{ scale: 0.97 }} disabled={!ok} className="btn-primary mt-6 w-full disabled:opacity-50"><SendIcon width={18} height={18} />Send via WhatsApp</motion.button>
           </form>

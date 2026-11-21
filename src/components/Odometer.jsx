@@ -16,7 +16,7 @@ export default function Odometer({ value, prefix = '', className = '' }) {
   const n = chars.length
   return (
     <span className={`inline-flex items-end tabular-nums ${className}`} role="text" aria-label={`${prefix}${Math.round(value).toLocaleString('en-IN')}`}>
-      {prefix && <span className="mr-0.5 self-start pt-[0.18em] text-[0.5em] font-semibold text-slate-400" aria-hidden>{prefix}</span>}
+      {prefix && <span className="mr-0.5 self-start pt-[0.18em] text-[0.5em] font-semibold text-current opacity-60" aria-hidden>{prefix}</span>}
       <span className="inline-flex" aria-hidden>
         {chars.map((c, i) => (c === ',' ? <span key={`c${n - i}`} className="w-[0.28em] text-center leading-none">,</span> : <Digit key={`d${n - i}`} d={+c} />))}
       </span>

@@ -4,7 +4,7 @@ import { PAYMENT, CONTACT, packages, capOf } from '../data'
 import { fmtDate, money, toast } from '../lib/store'
 import { billRows, waText, moneyOf } from '../lib/invoice'
 import { api } from '../lib/api'
-import { useMyBookings, shownStatus } from '../lib/bookings'
+import { useMyBookings, shownStatus, statusOf } from '../lib/bookings'
 import StatusPill from './StatusPill'
 import { HoldWarning, useHoldText } from './HoldTimer'
 import Odometer from './Odometer'
@@ -15,7 +15,7 @@ import PaymentHub from './PaymentHub'
 import PayLogo from './PayLogo'
 import PayProgress from './PayProgress'
 import Button from './brew/Button'
-import { CheckIcon, ChatIcon, DownloadIcon, ClipboardIcon, PlusIcon, CalendarIcon } from './Icons'
+import { CheckIcon, ChatIcon, ClipboardIcon, PlusIcon, CalendarIcon, ArrowRight, ChevronLeft } from './Icons'
 
 const CARD = 'rounded-3xl bg-surface p-4 ring-1 ring-slate-200 shadow-card sm:p-5'
 const EYEBROW = 'text-[11px] font-semibold uppercase tracking-wider text-slate-500'
@@ -45,17 +45,38 @@ function RefundDue({ m }) {
   )
 }
 
-function FullPaid({ m, name, reduce, onInvoice }) {
+function FullPaid({ m, name, reduce, done, onInvoice }) {
   return (
     <motion.section role="status" initial={reduce ? false : { opacity: 0, y: 14, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 220, damping: 22 }}
-      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 p-5 text-center text-white shadow-lg shadow-emerald-600/25 sm:p-8">
-      <div aria-hidden className="pointer-events-none absolute -left-12 -top-16 h-52 w-52 rounded-full bg-white/15 blur-2xl" />
+      className="relative overflow-hidden rounded-3xl bg-emerald-50 p-5 text-center ring-1 ring-emerald-200 sm:p-7 dark:!bg-emerald-500/10 dark:!ring-emerald-400/30">
+      <div aria-hidden className="pointer-events-none absolute -left-12 -top-16 h-48 w-48 rounded-full bg-emerald-200/60 blur-2xl dark:!bg-emerald-400/10" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-20 -right-12 h-48 w-48 rounded-full bg-teal-200/50 blur-2xl dark:!bg-teal-400/10" />
       {!reduce && <Confetti />}
-      <motion.span initial={reduce ? false : { scale: 0, rotate: -40 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 14, delay: 0.1 }} className="relative mx-auto grid h-16 w-16 place-items-center rounded-full bg-white text-emerald-600 shadow-lg"><CheckIcon width={34} height={34} strokeWidth={3} /></motion.span>
-      <h3 className="relative mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">Full Paid</h3>
-      <p className="relative mx-auto mt-1.5 max-w-md text-sm text-white/90">Thank you{name ? `, ${name.split(' ')[0]}` : ''}. We have received all {money(m.paid)} for this booking. Nothing more to pay.</p>
-      <button type="button" onClick={onInvoice} className="relative mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 active:scale-95"><ClipboardIcon width={16} height={16} />View paid invoice</button>
+      <motion.span initial={reduce ? false : { scale: 0, rotate: -40 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 14, delay: 0.1 }} className="relative mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 ring-8 ring-emerald-100 dark:!ring-emerald-400/15"><CheckIcon width={32} height={32} strokeWidth={3} /></motion.span>
+      <h3 className="relative mt-4 text-2xl font-semibold tracking-tight text-emerald-800 dark:!text-emerald-200">{done ? 'Event completed successfully' : 'Payment complete'}</h3>
+      <p className="relative mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-slate-600">{done ? `Thank you${name ? `, ${name.split(' ')[0]}` : ''}. Your event is complete and every taka is settled. It was a pleasure hosting you.` : `Thank you${name ? `, ${name.split(' ')[0]}` : ''}. We have received all of your payment. Nothing more to pay.`}</p>
+      <p className="relative mx-auto mt-4 inline-flex items-center gap-2 rounded-full bg-surface px-4 py-1.5 text-sm font-semibold tabular-nums text-emerald-700 ring-1 ring-emerald-200 dark:!text-emerald-300 dark:!ring-emerald-400/30"><CheckIcon width={14} height={14} strokeWidth={3} />{money(m.paid)} received</p>
+      <div className="relative mt-5"><button type="button" onClick={onInvoice} className="group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 text-sm font-semibold text-white shadow-sm ring-1 ring-emerald-700/30 transition hover:bg-emerald-700 active:scale-95"><ClipboardIcon width={16} height={16} className="transition-transform duration-200 group-hover:-rotate-6 group-hover:scale-110" />View paid invoice</button></div>
     </motion.section>
+  )
+}
+
+/* One quick action: icon bubble + label + hint. The icon and arrow move a little on hover. */
+const TILE_TONE = {
+  green: { box: 'bg-emerald-50 ring-emerald-200 hover:ring-emerald-400 dark:!bg-emerald-500/10 dark:!ring-emerald-400/30', icon: 'bg-emerald-500 text-white' },
+  blue: { box: 'bg-surface ring-slate-200 hover:ring-brand/60', icon: 'bg-brand-soft text-brand-ink' },
+  amber: { box: 'bg-surface ring-slate-200 hover:ring-amber-400', icon: 'bg-amber-100 text-amber-700 dark:!bg-amber-500/15 dark:!text-amber-300' },
+}
+function ActionTile({ as = 'button', icon: Ico, label, hint, tone = 'blue', reduce, ...props }) {
+  const M = as === 'a' ? motion.a : motion.button
+  const t = TILE_TONE[tone]
+  return (
+    <M whileHover={reduce ? undefined : { y: -2 }} whileTap={reduce ? undefined : { scale: 0.97 }} transition={{ type: 'spring', stiffness: 400, damping: 26 }} {...(as === 'a' ? {} : { type: 'button' })} {...props}
+      className={`group flex w-full min-w-0 items-center gap-3 rounded-2xl p-3 text-left shadow-sm outline-none ring-1 transition-shadow hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand ${t.box}`}>
+      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-transform duration-300 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110 ${t.icon}`}><Ico width={20} height={20} /></span>
+      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-fg">{label}</span><span className="block truncate text-xs text-slate-500">{hint}</span></span>
+      <ArrowRight width={16} height={16} className="shrink-0 text-slate-400 transition duration-200 group-hover:translate-x-1 group-hover:text-fg" />
+    </M>
   )
 }
 
@@ -77,6 +98,8 @@ export default function Billing({ b: initial, fresh = false, page = false, onNew
   const pay = PAYMENT.find((m) => m.id === method) || PAYMENT[1]
   const timer = useHoldText(b)
   const m = moneyOf(b)
+  const st = statusOf(b)                                   // a confirmed booking whose shift is over reads Completed
+  const eventDone = st === 'completed'
   const pkgDef = packages.find((x) => x.id === b.packageId)
   const pkgCap = pkgDef ? capOf(pkgDef) : 0
   const { paid, waiting, balance } = m
@@ -93,6 +116,7 @@ export default function Billing({ b: initial, fresh = false, page = false, onNew
   const ics = () => import('./ics').then((m) => m.downloadIcs(b))
   /* A payment is only a request until staff verify it (checked against the bKash/Nagad/bank statement). */
   const submitPayment = async (body) => {
+    if (!(Number.isInteger(body.amount) && body.amount > 0 && body.amount <= m.room)) { toast(`You can pay at most ${money(m.room)} on this booking`, 'error'); return false }   // never more than what is left
     setBusy(true)
     try {
       const needed = m.needAdvance > 0                                           // this payment is (part of) the advance
@@ -117,18 +141,24 @@ export default function Billing({ b: initial, fresh = false, page = false, onNew
   }
 
   return (
-    <div>
-      <div className={`relative text-center ${page ? 'rounded-3xl bg-surface p-5 shadow-card ring-1 ring-slate-200 sm:p-8' : ''}`}>
+    <div className={canPay ? 'pb-20 sm:pb-0' : ''}>
+      <div className={`relative text-center ${page ? 'rounded-3xl bg-surface p-4 shadow-card ring-1 ring-slate-200 sm:p-6 lg:p-7 lg:text-left' : ''}`}>
         {fresh && <Confetti />}
-        {fresh && (<>
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"><CheckIcon width={32} height={32} strokeWidth={3} /></motion.div>
-        <h3 className="mt-4 text-xl font-semibold text-fg sm:text-2xl">{fresh ? `Request received, ${b.name.split(' ')[0]}!` : `Billing · ${b.eventType}`}</h3>
-        </>)}
-        <p className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-slate-500 ${fresh ? 'mt-1' : ''}`}><StatusPill status={shownStatus(b)} />{m.paidInFull && !m.overpaid && <StatusPill status="fully paid" />}{inReview ? null : b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : b.status === 'confirmed' && balance > 0 ? <span>Advance received. Pay the rest online, at the office or after the event.</span> : b.status === 'completed' && balance > 0 ? <span>The event is over and {money(balance)} is still unpaid.</span> : null}</p>
-        <p className="mx-auto mt-2 flex max-w-xl flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-slate-600"><span>{b.eventType}</span><span aria-hidden>·</span><b className="text-fg">{q.pkgName}</b><span aria-hidden>·</span><span>{b.guests?.toLocaleString('en-IN')} guests{pkgCap ? <span className="text-slate-400"> (package allows up to {pkgCap.toLocaleString('en-IN')})</span> : null}</span></p>
-        <button onClick={() => copy(b.id, 'Booking ID')} className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-brand-soft px-4 py-1.5 font-mono text-sm font-semibold text-brand-ink ring-1 ring-brand/30 transition hover:ring-brand active:scale-95" aria-label={`Copy booking ID ${b.id}`}>{b.id}<ClipboardIcon width={15} height={15} /></button>
-        {b.status === 'pending' && <div className="mx-auto mt-4 max-w-xl text-left"><HoldWarning b={b} hideCta onExpire={refresh} className="!mt-0" /></div>}
-        {!['cancelled', 'expired'].includes(b.status) && <PayProgress submitted={payments.length > 0} verified={paid >= q.advance} confirmed={b.status === 'confirmed' || b.status === 'completed'} />}
+        <div className={page ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,25rem)] lg:items-center lg:gap-8' : ''}>
+          <div className="min-w-0">
+            {fresh && (
+              <div className="flex flex-col items-center gap-3 lg:flex-row lg:gap-4">
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 16 }} className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 lg:h-12 lg:w-12"><CheckIcon width={28} height={28} strokeWidth={3} /></motion.div>
+                <h3 className="text-xl font-semibold text-fg sm:text-2xl">{`Request received, ${b.name.split(' ')[0]}!`}</h3>
+              </div>
+            )}
+            <p className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-slate-500 lg:justify-start ${fresh ? 'mt-3' : ''}`}><StatusPill status={shownStatus(b)} />{m.paidInFull && !m.overpaid && <StatusPill status="fully paid" />}{inReview ? null : b.status === 'pending' ? <span>Pay the advance to confirm. We will also call <b>{b.phone}</b>.</span> : st === 'confirmed' && balance > 0 ? <span>Advance received. Pay the rest online, at the office or after the event.</span> : st === 'completed' && balance > 0 ? <span>The event is over and {money(balance)} is still unpaid.</span> : null}</p>
+            <p className="mt-2.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-slate-600 lg:justify-start"><span>{b.eventType}</span><span aria-hidden>·</span><b className="text-fg">{q.pkgName}</b><span aria-hidden>·</span><span>{b.guests?.toLocaleString('en-IN')} guests{pkgCap ? <span className="text-slate-400"> (package allows up to {pkgCap.toLocaleString('en-IN')})</span> : null}</span></p>
+            <button onClick={() => copy(b.id, 'Booking ID')} className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-brand-soft px-3.5 py-1.5 tabular-nums text-[13px] font-semibold text-brand-ink ring-1 ring-brand/30 transition hover:ring-brand active:scale-95" aria-label={`Copy booking ID ${b.id}`}>{b.id}<ClipboardIcon width={14} height={14} /></button>
+          </div>
+          {b.status === 'pending' && <div className="mx-auto mt-4 max-w-xl text-left lg:mx-0 lg:mt-0 lg:max-w-none"><HoldWarning b={b} hideCta onExpire={refresh} className="!mt-0" /></div>}
+        </div>
+        {!['cancelled', 'expired'].includes(b.status) && <PayProgress className={page ? 'mt-5 border-t border-slate-200 pt-5 lg:mt-6 lg:pt-6' : 'mt-5'} submitted={payments.length > 0} verified={paid >= q.advance} confirmed={b.status === 'confirmed' || b.status === 'completed'} completed={eventDone} />}
       </div>
 
       <div className="mx-auto mt-6 grid w-full max-w-xs grid-cols-2 rounded-full bg-slate-100 p-1 ring-1 ring-slate-200" role="tablist">
@@ -141,19 +171,19 @@ export default function Billing({ b: initial, fresh = false, page = false, onNew
 
       <AnimatePresence mode="wait" initial={false}>
         {tab === 'bill' ? (
-          <motion.div key="bill" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className={`mt-5 sm:mt-6 ${page ? 'grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start' : ''}`}>
+          <motion.div key="bill" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className={`mt-5 sm:mt-6 ${page ? 'grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:items-start' : ''}`}>
             <div className="min-w-0 space-y-4 sm:space-y-5">
             {/* totals */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1e4fbf] via-brand-dark to-brand p-4 text-white shadow-glow sm:p-6">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1e4fbf] via-brand-dark to-brand p-4 text-white shadow-glow sm:p-5">
               <div aria-hidden className="pointer-events-none absolute -right-14 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
               <div className="relative flex flex-wrap items-end justify-between gap-3 sm:gap-4">
-                <div className="min-w-0"><p className="text-xs font-medium uppercase tracking-widest text-white/80">Total bill</p><Odometer value={perGuest ? Math.round(q.total / b.guests) : q.total} prefix="৳" className="text-3xl font-semibold sm:text-5xl" /><p className="mt-1 text-xs leading-relaxed text-white/80">{perGuest ? `per guest · ${b.guests} guests` : `${b.eventType} · ${fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })} · ${q.shiftLabel}`}</p></div>
+                <div className="min-w-0"><p className="text-xs font-medium uppercase tracking-widest text-white/80">Total bill</p><Odometer value={perGuest ? Math.round(q.total / b.guests) : q.total} prefix="৳" className="text-3xl font-semibold sm:text-4xl" /><p className="mt-1 text-xs leading-relaxed text-white/80">{perGuest ? `per guest · ${b.guests} guests` : `${b.eventType} · ${fmtDate(b.date, { day: 'numeric', month: 'short', year: 'numeric' })} · ${q.shiftLabel}`}</p></div>
                 <button onClick={() => setPerGuest((v) => !v)} aria-pressed={perGuest} className="rounded-full bg-white/15 px-4 py-2 text-xs font-semibold ring-1 ring-white/30 backdrop-blur transition hover:bg-white/25 active:scale-95">{perGuest ? 'Show total' : 'Show per guest'}</button>
               </div>
               <div className="relative mt-4 grid gap-2.5 sm:mt-5 sm:grid-cols-2 sm:gap-3">
-                <div className="min-w-0 rounded-2xl bg-white/12 p-3.5 ring-1 ring-white/20 sm:p-4"><p className="text-xs text-white/80">{m.advanceReceived ? 'Advance (30%) received' : advanceCovered ? 'Advance (30%) submitted' : 'Advance due now (30%)'}</p><p className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl"><AnimatedNumber value={m.advance} prefix="৳" /></p>
+                <div className="min-w-0 rounded-2xl bg-white/12 p-3.5 ring-1 ring-white/20"><p className="text-xs text-white/80">{m.advanceReceived ? 'Advance (30%) received' : advanceCovered ? 'Advance (30%) submitted' : 'Advance due now (30%)'}</p><p className="mt-1 text-xl font-semibold tabular-nums"><AnimatedNumber value={m.advance} prefix="৳" /></p>
                   <div className="mt-2.5 flex h-1.5 overflow-hidden rounded-full bg-white/20" role="img" aria-label={`Advance: ${money(Math.min(paid, m.advance))} verified of ${money(m.advance)}`}><motion.span className="h-full bg-emerald-300" initial={{ width: 0 }} animate={{ width: `${Math.min(100, (paid / m.advance) * 100)}%` }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} /><motion.span className="h-full bg-white/70" initial={{ width: 0 }} animate={{ width: `${Math.max(0, Math.min(100 - Math.min(100, (paid / m.advance) * 100), (waiting / m.advance) * 100))}%` }} transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} /></div></div>
-                <div className="min-w-0 rounded-2xl bg-white/12 p-3.5 ring-1 ring-white/20 sm:p-4"><p className="text-xs text-white/80">{m.paidInFull ? 'Paid in full' : inReview ? 'Paid · staff verifying' : b.status === 'pending' && b.holdExpiresAt ? `Pay within (${b.holdHours ?? 48} h hold)` : 'Paid so far'}</p><p className="mt-1 break-words font-mono text-xl font-semibold tabular-nums sm:text-2xl">{m.paidInFull ? money(paid) : inReview ? money(paid + waiting) : b.status === 'pending' && b.holdExpiresAt ? timer : money(paid)}</p>{!(b.status === 'pending' && b.holdExpiresAt && !inReview) && <p className="mt-1 text-xs text-white/80">{m.paidInFull ? 'Nothing left to pay' : `Balance ${money(balance)}`}</p>}</div>
+                <div className="min-w-0 rounded-2xl bg-white/12 p-3.5 ring-1 ring-white/20"><p className="text-xs text-white/80">{m.paidInFull ? 'Paid in full' : inReview ? 'Paid · staff verifying' : b.status === 'pending' && b.holdExpiresAt ? (page ? 'Balance after advance' : `Pay within (${b.holdHours ?? 48} h hold)`) : 'Paid so far'}</p><p className="mt-1 break-words tabular-nums text-xl font-semibold tabular-nums">{m.paidInFull ? money(paid) : inReview ? money(paid + waiting) : b.status === 'pending' && b.holdExpiresAt ? (page ? money(Math.max(0, m.total - m.advance)) : timer) : money(paid)}</p>{!(b.status === 'pending' && b.holdExpiresAt && !inReview && !page) && <p className="mt-1 text-xs text-white/80">{m.paidInFull ? 'Nothing left to pay' : page && b.status === 'pending' && b.holdExpiresAt && !inReview ? 'Due once your date is confirmed' : `Balance ${money(balance)}`}</p>}</div>
               </div>
               <div className="relative mt-4" role="img" aria-label={`${money(paid)} of ${money(m.total)} paid`}>
                 <div className="flex h-2 overflow-hidden rounded-full bg-white/20"><motion.span className="h-full bg-emerald-300" initial={{ width: 0 }} animate={{ width: `${Math.min(100, (paid / m.total) * 100)}%` }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }} /><motion.span className="h-full bg-white/60" initial={{ width: 0 }} animate={{ width: `${Math.max(0, Math.min(100 - Math.min(100, (paid / m.total) * 100), (waiting / m.total) * 100))}%` }} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} /></div>
@@ -190,7 +220,7 @@ export default function Billing({ b: initial, fresh = false, page = false, onNew
                   {payments.map((p) => (
                     <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2.5 text-sm">
                       <PayLogo id={p.method} size="sm" />
-                      <span className="min-w-0 flex-1 basis-40"><span className="block font-medium text-fg">{PAYMENT.find((x) => x.id === p.method)?.label ?? p.method}{p.reference ? <span className="break-all font-mono text-xs font-normal text-slate-500"> · {p.reference}</span> : null}</span><span className="block text-xs text-slate-500">{fmtDate(p.createdAt.slice(0, 10))}</span></span>
+                      <span className="min-w-0 flex-1 basis-40"><span className="block font-medium text-fg">{PAYMENT.find((x) => x.id === p.method)?.label ?? p.method}{p.reference ? <span className="break-all tabular-nums text-xs font-normal text-slate-500"> · {p.reference}</span> : null}</span><span className="block text-xs text-slate-500">{fmtDate(p.createdAt.slice(0, 10))}</span></span>
                       <StatusPill status={p.status === 'pending' ? 'in review' : p.status} /><b className="ml-auto min-w-[5.5rem] text-right tabular-nums text-fg">{money(p.amount)}</b>
                     </li>
                   ))}
@@ -209,7 +239,7 @@ export default function Billing({ b: initial, fresh = false, page = false, onNew
               </div>
             )}
             {fullPaidShown && m.overpaid && <RefundDue m={m} />}
-            {fullPaidShown && !m.overpaid && <FullPaid m={m} name={b.name} reduce={reduce} onInvoice={() => setTab('invoice')} />}
+            {fullPaidShown && !m.overpaid && <FullPaid m={m} name={b.name} reduce={reduce} done={eventDone} onInvoice={() => setTab('invoice')} />}
             </div>
           </motion.div>
         ) : (
@@ -217,10 +247,10 @@ export default function Billing({ b: initial, fresh = false, page = false, onNew
         )}
       </AnimatePresence>
 
-      <div className="mt-5 grid gap-2.5 pb-[env(safe-area-inset-bottom)] sm:grid-cols-3 sm:gap-3">
-        {!m.paidInFull && (<Button as="a" size="lg" variant="success" href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(waText(b, pay.label))}`} target="_blank" rel="noreferrer" className="w-full !text-sm"><ChatIcon width={18} height={18} />Send payment proof</Button>)}
-        <Button size="lg" variant="outline" onClick={ics} className="w-full !text-sm"><DownloadIcon width={18} height={18} />Add to calendar</Button>
-        <Button size="lg" variant="outline" onClick={() => setTab('invoice')} className="w-full !text-sm"><ClipboardIcon width={18} height={18} />View invoice</Button>
+      <div className="mt-5 grid gap-2.5 sm:grid-cols-3 sm:gap-3 lg:mt-6">
+        {!m.paidInFull && <ActionTile as="a" tone="green" reduce={reduce} icon={ChatIcon} label="Send payment proof" hint="Share your TrxID on WhatsApp" href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(waText(b, pay.label))}`} target="_blank" rel="noreferrer" />}
+        <ActionTile tone="blue" reduce={reduce} icon={CalendarIcon} label="Add to calendar" hint="Save the event date" onClick={ics} />
+        <ActionTile tone="amber" reduce={reduce} icon={ClipboardIcon} label="View invoice" hint="See the full invoice" onClick={() => setTab('invoice')} />
       </div>
       <AnimatePresence>
         {canPay && tab === 'bill' && !hubInView && !showPay && (
@@ -235,9 +265,9 @@ export default function Billing({ b: initial, fresh = false, page = false, onNew
       <PaymentGateway open={showPay} onClose={() => setShowPay(false)} amount={payAmount} bookingId={b.id} payer={b.name}
         onPaid={(r) => submitPayment({ amount: payAmount, method: 'card', reference: r.ref })} />
       {(onManage || onNew) && (
-        <div className="mt-4 grid gap-2.5 border-t border-slate-200 pt-4 sm:grid-cols-2 sm:gap-3">
-          {onManage && <Button size="lg" variant="soft" onClick={onManage} className="w-full"><ClipboardIcon width={18} height={18} />My bookings</Button>}
-          {onNew && <Button size="lg" variant="primary" onClick={onNew} className="w-full"><PlusIcon width={18} height={18} />Book another date</Button>}
+        <div className="mt-5 flex flex-col-reverse gap-2.5 border-t border-slate-200 pt-4 pb-[env(safe-area-inset-bottom)] sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          {onManage && <Button size="md" variant="outline" onClick={onManage} className="group w-full sm:w-auto sm:min-w-[11rem]"><ChevronLeft width={16} height={16} className="transition-transform duration-200 group-hover:-translate-x-1" />My bookings</Button>}
+          {onNew && <Button size="md" variant="primary" onClick={onNew} className="group w-full sm:w-auto sm:min-w-[11rem]"><PlusIcon width={18} height={18} className="transition-transform duration-300 group-hover:rotate-90" />Book another date</Button>}
         </div>
       )}
     </div>

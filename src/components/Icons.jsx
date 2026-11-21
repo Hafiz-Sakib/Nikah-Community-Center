@@ -56,3 +56,5 @@ export const ICONS2 = { users: UsersIcon, snow: SnowIcon, car: CarIcon, bolt: Bo
 
 export const EditIcon = (p) => (<svg {...base} {...p}><path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></svg>)
 export const LockIcon = (p) => (<svg {...base} {...p}><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" /><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" /></svg>)
+
+export const StackIcon = (p) => (<svg {...base} {...p}><ellipse cx="12" cy="6" rx="7" ry="3" /><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" /></svg>)

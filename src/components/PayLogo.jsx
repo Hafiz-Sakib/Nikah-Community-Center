@@ -4,7 +4,7 @@ import { BrandLogo } from './gateway/marks'
 
 /* Payment method mark on a white tile, so the real logos stay readable in day and night mode.
    Fixed box + object-contain: every logo (wide wordmark or square emblem) is centred and never stretched. */
-const SIZE = { sm: 'h-8 w-[3.25rem] rounded-lg', md: 'h-11 w-[4.5rem] rounded-xl', lg: 'h-14 w-[5.75rem] rounded-2xl sm:h-16 sm:w-28' }
+const SIZE = { sm: 'h-8 w-[3.25rem] rounded-lg', md: 'h-11 w-[4.5rem] rounded-xl', tile: 'h-10 w-full max-w-[4.5rem] rounded-xl sm:h-11', lg: 'h-14 w-[5.75rem] rounded-2xl sm:h-16 sm:w-28' }
 const BOX = 'grid shrink-0 place-items-center bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.07),0_1px_2px_rgba(0,0,0,0.06)]'
 
 export default function PayLogo({ id, size = 'md', className = '' }) {

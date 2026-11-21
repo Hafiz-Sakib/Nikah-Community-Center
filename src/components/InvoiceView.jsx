@@ -24,7 +24,7 @@ export default function InvoiceView({ b }) {
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2.5">
-        <p className="text-sm text-slate-500">Invoice <b className="font-mono text-fg">{invoiceNo(b)}</b></p>
+        <p className="text-sm text-slate-500">Invoice <b className="tabular-nums text-fg">{invoiceNo(b)}</b></p>
         <div className="flex gap-2">
           <button type="button" onClick={copyNo} className="inline-flex h-10 items-center gap-2 rounded-full bg-surface px-4 text-sm font-semibold text-fg ring-1 ring-slate-300 transition hover:ring-slate-400 active:scale-95"><ClipboardIcon width={16} height={16} />Copy no.</button>
           <button type="button" onClick={save} disabled={busy} className="btn-primary !h-10 !py-0 disabled:opacity-60"><DownloadIcon width={16} height={16} />{busy ? 'Preparing PDF…' : 'Download PDF'}</button>
