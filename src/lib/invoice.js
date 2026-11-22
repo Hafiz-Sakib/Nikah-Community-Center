@@ -47,7 +47,7 @@ export function billRows(b) {
 export const waText = (b, method) => `Hello! I booked ${b.eventType} on ${fmtDate(b.date)}. Booking ID: ${b.id}. Name: ${b.name}.${method ? ` I will pay the advance via ${method}.` : ''}`
 
 /* Render the invoice node to an A4 PDF (libraries load only when needed).
-   Up to ~12% taller than one page is shrunk to fit on a single page; anything longer continues on extra pages. */
+   Shrunk to fit one A4 page; a very long invoice becomes one tall page, never split across pages. */
 export async function downloadInvoicePdf(node, filename) {
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas'), import('jspdf')])
   if (document.fonts?.ready) { try { await document.fonts.ready } catch {} }   // Poppins must be loaded before the snapshot
@@ -55,18 +55,17 @@ export async function downloadInvoicePdf(node, filename) {
   const pdf = new jsPDF({ unit: 'mm', format: 'a4', compress: true })
   const W = 210, H = 297
   const imgH = (canvas.height * W) / canvas.width
-  if (imgH <= H * 1.12) {
+  const data = canvas.toDataURL('image/jpeg', 0.95)
+  if (imgH <= H * 1.45) {
+    // one A4 page: shrink to fit, so the barcode and totals are never cut in two
     const k = Math.min(1, H / imgH), w = W * k, h = imgH * k
-    pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', (W - w) / 2, 0, w, h)
+    pdf.addImage(data, 'JPEG', (W - w) / 2, 0, w, h)
   } else {
-    const pagePx = Math.floor((canvas.width * H) / W)
-    for (let y = 0, n = 0; y < canvas.height; y += pagePx, n++) {
-      const part = document.createElement('canvas'); part.width = canvas.width; part.height = Math.min(pagePx, canvas.height - y)
-      const ctx = part.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, part.width, part.height)
-      ctx.drawImage(canvas, 0, y, canvas.width, part.height, 0, 0, canvas.width, part.height)
-      if (n) pdf.addPage()
-      pdf.addImage(part.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, W, (part.height * W) / canvas.width)
-    }
+    // very long invoice: one tall page instead of cutting through the barcode
+    const tall = new jsPDF({ unit: 'mm', format: [W, imgH], compress: true })
+    tall.addImage(data, 'JPEG', 0, 0, W, imgH)
+    tall.save(filename)
+    return
   }
   pdf.save(filename)
 }

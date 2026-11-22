@@ -92,12 +92,18 @@ export default function Navbar() {
             <VenueMenu pathname={pathname} />
             <li><NavLink to={contact.to} className={({ isActive }) => linkCls(isActive)}>{({ isActive }) => (<>{isActive && pill}{contact.label}</>)}</NavLink></li>
           </ul>
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <ThemeToggle />
             <InstallIconButton />
+            {user && (
+              <Link to="/my-bookings" aria-label="My bookings" className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full lg:hidden">
+                <Avatar user={user} size={34} />
+                {count > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">{count}</span>}
+              </Link>
+            )}
             {user ? <UserMenu /> : <Link to="/login" className="hidden rounded-full px-4 py-2 text-sm font-semibold text-fg ring-1 ring-slate-300 transition hover:bg-slate-100 lg:inline-flex">Log in</Link>}
             <Link to="/booking" className="btn-primary hidden !px-5 !py-2.5 sm:inline-flex">Book Now</Link>
-            <button onClick={() => setOpen((o) => !o)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-fg transition active:scale-90 lg:hidden">
+            <button onClick={() => setOpen((o) => !o)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-fg transition active:scale-90 lg:hidden">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.span key={open ? 'x' : 'm'} initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.18 }}>{open ? <CloseIcon /> : <MenuIcon />}</motion.span>
               </AnimatePresence>

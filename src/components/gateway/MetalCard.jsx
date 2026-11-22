@@ -88,7 +88,7 @@ export function MetalCard({ digits = '', brand = null, holder = '', expiry = '',
   useLayoutEffect(() => {
     const el = root.current
     if (!el || typeof ResizeObserver === 'undefined') return
-    const ro = new ResizeObserver(() => setFit(Math.min(1, Math.max(0.6, el.clientWidth / (W + 8)))))
+    const ro = new ResizeObserver(() => setFit(Math.min(1, Math.max(0.55, el.clientWidth / (W + 8)))))
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
@@ -109,7 +109,7 @@ export function MetalCard({ digits = '', brand = null, holder = '', expiry = '',
   const face = 'absolute inset-0 rounded-[18px] shadow-[0_2px_4px_rgba(0,0,0,0.18),0_24px_44px_-18px_rgba(0,0,0,0.55)] [backface-visibility:hidden]'
 
   return (
-    <div ref={root} className="mx-auto w-full max-w-[360px]" style={{ height: H * fit + 8 }} role="img"
+    <div ref={root} className="mx-auto w-full max-w-[300px] sm:max-w-[360px]" style={{ height: H * fit + 8 }} role="img"
       aria-label={`Card preview${brand ? `, ${brand}` : ''}${digits ? `, ending ${digits.slice(-4)}` : ''}`}>
       <div style={{ width: W, height: H, transform: fit < 1 ? `scale(${fit})` : undefined, transformOrigin: 'top left', marginInline: fit < 1 ? 0 : 'auto', perspective: 1100 }}>
         <motion.div onPointerMove={move} onPointerLeave={leave} style={{ rotateX: rx, rotateY: ry, transformStyle: 'preserve-3d', width: W, height: H }}>

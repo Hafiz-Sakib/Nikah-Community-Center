@@ -37,7 +37,7 @@ function Field({ id, label, value, onChange, focused, setFocused, icon, valid, e
   const inputId = `${uid}-${id}`
   return (
     <div className={className}>
-      <motion.div animate={shake} className={`relative h-[4.25rem] rounded-full bg-slate-100 transition-colors duration-200 ${!isFocused && !disabled ? 'hover:bg-slate-200/70' : ''}`}>
+      <motion.div animate={shake} className={`relative h-14 rounded-full sm:h-[4.25rem] bg-slate-100 transition-colors duration-200 ${!isFocused && !disabled ? 'hover:bg-slate-200/70' : ''}`}>
         {isFocused && <motion.span layoutId={`${uid}-ring`} aria-hidden className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-inset ring-fg" transition={still ? { duration: 0 } : RING} />}
         {showError && <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full" style={{ boxShadow: `inset 0 0 0 2px ${ERROR}80` }} />}
         <span aria-hidden className={`pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 transition-colors duration-200 ${isFocused ? 'text-fg' : 'text-slate-400'}`}>
@@ -47,7 +47,7 @@ function Field({ id, label, value, onChange, focused, setFocused, icon, valid, e
         <input id={inputId} ref={inputRef} value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)} onFocus={() => setFocused(id)}
           onBlur={() => { setFocused(null); if (value.length) setTouched(true); if (value.length && !valid && !still) shake.start({ x: [0, -6, 6, -4, 4, 0], transition: { duration: 0.4 } }) }}
           aria-invalid={showError || undefined} aria-describedby={showError ? `${inputId}-error` : undefined}
-          className={`absolute inset-0 w-full rounded-full bg-transparent pb-2 pl-[52px] pt-7 text-base leading-6 tabular-nums text-fg outline-none placeholder:text-transparent disabled:cursor-not-allowed ${wide ? 'pr-32' : 'pr-12'}`} {...inputProps} />
+          className={`absolute inset-0 w-full rounded-full bg-transparent pb-1.5 pl-[52px] pt-6 text-base sm:pb-2 sm:pt-7 leading-6 tabular-nums text-fg outline-none placeholder:text-transparent disabled:cursor-not-allowed ${wide ? 'pr-32' : 'pr-12'}`} {...inputProps} />
         <span className="pointer-events-none absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2">
           {right}
           <AnimatePresence>
@@ -156,16 +156,16 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
             <button onClick={onClose} disabled={phase === 'loading'} aria-label="Close checkout" className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 disabled:opacity-40 lg:bg-slate-100 lg:text-fg lg:hover:bg-slate-200"><CloseIcon /></button>
 
             {/* left: summary + live card */}
-            <div className="relative overflow-hidden bg-ink p-5 pt-6 text-white sm:p-8">
+            <div className="relative overflow-hidden bg-ink p-4 pt-5 text-white sm:p-8">
               <div aria-hidden className="pointer-events-none absolute -left-20 -top-24 h-72 w-72 rounded-full bg-brand/30 blur-3xl" />
               <div aria-hidden className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-[#9b1c1c]/40 blur-3xl" />
               <div className="relative">
                 <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-white/60"><svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor" aria-hidden><path d="M5 7V5.25a3 3 0 0 1 6 0V7" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" /><rect x="3.25" y="7" width="9.5" height="7" rx="1.75" /></svg>Secure checkout</p>
                 <h2 id={`${uid}-title`} className="mt-3 text-sm text-white/70">Your payment</h2>
-                <p className="mt-1 text-4xl font-semibold sm:text-5xl"><Rolling text={money(amount)} still={still} /></p>
+                <p className="mt-1 text-3xl font-semibold sm:text-5xl"><Rolling text={money(amount)} still={still} /></p>
                 <p className="mt-2 text-xs text-white/50">Booking <span className="tabular-nums text-white/80">{bookingId}</span></p>
-                <div className="mt-8"><MetalCard owner={payer.toUpperCase()} digits={shownDigits} brand={res ? res.brand : brand} holder={res ? '' : v.name.toUpperCase()} expiry={res ? '' : v.expiry} cvc={v.cvc} flipped={focused === 'cvc' && !res} /></div>
-                <ul className="mt-8 space-y-2 text-xs text-white/60">
+                <div className="mt-4 sm:mt-8"><MetalCard owner={payer.toUpperCase()} digits={shownDigits} brand={res ? res.brand : brand} holder={res ? '' : v.name.toUpperCase()} expiry={res ? '' : v.expiry} cvc={v.cvc} flipped={focused === 'cvc' && !res} /></div>
+                <ul className="mt-4 hidden space-y-2 text-xs text-white/60 sm:mt-8 sm:block">
                   <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />Card number and CVC are never saved on this device</li>
                   <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />The balance is paid later, before the event</li>
                 </ul>
@@ -173,7 +173,7 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
             </div>
 
             {/* right: form or receipt */}
-            <div className="relative min-h-[420px] p-5 sm:min-h-[460px] sm:p-8">
+            <div className="relative p-4 sm:min-h-[460px] sm:p-8">
               <AnimatePresence mode="wait" initial={false}>
                 {phase !== 'done' ? (
                   <motion.form key="form" onSubmit={submit} noValidate exit={{ opacity: 0, scale: 0.97, filter: 'blur(6px)', transition: { duration: 0.25 } }} initial={still ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: GLIDE }}>
@@ -188,7 +188,7 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
                       </div>
                     )}
                     <LayoutGroup id={uid}>
-                      <div className="mt-5 grid grid-cols-2 gap-3">
+                      <div className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-5 sm:gap-3">
                         <Field {...common} id="number" wide inputRef={first} label="Card number" value={v.number} onChange={(x) => set({ number: formatNumber(digitsOf(x)) })} valid={numberOk} error="Check the card number." className="col-span-2" icon={<CardIcon />}
                           right={<AnimatePresence mode="popLayout">{brand && <motion.span key={brand} initial={still ? { opacity: 0 } : { opacity: 0, y: 8, filter: 'blur(4px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} exit={still ? { opacity: 0 } : { opacity: 0, y: -8, filter: 'blur(4px)' }} transition={{ duration: 0.3, ease: GLIDE }} className="grid"><BrandLogo brand={brand} /></motion.span>}</AnimatePresence>}
                           inputProps={{ inputMode: 'numeric', autoComplete: 'cc-number', maxLength: 23 }} />
@@ -201,7 +201,7 @@ export default function PaymentGateway({ open, onClose, amount, bookingId, payer
                     <AnimatePresence>{err && <motion.p role="alert" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-4 overflow-hidden rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">{err}</motion.p>}</AnimatePresence>
 
                     <motion.button type="submit" aria-disabled={!ready || locked} whileTap={ready && !locked && !still ? { scale: 0.98 } : undefined}
-                      className={`mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 ${ready || locked ? 'cursor-pointer bg-ink text-white' : 'cursor-default bg-slate-100 text-slate-400'}`}>
+                      className={`mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 ${ready || locked ? 'cursor-pointer bg-ink text-white' : 'cursor-default bg-slate-100 text-slate-400'}`}>
                       <span className="relative grid h-4 w-4 place-items-center">
                         {phase === 'loading'
                           ? <motion.span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white" animate={{ rotate: still ? 0 : 360 }} transition={{ rotate: { duration: 0.8, ease: 'linear', repeat: Infinity } }} />
