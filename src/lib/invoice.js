@@ -94,57 +94,77 @@ async function vectorInvoicePdf(b, filename) {
   text(`Issued ${fmtDate(b.createdAt.slice(0, 10))}`, R, 30, { size: 9, align: 'right', color: '#64748b' })
   text(status, R, 36, { bold: true, size: 9, align: 'right', color: full || b.status === 'confirmed' ? '#047857' : b.status === 'cancelled' || b.status === 'expired' ? '#b91c1c' : '#b45309' })
 
-  if (full && b.status !== 'cancelled') text('PAID', 150, 62, { bold: true, size: 20, color: '#047857' })
   let y = 46
   const box = (x, w, label, big, sub) => {
-    fill('#fdf4f4'); doc.roundedRect(x, y, w, 30, 3, 3, 'F')
-    text(label.toUpperCase(), x + 5, y + 7, { size: 7, bold: true, color: '#64748b' })
-    text(wrap(big, w - 10, 11)[0], x + 5, y + 14, { bold: true, size: 11 })
-    sub.slice(0, 3).forEach((t, i) => text(t, x + 5, y + 20 + i * 4.5, { size: 8.5, color: '#64748b' }))
+    fill('#fdf4f4'); doc.roundedRect(x, y, w, 28, 3, 3, 'F')
+    text(label.toUpperCase(), x + 5, y + 6.5, { size: 7, bold: true, color: '#64748b' })
+    text(wrap(big, w - 10, 11)[0], x + 5, y + 13, { bold: true, size: 11 })
+    sub.slice(0, 3).forEach((t, i) => text(wrap(t, w - 10, 8.5)[0], x + 5, y + 18.5 + i * 4.3, { size: 8.5, color: '#64748b' }))
   }
   box(L, 86, 'Billed to', b.name, [b.phone, b.email].filter(Boolean))
   box(L + 92, 86, 'Event', `${b.eventType} - ${fmtDate(b.date, { day: 'numeric', month: 'long', year: 'numeric' })}`, [`${q.shiftLabel} - ${q.shiftTime}`, `${b.guests} guests - ${q.menuName ? `Hall catering (${q.menuName})` : 'Own caterer'}`])
 
-  y = 82
-  const stat = (x, label, val, c) => { line('#e2e8f0'); doc.roundedRect(x, y, 57, 17, 3, 3, 'S'); text(label.toUpperCase(), x + 4, y + 6, { size: 7, bold: true, color: '#64748b' }); text(money(val), x + 4, y + 13, { bold: true, size: 12, color: c }) }
+  // "PAID" seal: a tilted green frame with the word inside, drawn after the boxes so it sits on top of them
+  if (full && b.status !== 'cancelled') {
+    const cx = 168, cy = 46, hw = 17, hh = 6.5, a = (10 * Math.PI) / 180, cos = Math.cos(a), sin = Math.sin(a)
+    const pt = (dx, dy) => [cx + dx * cos + dy * sin, cy - dx * sin + dy * cos]   // counter-clockwise tilt
+    const c = [pt(-hw, -hh), pt(hw, -hh), pt(hw, hh), pt(-hw, hh)]
+    line('#047857'); doc.setLineWidth(0.9)
+    c.forEach((p, i) => { const n = c[(i + 1) % 4]; doc.line(p[0], p[1], n[0], n[1]) })
+    doc.setLineWidth(0.2)
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(17); ink('#047857')
+    const tw = doc.getTextWidth('PAID'), st = pt(-tw / 2, 2.6)
+    doc.text('PAID', st[0], st[1], { angle: 10 })
+  }
+
+  y = 79
+  const stat = (x, label, val, c) => { line('#e2e8f0'); doc.roundedRect(x, y, 57, 16, 3, 3, 'S'); text(label.toUpperCase(), x + 4, y + 5.5, { size: 7, bold: true, color: '#64748b' }); text(money(val), x + 4, y + 12, { bold: true, size: 12, color: c }) }
   stat(L, 'Total bill', q.total, '#0f172a'); stat(L + 60.5, paid > q.advance ? 'Paid' : 'Advance paid', paid, '#047857'); stat(L + 121, 'Remaining due bill', balance, balance === 0 ? '#047857' : '#b45309')
 
-  y = 108
+  // Everything is sized so a normal invoice fits ONE page: rows shrink (down to a floor) as items / payments are added.
+  const pays = (b.payments || []).filter((p) => p.status !== 'rejected')
+  const LIMIT = 280, TOP = 101
+  const bottom = 6 + 16 + 18 + 6 * pays.length + 10 + 32   // totals + payments + terms/barcode
+  const base = Math.min(14, Math.max(9, (LIMIT - bottom - (TOP + 8)) / Math.max(1, rows.length)))
+  y = TOP
   fill('#fdf4f4'); doc.rect(L, y, R - L, 8, 'F')
   text('#', L + 3, y + 5.5, { size: 7, bold: true, color: '#64748b' }); text('DESCRIPTION', L + 12, y + 5.5, { size: 7, bold: true, color: '#64748b' }); text('AMOUNT', R - 3, y + 5.5, { size: 7, bold: true, color: '#64748b', align: 'right' })
   y += 8
   rows.forEach((r, i) => {
-    if (y + 17 > 262) { doc.addPage(); y = 20 }
-    text(String(i + 1), L + 3, y + 6, { size: 9, color: '#64748b' })
-    text(r.label, L + 12, y + 6, { bold: true, size: 9.5 })
-    if (r.note) text(r.note, L + 12, y + 10.5, { size: 8, color: '#64748b' })
-    text(money(r.amount), R - 3, y + 6, { bold: true, size: 9.5, align: 'right' })
-    y += 17; line('#e2e8f0'); doc.line(L, y, R, y)
+    const h = r.note ? Math.max(base, 11.5) : base
+    if (y + h > 262) { doc.addPage(); y = 20 }
+    const ty = y + (r.note ? 5 : h / 2 + 1.3)
+    text(String(i + 1), L + 3, ty, { size: 9, color: '#64748b' })
+    text(r.label, L + 12, ty, { bold: true, size: 9.5 })
+    if (r.note) text(r.note, L + 12, ty + 4.4, { size: 8, color: '#64748b' })
+    text(money(r.amount), R - 3, ty, { bold: true, size: 9.5, align: 'right' })
+    y += h; line('#e2e8f0'); doc.line(L, y, R, y)
   })
 
   y += 8
-  if (y + 50 > 270) { doc.addPage(); y = 20 }
-  const tr = (label, val, c) => { text(label, 120, y, { size: 10, color: '#475569' }); text(money(val), R, y, { bold: true, size: 10, align: 'right', color: c || '#0f172a' }); y += 9 }
+  if (y + bottom - 8 > LIMIT) { doc.addPage(); y = 22 }
+  const tr = (label, val, c) => { text(label, 120, y, { size: 10, color: '#475569' }); text(money(val), R, y, { bold: true, size: 10, align: 'right', color: c || '#0f172a' }); y += 8 }
   tr('Total bill', q.total); tr(paid > q.advance ? 'Paid' : 'Advance paid', paid, '#047857')
-  fill('#6f0202'); doc.roundedRect(118, y - 3, R - 118, 10, 3, 3, 'F')
-  text('Remaining due bill', 122, y + 3.5, { bold: true, size: 10, color: '#ffffff' }); text(money(balance), R - 4, y + 3.5, { bold: true, size: 10, align: 'right', color: '#ffffff' })
-  y += 18
-  ;(b.payments || []).filter((p) => p.status !== 'rejected').forEach((p) => {
+  fill('#6f0202'); doc.roundedRect(118, y - 3.5, R - 118, 10, 3, 3, 'F')
+  text('Remaining due bill', 122, y + 3, { bold: true, size: 10, color: '#ffffff' }); text(money(balance), R - 4, y + 3, { bold: true, size: 10, align: 'right', color: '#ffffff' })
+  y += 15
+  pays.forEach((p) => {
     const t = `${p.method}${p.reference ? ` - ${p.reference}` : ''} - ${p.status === 'verified' ? 'received' : 'awaiting verification'}`
-    text(wrap(t, 70, 8)[0], 120, y, { size: 8, color: '#64748b' }); text(money(p.amount), R, y, { size: 8, align: 'right', color: '#64748b' }); y += 6.5
+    text(wrap(t, 70, 8)[0], 120, y, { size: 8, color: '#64748b' }); text(money(p.amount), R, y, { size: 8, align: 'right', color: '#64748b' }); y += 6
   })
 
-  y = Math.max(y + 16, 200)
-  if (y + 36 > 276) { doc.addPage(); y = 24 }
+  y += 10
+  if (y + 32 > LIMIT) { doc.addPage(); y = 24 }
   text('TERMS', L, y, { size: 7, bold: true, color: '#64748b' })
   ;['Date held for 48 hours; confirmed once the advance is verified.', 'Cancel 14+ days before the event for a full advance refund.', `Package: ${q.pkgName}. Prices in BDT.`].forEach((t, i) => text(`- ${t}`, L, y + 6 + i * 5, { size: 8, color: '#64748b' }))
   const w = code128(b.id), total = w.reduce((a, c) => a + c, 0), bw = 62, k = bw / (total + 20), bx = 130
   let x = bx + 10 * k
-  fill('#000000'); w.forEach((n, i) => { if (i % 2 === 0) doc.rect(x, y - 2, n * k, 20, 'F'); x += n * k })
-  text(b.id, bx + bw / 2, y + 24, { size: 9, bold: true, align: 'center' }); text('Show this code at reception', bx + bw / 2, y + 28.5, { size: 7.5, color: '#64748b', align: 'center' })
+  fill('#000000'); w.forEach((n, i) => { if (i % 2 === 0) doc.rect(x, y - 2, n * k, 16, 'F'); x += n * k })
+  text(b.id, bx + bw / 2, y + 19.5, { size: 9, bold: true, align: 'center' }); text('Show this code at reception', bx + bw / 2, y + 24, { size: 7.5, color: '#64748b', align: 'center' })
 
-  fill('#fdf4f4'); doc.rect(0, 280, 210, 17, 'F')
-  text('Thank you for choosing Nikah Community Center.', L, 290, { size: 8, color: '#64748b' }); text('This is a computer-generated invoice.', R, 290, { size: 8, color: '#64748b', align: 'right' })
+  const pages = doc.getNumberOfPages(); doc.setPage(pages)
+  fill('#fdf4f4'); doc.rect(0, 285, 210, 12, 'F')
+  text('Thank you for choosing Nikah Community Center.', L, 292, { size: 8, color: '#64748b' }); text('This is a computer-generated invoice.', R, 292, { size: 8, color: '#64748b', align: 'right' })
   doc.save(filename)
 }
 
