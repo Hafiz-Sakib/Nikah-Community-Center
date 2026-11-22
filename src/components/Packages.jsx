@@ -114,31 +114,88 @@ export function PackageGrid() {
   )
 }
 
+/* Package comparison. Large screens: one fixed-width table that always fits (no sideways or inner scrolling); the popular plan is lifted as a single
+   continuous framed column from top to bottom, and hovering any column or row highlights it. Phones / tablets: pick a plan, read its list. */
+const LABEL = 19, COL = (100 - LABEL) / 6
+const Cell = ({ v }) => (v === true
+  ? <span className="mx-auto flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"><CheckIcon width={14} height={14} /></span>
+  : v === false || v === '—' ? <span className="text-slate-300">—</span> : <span>{v}</span>)
+
 export function CompareTable() {
+  const [hc, setHc] = useState(null)
+  const [sel, setSel] = useState(Math.max(0, packages.findIndex((p) => p.popular)))
+  const pop = packages.findIndex((p) => p.popular)
+  const left = (i) => `${LABEL + i * COL}%`
+  const price = (p) => `৳${p.price.toLocaleString('en-IN')}`
   return (
-    <div className="overflow-hidden rounded-3xl bg-surface shadow-card ring-1 ring-fg/5">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px] border-collapse text-sm">
-          <thead>
-            <tr>
-              <th className="sticky left-0 z-10 bg-surface p-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Compare</th>
-              {packages.map((p) => <th key={p.id} className={`p-4 text-left ${p.popular ? 'bg-brand-soft' : ''}`}><span className="block font-semibold text-fg">{p.name}</span><span className="text-xs font-normal text-brand-ink">৳{p.price.toLocaleString('en-IN')} / shift</span></th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {compare.map((r, i) => (
-              <motion.tr key={r.label} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }} className="border-t border-slate-100">
-                <td className="sticky left-0 z-10 bg-surface p-4 font-medium text-fg">{r.label}</td>
-                {r.v.map((v, k) => (
-                  <td key={k} className={`p-4 text-slate-600 ${packages[k].popular ? 'bg-brand-soft/50' : ''}`}>
-                    {v === true ? <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"><CheckIcon width={14} height={14} /></span> : v === false ? <span className="text-slate-300">—</span> : v}
-                  </td>
-                ))}
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
+    <>
+      {/* desktop table */}
+      <div className="relative hidden pt-4 lg:block" onMouseLeave={() => setHc(null)}>
+        <div className="relative rounded-3xl bg-surface shadow-card ring-1 ring-fg/5">
+          {hc !== null && hc !== pop && <div aria-hidden className="pointer-events-none absolute inset-y-0 rounded-2xl bg-brand/[0.06] transition-all duration-200" style={{ left: left(hc), width: `${COL}%` }} />}
+          {pop >= 0 && (
+            <div aria-hidden className="pointer-events-none absolute -inset-y-4 z-0 rounded-[1.75rem] border-2 border-brand bg-brand-soft/60 shadow-glow" style={{ left: left(pop), width: `${COL}%` }}>
+              <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-md">Most popular</span>
+            </div>
+          )}
+          <table className="relative z-10 w-full table-fixed border-collapse text-sm">
+            <colgroup><col style={{ width: `${LABEL}%` }} />{packages.map((p) => <col key={p.id} style={{ width: `${COL}%` }} />)}</colgroup>
+            <thead>
+              <tr>
+                <th className="px-6 py-7 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Compare</th>
+                {packages.map((p, k) => {
+                  const Ico = ICONS2[p.icon]
+                  return (
+                    <th key={p.id} onMouseEnter={() => setHc(k)} className="px-3 py-7 text-center align-top">
+                      {Ico && <span className={`mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-xl ${k === pop ? 'bg-brand text-white' : 'bg-slate-100 text-brand-ink'}`}><Ico width={18} height={18} /></span>}
+                      <span className="block text-[15px] font-semibold leading-tight text-fg">{p.name}</span>
+                      <span className="mt-1.5 block text-base font-bold tabular-nums text-brand-ink">{price(p)}</span>
+                      <span className="text-[11px] font-normal text-slate-500">per shift</span>
+                    </th>
+                  )
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {compare.map((r, i) => (
+                <motion.tr key={r.label} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }} className="group/row border-t border-slate-200/70 transition-colors hover:bg-fg/[0.03]">
+                  <td className="px-6 py-4 font-medium text-fg">{r.label}</td>
+                  {r.v.map((v, k) => (
+                    <td key={k} onMouseEnter={() => setHc(k)} className={`px-3 py-4 text-center text-[13px] leading-snug ${k === pop ? 'font-medium text-fg' : 'text-slate-600'}`}><Cell v={v} /></td>
+                  ))}
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      {/* phone / tablet: choose a plan, read its list (nothing scrolls sideways) */}
+      <div className="lg:hidden">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="tablist" aria-label="Choose a package">
+          {packages.map((p, k) => (
+            <button key={p.id} type="button" role="tab" aria-selected={sel === k} onClick={() => setSel(k)}
+              className={`relative rounded-2xl px-3 py-2.5 text-center text-[13px] font-semibold leading-tight transition active:scale-95 ${sel === k ? 'bg-brand text-white shadow-glow' : 'bg-surface text-slate-600 ring-1 ring-slate-200/80'}`}>
+              {p.name}{k === pop && <span className={`mt-1 block text-[10px] font-bold uppercase tracking-wider ${sel === k ? 'text-white/80' : 'text-brand-ink'}`}>Most popular</span>}
+            </button>
+          ))}
+        </div>
+        <motion.div key={sel} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}
+          className={`mt-4 overflow-hidden rounded-3xl bg-surface shadow-card ${sel === pop ? 'ring-2 ring-brand' : 'ring-1 ring-fg/5'}`}>
+          <div className={`flex items-center justify-between gap-3 px-5 py-4 ${sel === pop ? 'bg-brand-soft' : 'bg-slate-50'}`}>
+            <p className="text-base font-semibold text-fg">{packages[sel].name}</p>
+            <p className="text-right"><b className="text-lg tabular-nums text-brand-ink">{price(packages[sel])}</b><span className="block text-[11px] text-slate-500">per shift</span></p>
+          </div>
+          <ul className="divide-y divide-slate-200/70">
+            {compare.map((r) => (
+              <li key={r.label} className="flex items-center justify-between gap-4 px-5 py-3 text-sm">
+                <span className="font-medium text-fg">{r.label}</span>
+                <span className="text-right text-slate-600"><Cell v={r.v[sel]} /></span>
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+      </div>
+    </>
   )
 }
