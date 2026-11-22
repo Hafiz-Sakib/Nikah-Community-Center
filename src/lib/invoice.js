@@ -1,6 +1,6 @@
 import { fmtDate, money } from './store'
 import { code128 } from './code128'
-import { CONTACT } from '../data'
+import { CONTACT, img } from '../data'
 
 export const invoiceNo = (b) => b.invoiceNo || 'INV-' + b.id.replace(/^NCC-/, '')
 
@@ -80,14 +80,21 @@ async function vectorInvoicePdf(b, filename) {
   const wrap = (t, w, size) => { doc.setFontSize(size); return doc.splitTextToSize(T(t), w) }
 
   fill('#6f0202'); doc.rect(0, 0, 210, 4, 'F')
-  text('Nikah Community Center', L, 18, { bold: true, size: 16, color: '#6f0202' })
-  text(CONTACT.address, L, 24, { size: 8, color: '#64748b' })
-  text(`${CONTACT.phone}  |  ${CONTACT.email}`, L, 28.5, { size: 8, color: '#64748b' })
+  let hx = L
+  try {
+    const blob = await (await fetch(img('logo-mark.png'))).blob()
+    const url = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob) })
+    doc.addImage(url, 'PNG', L, 10, 16, 16); hx = L + 20
+  } catch { /* the invoice is fine without the emblem */ }
+  text('Nikah Community Center', hx, 17, { bold: true, size: 16, color: '#6f0202' })
+  text(CONTACT.address, hx, 23, { size: 8, color: '#64748b' })
+  text(`${CONTACT.phone}  |  ${CONTACT.email}`, hx, 27.5, { size: 8, color: '#64748b' })
   text('INVOICE', R, 18, { bold: true, size: 22, align: 'right' })
   text(`No. ${invoiceNo(b)}`, R, 25, { size: 9, align: 'right', color: '#475569' })
   text(`Issued ${fmtDate(b.createdAt.slice(0, 10))}`, R, 30, { size: 9, align: 'right', color: '#64748b' })
   text(status, R, 36, { bold: true, size: 9, align: 'right', color: full || b.status === 'confirmed' ? '#047857' : b.status === 'cancelled' || b.status === 'expired' ? '#b91c1c' : '#b45309' })
 
+  if (full && b.status !== 'cancelled') text('PAID', 150, 62, { bold: true, size: 20, color: '#047857' })
   let y = 46
   const box = (x, w, label, big, sub) => {
     fill('#fdf4f4'); doc.roundedRect(x, y, w, 30, 3, 3, 'F')
@@ -107,6 +114,7 @@ async function vectorInvoicePdf(b, filename) {
   text('#', L + 3, y + 5.5, { size: 7, bold: true, color: '#64748b' }); text('DESCRIPTION', L + 12, y + 5.5, { size: 7, bold: true, color: '#64748b' }); text('AMOUNT', R - 3, y + 5.5, { size: 7, bold: true, color: '#64748b', align: 'right' })
   y += 8
   rows.forEach((r, i) => {
+    if (y + 17 > 262) { doc.addPage(); y = 20 }
     text(String(i + 1), L + 3, y + 6, { size: 9, color: '#64748b' })
     text(r.label, L + 12, y + 6, { bold: true, size: 9.5 })
     if (r.note) text(r.note, L + 12, y + 10.5, { size: 8, color: '#64748b' })
@@ -115,6 +123,7 @@ async function vectorInvoicePdf(b, filename) {
   })
 
   y += 8
+  if (y + 50 > 270) { doc.addPage(); y = 20 }
   const tr = (label, val, c) => { text(label, 120, y, { size: 10, color: '#475569' }); text(money(val), R, y, { bold: true, size: 10, align: 'right', color: c || '#0f172a' }); y += 9 }
   tr('Total bill', q.total); tr(paid > q.advance ? 'Paid' : 'Advance paid', paid, '#047857')
   fill('#6f0202'); doc.roundedRect(118, y - 3, R - 118, 10, 3, 3, 'F')
@@ -126,6 +135,7 @@ async function vectorInvoicePdf(b, filename) {
   })
 
   y = Math.max(y + 16, 200)
+  if (y + 36 > 276) { doc.addPage(); y = 24 }
   text('TERMS', L, y, { size: 7, bold: true, color: '#64748b' })
   ;['Date held for 48 hours; confirmed once the advance is verified.', 'Cancel 14+ days before the event for a full advance refund.', `Package: ${q.pkgName}. Prices in BDT.`].forEach((t, i) => text(`- ${t}`, L, y + 6 + i * 5, { size: 8, color: '#64748b' }))
   const w = code128(b.id), total = w.reduce((a, c) => a + c, 0), bw = 62, k = bw / (total + 20), bx = 130
@@ -175,10 +185,16 @@ async function snapshotPdf(node, filename, inline) {
   } finally { stage?.remove() }
 }
 
+const strings = (b) => { const { rows, q } = billRows(b); return [b.name, b.phone, b.email, b.eventType, q.pkgName, q.shiftLabel, q.shiftTime, q.menuName, ...rows.flatMap((r) => [r.label, r.note]), ...(b.payments || []).flatMap((p) => [p.method, p.reference])] }
+const isLatin = (b) => { try { return !strings(b).some((t) => /[^\x20-\xFF\u09F3\u2013\u2014]/.test(String(t ?? ''))) } catch { return false } }
+
+/* Phones draw text unreliably in an HTML screenshot (words run together, edges cut). So when everything on the invoice is Latin text
+   the PDF is drawn directly (sharp, selectable, identical on every device). Bangla names need the screenshot route, which has fallbacks. */
 /* Tries the styled snapshot first, then the plain one, then the drawn PDF, so a phone always gets a file. */
 export async function downloadInvoicePdf(node, filename, booking) {
-  const tries = [() => snapshotPdf(node, filename, true), () => snapshotPdf(node, filename, false)]
-  if (booking) tries.push(() => vectorInvoicePdf(booking, filename))
+  const snaps = [() => snapshotPdf(node, filename, true), () => snapshotPdf(node, filename, false)]
+  const drawn = booking ? [() => vectorInvoicePdf(booking, filename)] : []
+  const tries = booking && isLatin(booking) ? [...drawn, ...snaps] : [...snaps, ...drawn]
   let err
   for (const t of tries) { try { await t(); return } catch (e) { err = e; console.warn('Invoice PDF attempt failed', e) } }
   throw err
