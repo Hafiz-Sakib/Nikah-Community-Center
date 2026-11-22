@@ -106,11 +106,19 @@
 .inv { position: relative; box-sizing: border-box; width: 100%; max-width: 794px; margin-inline: auto; overflow: hidden; background: #fff; color: #0f172a; font-family: Poppins, 'Hind Siliguri', system-ui, sans-serif; border-radius: 14px; box-shadow: 0 1px 2px rgba(15,23,42,.06), 0 18px 40px -22px rgba(15,23,42,.35); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .inv-pdf { max-width: none; border-radius: 0; box-shadow: none; min-height: 1123px; display: flex; flex-direction: column; }
 .inv-pdf .inv-head { padding-top: 26px; }
-.inv-pdf .inv-info { margin-top: 18px; }
-.inv-pdf .inv-table { margin-top: 16px; }
-.inv-pdf .inv-table td { padding-block: 9px; }
-.inv-pdf .inv-totals-row { margin-top: 12px; }
-.inv-pdf .inv-foot-grid { margin-top: 16px; margin-bottom: 18px; }
+.inv-pdf .inv-info { margin-top: 24px; }
+.inv-pdf .inv-sum { margin-top: 18px; }
+.inv-pdf .inv-table { margin-top: 26px; }
+.inv-pdf .inv-table td { padding-block: 13px; }
+.inv-pdf .inv-table th { padding-block: 12px; }
+.inv-pdf .inv-totals-row { margin-top: 26px; }
+.inv-pdf .inv-trow { padding-block: 11px; }
+.inv-pdf .inv-adv { margin-top: 8px; padding-block: 14px; }
+.inv-pdf .inv-notes { margin-top: 16px; }
+.inv-pdf .inv-prow { padding-block: 6px; }
+.inv-pdf .inv-foot-grid { margin-top: 38px; margin-bottom: 28px; gap: 36px; }
+.inv-pdf .inv-terms { line-height: 1.9; }
+.inv-pdf .inv-codeid { margin-top: 10px; }
 .inv-pdf .inv-end { margin-top: auto; }
 .inv-bar { height: 10px; background: linear-gradient(90deg, #6f0202, #b3261e 60%, #d4a017); }
 .inv-head { display: flex; justify-content: space-between; gap: 24px; padding: 36px 48px 0; }

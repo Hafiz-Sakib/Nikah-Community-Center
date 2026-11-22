@@ -111,21 +111,21 @@ async function vectorInvoicePdf(b, filename) {
     text(r.label, L + 12, y + 6, { bold: true, size: 9.5 })
     if (r.note) text(r.note, L + 12, y + 10.5, { size: 8, color: '#64748b' })
     text(money(r.amount), R - 3, y + 6, { bold: true, size: 9.5, align: 'right' })
-    y += 14; line('#e2e8f0'); doc.line(L, y, R, y)
+    y += 17; line('#e2e8f0'); doc.line(L, y, R, y)
   })
 
   y += 8
-  const tr = (label, val, c) => { text(label, 120, y, { size: 10, color: '#475569' }); text(money(val), R, y, { bold: true, size: 10, align: 'right', color: c || '#0f172a' }); y += 7 }
+  const tr = (label, val, c) => { text(label, 120, y, { size: 10, color: '#475569' }); text(money(val), R, y, { bold: true, size: 10, align: 'right', color: c || '#0f172a' }); y += 9 }
   tr('Total bill', q.total); tr(paid > q.advance ? 'Paid' : 'Advance paid', paid, '#047857')
   fill('#6f0202'); doc.roundedRect(118, y - 3, R - 118, 10, 3, 3, 'F')
   text('Remaining due bill', 122, y + 3.5, { bold: true, size: 10, color: '#ffffff' }); text(money(balance), R - 4, y + 3.5, { bold: true, size: 10, align: 'right', color: '#ffffff' })
-  y += 14
+  y += 18
   ;(b.payments || []).filter((p) => p.status !== 'rejected').forEach((p) => {
     const t = `${p.method}${p.reference ? ` - ${p.reference}` : ''} - ${p.status === 'verified' ? 'received' : 'awaiting verification'}`
-    text(wrap(t, 70, 8)[0], 120, y, { size: 8, color: '#64748b' }); text(money(p.amount), R, y, { size: 8, align: 'right', color: '#64748b' }); y += 5
+    text(wrap(t, 70, 8)[0], 120, y, { size: 8, color: '#64748b' }); text(money(p.amount), R, y, { size: 8, align: 'right', color: '#64748b' }); y += 6.5
   })
 
-  y = Math.max(y + 10, 196)
+  y = Math.max(y + 16, 200)
   text('TERMS', L, y, { size: 7, bold: true, color: '#64748b' })
   ;['Date held for 48 hours; confirmed once the advance is verified.', 'Cancel 14+ days before the event for a full advance refund.', `Package: ${q.pkgName}. Prices in BDT.`].forEach((t, i) => text(`- ${t}`, L, y + 6 + i * 5, { size: 8, color: '#64748b' }))
   const w = code128(b.id), total = w.reduce((a, c) => a + c, 0), bw = 62, k = bw / (total + 20), bx = 130
