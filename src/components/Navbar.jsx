@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { nav } from '../data'
 import { MenuIcon, CloseIcon, ArrowRight, ClipboardIcon, ICONS2, HomeIcon, PhoneIcon, ShieldIcon } from './Icons'
@@ -14,10 +14,37 @@ import { InstallIconButton } from './Install'
 const NAV_ICONS = { ...ICONS2, home: HomeIcon, phone: PhoneIcon }
 const isOn = (to, pathname, isActive) => isActive
 
-/* Desktop: every page is a direct link (no dropdown). The bar runs edge to edge and the links spread evenly across the free space
-   between the logo and the buttons, so the row fills the whole width on one line. Mobile menu lists everything. */
-const linkCls = (on) => `relative flex items-center gap-1 rounded-full whitespace-nowrap px-3.5 py-2 text-sm font-medium transition-colors xl:px-5 xl:py-2.5 ${on ? 'text-brand-ink' : 'text-slate-600 hover:text-fg'}`
-const pill = <motion.span layoutId="desk-pill" className="absolute inset-0 -z-10 rounded-full bg-surface shadow-sm ring-1 ring-slate-200/70" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />
+/* Desktop (lg+) only: the animated pill nav from the Number-System project. A brand-blue pill (same blue as Book Now) glides between links on a spring,
+   hovering fades in a soft chip, each icon pops when its page becomes active, a tap sends a ripple, and the links rise in one by one.
+   Phones and tablets keep the original menu below. */
+const SPRING = { type: 'spring', stiffness: 420, damping: 32 }
+const GLIDE = [0.22, 1, 0.36, 1]
+const pill = <motion.span layoutId="desk-pill" transition={SPRING} className="absolute inset-0 rounded-full bg-gradient-to-b from-[#5a9bfb] to-[#3f87f5] shadow-[0_6px_16px_-6px_rgba(63,135,245,.7),inset_0_1px_0_rgba(255,255,255,.25)]" />
+
+function DeskLink({ n, i, end }) {
+  const still = !!useReducedMotion()
+  const [taps, setTaps] = useState(0)
+  const Ico = NAV_ICONS[n.icon]
+  return (
+    <motion.li initial={still ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: GLIDE, delay: still ? 0 : 0.15 + i * 0.05 }}>
+      <NavLink to={n.to} end={end} onPointerDown={() => setTaps((t) => t + 1)} className="group relative block rounded-full outline-none focus:outline-none focus-visible:outline-none">
+        {({ isActive }) => (
+          <motion.span whileTap={still ? undefined : { scale: 0.92 }} transition={SPRING} className="relative flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-medium xl:px-4 xl:py-2.5">
+            {isActive ? pill : <span aria-hidden className="absolute inset-0 rounded-full bg-fg/[0.06] opacity-0 transition-opacity duration-200 group-hover:opacity-100" />}
+            <AnimatePresence>
+              {!still && taps > 0 && <motion.span key={taps} aria-hidden initial={{ scale: 0.4, opacity: 0.35 }} animate={{ scale: 1.6, opacity: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.6, ease: GLIDE }} className="absolute inset-x-2 inset-y-0 rounded-full bg-brand/25" />}
+            </AnimatePresence>
+            {Ico && (
+              <motion.span key={isActive ? 'on' : 'off'} initial={isActive && !still ? { scale: 0.6, rotate: -16 } : false} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 520, damping: 11 }}
+                className={`relative hidden xl:grid ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-fg'}`}><Ico width={17} height={17} /></motion.span>
+            )}
+            <span className={`relative transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-600 group-hover:text-fg'}`}>{n.label}</span>
+          </motion.span>
+        )}
+      </NavLink>
+    </motion.li>
+  )
+}
 
 export default function Navbar() {
   const { user, isAdmin, signOut } = useAuth()
@@ -39,15 +66,9 @@ export default function Navbar() {
         className={`fixed inset-x-0 top-0 z-[60] transition-all duration-300 ${scrolled || open ? 'bg-surface/85 shadow-sm backdrop-blur-xl' : 'bg-surface'}`}>
         <nav className="flex h-16 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:gap-6 lg:px-8 xl:px-12 2xl:px-16" aria-label="Main">
           <Logo />
-          <div className="hidden min-w-0 flex-1 justify-center lg:flex"><ul className="flex items-center gap-0.5 rounded-full bg-slate-100/80 p-1 ring-1 ring-slate-200/70 xl:gap-1">
-            {nav.map((n) => (
-              <li key={n.to}>
-                <NavLink to={n.to} end={n.to === '/'} className={({ isActive }) => linkCls(isActive)}>
-                  {({ isActive }) => (<>{isActive && pill}{n.label}</>)}
-                </NavLink>
-              </li>
-            ))}
-          </ul></div>
+          <div className="hidden min-w-0 flex-1 justify-center lg:flex"><ul className="flex items-center gap-0.5 rounded-full border border-slate-300/80 bg-slate-100/80 p-1 xl:gap-1">
+              {nav.map((n, i) => <DeskLink key={n.to} n={n} i={i} end={n.to === '/'} />)}
+            </ul></div>
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <ThemeToggle />
             <InstallIconButton />
