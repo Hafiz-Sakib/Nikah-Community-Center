@@ -4,6 +4,7 @@ import { galleryPhotos, GALLERY_CATS } from '../galleryPhotos'
 import { img } from '../data'
 import Lightbox from './Lightbox'
 import SectionHead from './SectionHead'
+import GalleryCarousel from './GalleryCarousel'
 
 const STEP = 24
 
@@ -21,6 +22,7 @@ export default function GalleryAll() {
     <section className="bg-slate-50 py-16 sm:py-24">
       <div className="container-wide">
         <SectionHead eyebrow="Gallery" title="Moments we have hosted" text={`${galleryPhotos.length} photos from weddings, holud, receptions and celebrations at our venue.`} />
+        <div className="-mx-4 mt-8 sm:-mx-6"><GalleryCarousel /></div>
         <div className="-mx-4 mt-10 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden" role="tablist" aria-label="Photo categories">
           <div className="mx-auto flex w-max gap-2 sm:w-auto sm:flex-wrap sm:justify-center">
             {GALLERY_CATS.map((c) => (

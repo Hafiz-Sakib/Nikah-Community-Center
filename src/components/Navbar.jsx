@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { nav } from '../data'
-import { MenuIcon, CloseIcon, ArrowRight, ClipboardIcon, ChevronDown, ICONS2, HomeIcon, PhoneIcon, ShieldIcon } from './Icons'
+import { MenuIcon, CloseIcon, ArrowRight, ClipboardIcon, ICONS2, HomeIcon, PhoneIcon, ShieldIcon } from './Icons'
 import { useAuth } from '../context/AuthContext'
 import { useMyBookings, isActive } from '../lib/bookings'
 import Avatar from './Avatar'
@@ -14,52 +14,10 @@ import { InstallIconButton } from './Install'
 const NAV_ICONS = { ...ICONS2, home: HomeIcon, phone: PhoneIcon }
 const isOn = (to, pathname, isActive) => isActive
 
-/* Desktop: 4 direct links + one "Venue" dropdown keeps the bar short and calm. Mobile menu lists everything. */
-const DIRECT = ['/', '/events', '/food', '/packages']
-const direct = nav.filter((n) => DIRECT.includes(n.to))
-const venue = nav.filter((n) => !DIRECT.includes(n.to) && n.to !== '/connect')
-const contact = nav.find((n) => n.to === '/connect')
-const linkCls = (on) => `relative flex items-center gap-1 rounded-full whitespace-nowrap px-3.5 py-2 text-sm font-medium transition-colors ${on ? 'text-brand-ink' : 'text-slate-600 hover:text-fg'}`
-const pill = <motion.span layoutId="desk-pill" className="absolute inset-0 -z-10 rounded-full bg-brand-soft" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />
-
-function VenueMenu({ pathname }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-  const on = venue.some((n) => isOn(n.to, pathname, pathname === n.to))
-  useEffect(() => { setOpen(false) }, [pathname])
-  useEffect(() => {
-    if (!open) return
-    const out = (e) => { if (!ref.current?.contains(e.target)) setOpen(false) }
-    const esc = (e) => { if (e.key === 'Escape') setOpen(false) }
-    document.addEventListener('pointerdown', out); document.addEventListener('keydown', esc)
-    return () => { document.removeEventListener('pointerdown', out); document.removeEventListener('keydown', esc) }
-  }, [open])
-  return (
-    <li ref={ref} className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <button type="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className={linkCls(on)}>
-        {on && pill}Venue<ChevronDown width={15} height={15} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div role="menu" initial={{ opacity: 0, y: 6, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.15 }}
-            className="absolute left-1/2 top-full z-10 w-64 -translate-x-1/2 pt-2">
-            <div className="rounded-2xl bg-surface p-2 shadow-dock ring-1 ring-fg/5">
-              {venue.map((n) => {
-                const Ico = NAV_ICONS[n.icon]
-                return (
-                  <NavLink key={n.to} to={n.to} role="menuitem" className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-100 ${isOn(n.to, pathname, isActive) ? 'bg-brand-soft text-brand-ink' : 'text-fg'}`}>
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-brand-ink"><Ico width={18} height={18} /></span>
-                    <span className="min-w-0"><span className="block text-sm font-semibold leading-tight">{n.label}</span><span className="block truncate text-xs text-slate-500">{n.hint}</span></span>
-                  </NavLink>
-                )
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </li>
-  )
-}
+/* Desktop: every page is a direct link (no dropdown). The bar runs edge to edge and the links spread evenly across the free space
+   between the logo and the buttons, so the row fills the whole width on one line. Mobile menu lists everything. */
+const linkCls = (on) => `relative flex items-center gap-1 rounded-full whitespace-nowrap px-3.5 py-2 text-sm font-medium transition-colors xl:px-5 xl:py-2.5 ${on ? 'text-brand-ink' : 'text-slate-600 hover:text-fg'}`
+const pill = <motion.span layoutId="desk-pill" className="absolute inset-0 -z-10 rounded-full bg-surface shadow-sm ring-1 ring-slate-200/70" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />
 
 export default function Navbar() {
   const { user, isAdmin, signOut } = useAuth()
@@ -79,19 +37,17 @@ export default function Navbar() {
     <>
       <motion.header initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 120, damping: 18 }}
         className={`fixed inset-x-0 top-0 z-[60] transition-all duration-300 ${scrolled || open ? 'bg-surface/85 shadow-sm backdrop-blur-xl' : 'bg-surface'}`}>
-        <nav className="container-wide flex h-16 items-center justify-between gap-3" aria-label="Main">
+        <nav className="flex h-16 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:gap-6 lg:px-8 xl:px-12 2xl:px-16" aria-label="Main">
           <Logo />
-          <ul className="hidden items-center gap-1 lg:flex">
-            {direct.map((n) => (
+          <div className="hidden min-w-0 flex-1 justify-center lg:flex"><ul className="flex items-center gap-0.5 rounded-full bg-slate-100/80 p-1 ring-1 ring-slate-200/70 xl:gap-1">
+            {nav.map((n) => (
               <li key={n.to}>
                 <NavLink to={n.to} end={n.to === '/'} className={({ isActive }) => linkCls(isActive)}>
                   {({ isActive }) => (<>{isActive && pill}{n.label}</>)}
                 </NavLink>
               </li>
             ))}
-            <VenueMenu pathname={pathname} />
-            <li><NavLink to={contact.to} className={({ isActive }) => linkCls(isActive)}>{({ isActive }) => (<>{isActive && pill}{contact.label}</>)}</NavLink></li>
-          </ul>
+          </ul></div>
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <ThemeToggle />
             <InstallIconButton />
