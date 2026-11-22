@@ -151,6 +151,10 @@
 .inv-prow { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 11px; color: #64748b; }
 .inv-prow span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .inv-adv { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 14px; background: #6f0202; color: #fff; font-size: 14px; font-weight: 600; }
+.inv-big-row { font-size: 14px; }
+.inv-big-row span { color: #475569; }
+.inv-adv { margin-top: 4px; }
+.inv-notes { margin-top: 8px; padding: 6px 4px 0; }
 .inv-bal { display: flex; justify-content: space-between; gap: 12px; padding: 10px 4px 0; font-size: 12px; color: #64748b; }
 .inv-bal b { color: #0f172a; white-space: nowrap; }
 .inv-foot-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: end; margin: 24px 48px 0; }

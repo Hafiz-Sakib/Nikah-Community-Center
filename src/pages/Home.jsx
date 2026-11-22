@@ -32,7 +32,7 @@ export default function Home() {
         <SectionHead eyebrow="Facilities" title="Everything your event needs" text="A complete venue, so you can focus on the people who matter." />
         <div className="mt-12"><StatsBand /></div>
         <div className="mt-5"><FacilitiesGrid limit={6} /></div>
-        <More to="/facilities">All facilities</More>
+        <More to="/events">Facilities &amp; events</More>
       </div></section>
       <section className="bg-slate-50 py-16 sm:py-24"><div className="container-x">
         <SectionHead eyebrow="Events" title="Celebrate every occasion" text="From intimate milad to grand receptions — pick an event and we’ll set the stage." />

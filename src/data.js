@@ -204,8 +204,7 @@ export const values = [
 
 export const nav = [
   { to: '/', label: 'Home', icon: 'home', hint: 'Start here' },
-  { to: '/facilities', label: 'Facilities', icon: 'building', hint: 'Hall, parking, power & rooms' },
-  { to: '/events', label: 'Events', icon: 'sparkles', hint: 'Weddings, holud, milad & more' },
+  { to: '/events', label: 'Events', icon: 'sparkles', hint: 'Weddings, holud, milad, hall & facilities' },
   { to: '/food', label: 'Food', icon: 'utensils', hint: 'Bengali wedding menus' },
   { to: '/gallery', label: 'Gallery', icon: 'image', hint: 'Moments we have hosted' },
   { to: '/packages', label: 'Packages', icon: 'gift', hint: 'Pricing & what is included' },

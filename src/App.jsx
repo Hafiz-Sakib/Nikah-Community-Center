@@ -8,7 +8,6 @@ import MyBookings from './components/MyBookings'
 import Admin from './components/Admin'
 import Home from './pages/Home'
 import Connect from './pages/Connect'
-import FacilitiesPage from './pages/FacilitiesPage'
 import EventsPage from './pages/EventsPage'
 import GalleryPage from './pages/GalleryPage'
 import PackagesPage from './pages/PackagesPage'
@@ -47,7 +46,7 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/connect" element={<Connect />} />
               <Route path="/about" element={<Navigate to="/connect" replace />} />
-              <Route path="/facilities" element={<FacilitiesPage />} />
+              <Route path="/facilities" element={<Navigate to="/events" replace />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/gallery" element={<GalleryPage />} />
               <Route path="/packages" element={<PackagesPage />} />

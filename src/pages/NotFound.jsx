@@ -7,7 +7,7 @@ import Button from '../components/brew/Button'
 import { ArrowRight, CalendarIcon, SparklesIcon } from '../components/Icons'
 
 const LINKS = [['Packages', '/packages'], ['Events', '/events'], ['Gallery', '/gallery'], ['Connect', '/connect']]
-const ROUTES = ['/events', '/food', '/packages', '/facilities', '/gallery', '/connect', '/booking', '/my-bookings', '/login']
+const ROUTES = ['/events', '/food', '/packages', '/gallery', '/connect', '/booking', '/my-bookings', '/login']
 const EASE = [0.22, 1, 0.36, 1]
 
 /* ---- "did you mean …?" : nearest real page to the mistyped link ---- */

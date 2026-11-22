@@ -19,6 +19,7 @@ const Invoice = forwardRef(function Invoice({ b, pdf = false }, ref) {
   const advanceDue = Math.max(0, q.advance - paid)
   const advanceSubmitted = advanceDue > 0 && waiting >= advanceDue
   const balance = Math.max(0, q.total - paid)
+  const paidLabel = paid > q.advance ? 'Paid' : 'Advance paid'
   return (
     <div className="inv-wrap" style={pdf ? { width: 794 } : undefined}>
       <div ref={ref} className={`inv ${pdf ? 'inv-pdf' : ''}`}>
@@ -54,9 +55,9 @@ const Invoice = forwardRef(function Invoice({ b, pdf = false }, ref) {
         </div>
 
         <div className="inv-sum">
-          <div><div className="inv-label">Total</div><b>{money(q.total)}</b></div>
-          <div><div className="inv-label">Paid</div><b style={{ color: '#047857' }}>{money(paid)}</b></div>
-          <div><div className="inv-label">{balance === 0 ? 'Balance' : 'Balance due'}</div><b style={{ color: balance === 0 ? '#047857' : '#b45309' }}>{money(balance)}</b></div>
+          <div><div className="inv-label">Total bill</div><b>{money(q.total)}</b></div>
+          <div><div className="inv-label">{paidLabel}</div><b style={{ color: '#047857' }}>{money(paid)}</b></div>
+          <div><div className="inv-label">Remaining due bill</div><b style={{ color: balance === 0 ? '#047857' : '#b45309' }}>{money(balance)}</b></div>
         </div>
 
         <table className="inv-table">
@@ -74,16 +75,20 @@ const Invoice = forwardRef(function Invoice({ b, pdf = false }, ref) {
 
         <div className="inv-totals-row">
           <div className="inv-tot">
-            <div className="inv-trow"><span className="inv-mute">Total</span><b>{money(q.total)}</b></div>
-            {payList.map((p) => (
-              <div key={p.id} className="inv-prow">
-                <span>Payment · {p.method}{p.reference ? ` · ${p.reference}` : ''} · {p.status === 'verified' ? 'received' : 'awaiting verification'}</span><span className="inv-nowrap">{money(p.amount)}</span>
+            <div className="inv-trow inv-big-row"><span>Total bill</span><b>{money(q.total)}</b></div>
+            <div className="inv-trow inv-big-row"><span>{paidLabel}</span><b style={{ color: '#047857' }}>{money(paid)}</b></div>
+            <div className="inv-adv"><span>Remaining due bill</span><span className="inv-nowrap">{money(balance)}</span></div>
+            {(payList.length > 0 || waiting > 0 || advanceDue > 0) && (
+              <div className="inv-notes">
+                {payList.map((p) => (
+                  <div key={p.id} className="inv-prow">
+                    <span>{p.method}{p.reference ? ` · ${p.reference}` : ''} · {p.status === 'verified' ? 'received' : 'awaiting verification'}</span><span className="inv-nowrap">{money(p.amount)}</span>
+                  </div>
+                ))}
+                {waiting > 0 && <div className="inv-prow"><span>Submitted, in review (not counted yet)</span><span className="inv-nowrap">{money(waiting)}</span></div>}
+                {advanceDue > 0 && <div className="inv-prow"><span>Advance (30%) still due</span><span className="inv-nowrap">{money(advanceDue)}</span></div>}
               </div>
-            ))}
-            <div className="inv-trow"><span className="inv-mute">Paid (verified)</span><b style={{ color: '#047857' }}>{money(paid)}</b></div>
-            {waiting > 0 && <div className="inv-trow"><span className="inv-mute">Submitted, in review</span><b style={{ color: '#0369a1' }}>{money(waiting)}</b></div>}
-            <div className="inv-adv"><span>{advanceSubmitted ? 'Advance (30%) submitted' : advanceDue > 0 ? 'Advance due (30%)' : 'Advance (30%) received'}</span><span className="inv-nowrap">{money(advanceDue > 0 ? advanceDue : q.advance)}</span></div>
-            <div className="inv-bal"><span>{balance === 0 ? 'Balance — paid in full, thank you' : 'Balance, payable before the event'}</span><b>{money(balance)}</b></div>
+            )}
           </div>
         </div>
 
