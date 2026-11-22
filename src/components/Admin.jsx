@@ -405,7 +405,7 @@ export default function Admin() {
           {edit && <EditBooking key={edit === 'new' ? 'new' : edit.id} booking={edit === 'new' ? null : edit} admin map={map} onClose={() => setEdit(null)} onSaved={changed} />}
           {refunding && <RefundDialog key="refund" b={refunding} onClose={() => setRefunding(null)} onDone={changed} />}
           {cancelling && <CancelDialog key="cancel" b={cancelling} onClose={() => setCancelling(null)} onDone={changed} />}
-          {inv && <Modal key="inv" size="lg" title={`Invoice ${inv.invoiceNo}`} onClose={() => setInv(null)}><InvoiceView b={inv} /></Modal>}
+          {inv && <Modal key="inv" size="lg" center title={`Invoice ${inv.invoiceNo}`} onClose={() => setInv(null)}><InvoiceView b={inv} /></Modal>}
         </AnimatePresence>
       </section>
     </>

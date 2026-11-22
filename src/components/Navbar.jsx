@@ -19,7 +19,7 @@ const isOn = (to, pathname, isActive) => isActive
    Phones and tablets keep the original menu below. */
 const SPRING = { type: 'spring', stiffness: 420, damping: 32 }
 const GLIDE = [0.22, 1, 0.36, 1]
-const pill = <motion.span layoutId="desk-pill" transition={SPRING} className="absolute inset-0 rounded-full bg-gradient-to-b from-[#5a9bfb] to-[#3f87f5] shadow-[0_6px_16px_-6px_rgba(63,135,245,.7),inset_0_1px_0_rgba(255,255,255,.25)]" />
+const pill = <motion.span layoutId="desk-pill" transition={SPRING} className="absolute inset-0 rounded-full bg-gradient-to-b from-[#4f96fb] to-[#2f78ee] shadow-[0_8px_18px_-8px_rgba(47,120,238,.85),inset_0_1px_0_rgba(255,255,255,.35),inset_0_-1px_0_rgba(0,0,0,.08)]" />
 
 function DeskLink({ n, i, end }) {
   const still = !!useReducedMotion()
@@ -66,7 +66,7 @@ export default function Navbar() {
         className={`fixed inset-x-0 top-0 z-[60] transition-all duration-300 ${scrolled || open ? 'bg-surface/85 shadow-sm backdrop-blur-xl' : 'bg-surface'}`}>
         <nav className="flex h-16 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:gap-6 lg:px-8 xl:px-12 2xl:px-16" aria-label="Main">
           <Logo />
-          <div className="hidden min-w-0 flex-1 justify-center lg:flex"><ul className="flex items-center gap-0.5 rounded-full border border-slate-300/80 bg-slate-100/80 p-1 xl:gap-1">
+          <div className="hidden min-w-0 flex-1 justify-center lg:flex"><ul className="flex items-center gap-0.5 rounded-full border-[1.5px] border-brand/40 bg-surface/70 p-1 shadow-[0_4px_14px_-6px_rgba(63,135,245,.45),inset_0_0_0_1px_rgba(255,255,255,.6)] backdrop-blur-sm xl:gap-1">
               {nav.map((n, i) => <DeskLink key={n.to} n={n} i={i} end={n.to === '/'} />)}
             </ul></div>
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">

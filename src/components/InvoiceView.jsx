@@ -17,8 +17,8 @@ export default function InvoiceView({ b }) {
       const imgs = [...(full.current?.querySelectorAll('img') ?? [])]
       await Promise.all(imgs.map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r }))))
       await new Promise((r) => setTimeout(r, 60))   // let layout settle before the styles are read
-      await downloadInvoicePdf(full.current, `${invoiceNo(b)}.pdf`); toast('Invoice downloaded')
-    } catch { toast('Could not create the PDF. Please try again.', 'error') }
+      await downloadInvoicePdf(full.current, `${invoiceNo(b)}.pdf`, b); toast('Invoice downloaded')
+    } catch (e) { console.error('Invoice PDF failed', e); toast('Could not create the PDF. Please try again.', 'error') }
     setPdf(false); setBusy(false)
   }
   const copyNo = async () => { try { await navigator.clipboard.writeText(invoiceNo(b)); toast('Invoice number copied') } catch { toast('Copy not available here', 'error') } }

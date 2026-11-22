@@ -123,7 +123,7 @@ export default function MyBookings() {
         </ul>
       )}
       <AnimatePresence>
-        {inv && <Modal key="inv" size="lg" title={`Invoice ${inv.invoiceNo}`} onClose={() => setInv(null)}><InvoiceView b={inv} /></Modal>}
+        {inv && <Modal key="inv" size="lg" center title={`Invoice ${inv.invoiceNo}`} onClose={() => setInv(null)}><InvoiceView b={inv} /></Modal>}
         {edit && <EditBooking key="edit" booking={edit} map={map} onClose={() => setEdit(null)} onSaved={() => { reload(); reloadMap() }} />}
       </AnimatePresence>
       <p className="mt-5 text-center text-xs text-slate-400">Refunds for cancelled bookings are handled by our team. Call us if you need help.</p>

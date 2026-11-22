@@ -1,4 +1,6 @@
-import { fmtDate } from './store'
+import { fmtDate, money } from './store'
+import { code128 } from './code128'
+import { CONTACT } from '../data'
 
 export const invoiceNo = (b) => b.invoiceNo || 'INV-' + b.id.replace(/^NCC-/, '')
 
@@ -60,37 +62,124 @@ function inlineStyles(src, dst) {
 }
 const settled = (img) => (img.complete && img.naturalWidth ? null : new Promise((r) => { img.onload = img.onerror = r }))
 
-/* Render the invoice node to an A4 PDF (libraries load only when needed).
-   Shrunk to fit one A4 page; a very long invoice becomes one tall page, never split across pages. */
-export async function downloadInvoicePdf(node, filename) {
+/* Last-resort PDF: drawn straight with jsPDF (no HTML, no screenshot), so it works on any phone.
+   The built-in PDF fonts are Latin only, so the taka sign is written "Tk" and anything else non-Latin becomes "?". */
+const T = (v) => String(v ?? '').replace(/৳/g, 'Tk ').replace(/[–—]/g, '-').replace(/[^\x20-\xFF]/g, '?')
+async function vectorInvoicePdf(b, filename) {
+  const { jsPDF } = await import('jspdf')
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: true })
+  const { rows, q } = billRows(b)
+  const paid = paidOf(b)
+  const full = q.total > 0 && paid >= q.total
+  const balance = Math.max(0, q.total - paid)
+  const status = b.status === 'cancelled' ? 'CANCELLED' : b.status === 'expired' ? 'EXPIRED' : full ? 'PAID IN FULL' : b.status === 'confirmed' ? 'CONFIRMED' : 'ADVANCE PENDING'
+  const L = 16, R = 194
+  const rgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]
+  const fill = (h) => doc.setFillColor(...rgb(h)), ink = (h) => doc.setTextColor(...rgb(h)), line = (h) => doc.setDrawColor(...rgb(h))
+  const text = (t, x, y, o = {}) => { doc.setFont('helvetica', o.bold ? 'bold' : 'normal'); doc.setFontSize(o.size || 9); ink(o.color || '#0f172a'); doc.text(T(t), x, y, o.align ? { align: o.align } : undefined) }
+  const wrap = (t, w, size) => { doc.setFontSize(size); return doc.splitTextToSize(T(t), w) }
+
+  fill('#6f0202'); doc.rect(0, 0, 210, 4, 'F')
+  text('Nikah Community Center', L, 18, { bold: true, size: 16, color: '#6f0202' })
+  text(CONTACT.address, L, 24, { size: 8, color: '#64748b' })
+  text(`${CONTACT.phone}  |  ${CONTACT.email}`, L, 28.5, { size: 8, color: '#64748b' })
+  text('INVOICE', R, 18, { bold: true, size: 22, align: 'right' })
+  text(`No. ${invoiceNo(b)}`, R, 25, { size: 9, align: 'right', color: '#475569' })
+  text(`Issued ${fmtDate(b.createdAt.slice(0, 10))}`, R, 30, { size: 9, align: 'right', color: '#64748b' })
+  text(status, R, 36, { bold: true, size: 9, align: 'right', color: full || b.status === 'confirmed' ? '#047857' : b.status === 'cancelled' || b.status === 'expired' ? '#b91c1c' : '#b45309' })
+
+  let y = 46
+  const box = (x, w, label, big, sub) => {
+    fill('#fdf4f4'); doc.roundedRect(x, y, w, 30, 3, 3, 'F')
+    text(label.toUpperCase(), x + 5, y + 7, { size: 7, bold: true, color: '#64748b' })
+    text(wrap(big, w - 10, 11)[0], x + 5, y + 14, { bold: true, size: 11 })
+    sub.slice(0, 3).forEach((t, i) => text(t, x + 5, y + 20 + i * 4.5, { size: 8.5, color: '#64748b' }))
+  }
+  box(L, 86, 'Billed to', b.name, [b.phone, b.email].filter(Boolean))
+  box(L + 92, 86, 'Event', `${b.eventType} - ${fmtDate(b.date, { day: 'numeric', month: 'long', year: 'numeric' })}`, [`${q.shiftLabel} - ${q.shiftTime}`, `${b.guests} guests - ${q.menuName ? `Hall catering (${q.menuName})` : 'Own caterer'}`])
+
+  y = 82
+  const stat = (x, label, val, c) => { line('#e2e8f0'); doc.roundedRect(x, y, 57, 17, 3, 3, 'S'); text(label.toUpperCase(), x + 4, y + 6, { size: 7, bold: true, color: '#64748b' }); text(money(val), x + 4, y + 13, { bold: true, size: 12, color: c }) }
+  stat(L, 'Total bill', q.total, '#0f172a'); stat(L + 60.5, paid > q.advance ? 'Paid' : 'Advance paid', paid, '#047857'); stat(L + 121, 'Remaining due bill', balance, balance === 0 ? '#047857' : '#b45309')
+
+  y = 108
+  fill('#fdf4f4'); doc.rect(L, y, R - L, 8, 'F')
+  text('#', L + 3, y + 5.5, { size: 7, bold: true, color: '#64748b' }); text('DESCRIPTION', L + 12, y + 5.5, { size: 7, bold: true, color: '#64748b' }); text('AMOUNT', R - 3, y + 5.5, { size: 7, bold: true, color: '#64748b', align: 'right' })
+  y += 8
+  rows.forEach((r, i) => {
+    text(String(i + 1), L + 3, y + 6, { size: 9, color: '#64748b' })
+    text(r.label, L + 12, y + 6, { bold: true, size: 9.5 })
+    if (r.note) text(r.note, L + 12, y + 10.5, { size: 8, color: '#64748b' })
+    text(money(r.amount), R - 3, y + 6, { bold: true, size: 9.5, align: 'right' })
+    y += 14; line('#e2e8f0'); doc.line(L, y, R, y)
+  })
+
+  y += 8
+  const tr = (label, val, c) => { text(label, 120, y, { size: 10, color: '#475569' }); text(money(val), R, y, { bold: true, size: 10, align: 'right', color: c || '#0f172a' }); y += 7 }
+  tr('Total bill', q.total); tr(paid > q.advance ? 'Paid' : 'Advance paid', paid, '#047857')
+  fill('#6f0202'); doc.roundedRect(118, y - 3, R - 118, 10, 3, 3, 'F')
+  text('Remaining due bill', 122, y + 3.5, { bold: true, size: 10, color: '#ffffff' }); text(money(balance), R - 4, y + 3.5, { bold: true, size: 10, align: 'right', color: '#ffffff' })
+  y += 14
+  ;(b.payments || []).filter((p) => p.status !== 'rejected').forEach((p) => {
+    const t = `${p.method}${p.reference ? ` - ${p.reference}` : ''} - ${p.status === 'verified' ? 'received' : 'awaiting verification'}`
+    text(wrap(t, 70, 8)[0], 120, y, { size: 8, color: '#64748b' }); text(money(p.amount), R, y, { size: 8, align: 'right', color: '#64748b' }); y += 5
+  })
+
+  y = Math.max(y + 10, 196)
+  text('TERMS', L, y, { size: 7, bold: true, color: '#64748b' })
+  ;['Date held for 48 hours; confirmed once the advance is verified.', 'Cancel 14+ days before the event for a full advance refund.', `Package: ${q.pkgName}. Prices in BDT.`].forEach((t, i) => text(`- ${t}`, L, y + 6 + i * 5, { size: 8, color: '#64748b' }))
+  const w = code128(b.id), total = w.reduce((a, c) => a + c, 0), bw = 62, k = bw / (total + 20), bx = 130
+  let x = bx + 10 * k
+  fill('#000000'); w.forEach((n, i) => { if (i % 2 === 0) doc.rect(x, y - 2, n * k, 20, 'F'); x += n * k })
+  text(b.id, bx + bw / 2, y + 24, { size: 9, bold: true, align: 'center' }); text('Show this code at reception', bx + bw / 2, y + 28.5, { size: 7.5, color: '#64748b', align: 'center' })
+
+  fill('#fdf4f4'); doc.rect(0, 280, 210, 17, 'F')
+  text('Thank you for choosing Nikah Community Center.', L, 290, { size: 8, color: '#64748b' }); text('This is a computer-generated invoice.', R, 290, { size: 8, color: '#64748b', align: 'right' })
+  doc.save(filename)
+}
+
+/* html2canvas snapshot of the styled invoice (see above). `inline` = style every element from a detached copy first. */
+async function snapshotPdf(node, filename, inline) {
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas'), import('jspdf')])
   if (document.fonts?.ready) { try { await document.fonts.ready } catch {} }   // Poppins must be loaded before the snapshot
   const W_PX = 794
-  const clone = node.cloneNode(true)
-  inlineStyles(node, clone)
-  const stage = document.createElement('div')
-  stage.setAttribute('aria-hidden', 'true')
-  stage.style.cssText = `position:fixed;left:-10000px;top:0;width:${W_PX}px;background:#fff;pointer-events:none;`
-  clone.style.width = `${W_PX}px`; clone.style.maxWidth = 'none'
-  stage.appendChild(clone); document.body.appendChild(stage)
+  let target = node, stage = null
+  if (inline) {
+    target = node.cloneNode(true)
+    inlineStyles(node, target)
+    stage = document.createElement('div')
+    stage.setAttribute('aria-hidden', 'true')
+    stage.style.cssText = `position:absolute;left:0;top:0;width:${W_PX}px;background:#fff;pointer-events:none;z-index:-1;`
+    target.style.width = `${W_PX}px`; target.style.maxWidth = 'none'
+    stage.appendChild(target); document.body.appendChild(stage)
+  }
   try {
-    await Promise.all([...clone.querySelectorAll('img')].map(settled))
-    const canvas = await html2canvas(clone, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false, windowWidth: W_PX, width: W_PX })
-    const pdf = new jsPDF({ unit: 'mm', format: 'a4', compress: true })
+    await Promise.all([...target.querySelectorAll('img')].map(settled))
+    const canvas = await html2canvas(target, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false, windowWidth: W_PX, scrollX: 0, scrollY: 0 })
+    if (!canvas.width || !canvas.height) throw new Error('empty canvas')
     const W = 210, H = 297
     const imgH = (canvas.height * W) / canvas.width
     const data = canvas.toDataURL('image/jpeg', 0.95)
     if (imgH <= H * 1.45) {
       // one A4 page: shrink to fit, so the barcode and totals are never cut in two
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', compress: true })
       const k = Math.min(1, H / imgH), w = W * k, h = imgH * k
       pdf.addImage(data, 'JPEG', (W - w) / 2, 0, w, h)
+      pdf.save(filename)
     } else {
       // very long invoice: one tall page instead of cutting through the barcode
       const tall = new jsPDF({ unit: 'mm', format: [W, imgH], compress: true })
       tall.addImage(data, 'JPEG', 0, 0, W, imgH)
       tall.save(filename)
-      return
     }
-    pdf.save(filename)
-  } finally { stage.remove() }
+  } finally { stage?.remove() }
+}
+
+/* Tries the styled snapshot first, then the plain one, then the drawn PDF, so a phone always gets a file. */
+export async function downloadInvoicePdf(node, filename, booking) {
+  const tries = [() => snapshotPdf(node, filename, true), () => snapshotPdf(node, filename, false)]
+  if (booking) tries.push(() => vectorInvoicePdf(booking, filename))
+  let err
+  for (const t of tries) { try { await t(); return } catch (e) { err = e; console.warn('Invoice PDF attempt failed', e) } }
+  throw err
 }
