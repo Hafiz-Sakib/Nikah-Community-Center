@@ -33,7 +33,7 @@ export default function HomeFaq({ limit = 4 }) {
                 </Reveal>
               )
             })}
-            <Reveal delay={0.25}><Link to="/about" className="inline-flex items-center gap-2 pt-2 text-sm font-semibold text-brand-ink hover:underline">More questions <ArrowRight /></Link></Reveal>
+            <Reveal delay={0.25}><Link to="/connect" className="inline-flex items-center gap-2 pt-2 text-sm font-semibold text-brand-ink hover:underline">More questions <ArrowRight /></Link></Reveal>
           </div>
         </div>
       </div>

@@ -15,7 +15,7 @@ import PaymentHub from './PaymentHub'
 import PayLogo from './PayLogo'
 import PayProgress from './PayProgress'
 import Button from './brew/Button'
-import { CheckIcon, ChatIcon, ClipboardIcon, PlusIcon, CalendarIcon, ArrowRight, ChevronLeft } from './Icons'
+import { CheckIcon, WhatsAppIcon, ClipboardIcon, PlusIcon, CalendarIcon, ArrowRight, ChevronLeft } from './Icons'
 
 const CARD = 'rounded-3xl bg-surface p-4 ring-1 ring-slate-200 shadow-card sm:p-5'
 const EYEBROW = 'text-[11px] font-semibold uppercase tracking-wider text-slate-500'
@@ -63,6 +63,7 @@ function FullPaid({ m, name, reduce, done, onInvoice }) {
 
 /* One quick action: icon bubble + label + hint. The icon and arrow move a little on hover. */
 const TILE_TONE = {
+  wa: { box: 'bg-[#25D366]/10 ring-[#25D366]/40 hover:ring-[#25D366] dark:!bg-[#25D366]/10', icon: 'bg-[#25D366] text-white' },
   green: { box: 'bg-emerald-50 ring-emerald-200 hover:ring-emerald-400 dark:!bg-emerald-500/10 dark:!ring-emerald-400/30', icon: 'bg-emerald-500 text-white' },
   blue: { box: 'bg-surface ring-slate-200 hover:ring-brand/60', icon: 'bg-brand-soft text-brand-ink' },
   amber: { box: 'bg-surface ring-slate-200 hover:ring-amber-400', icon: 'bg-amber-100 text-amber-700 dark:!bg-amber-500/15 dark:!text-amber-300' },
@@ -248,7 +249,7 @@ export default function Billing({ b: initial, fresh = false, page = false, onNew
       </AnimatePresence>
 
       <div className="mt-5 grid gap-2.5 sm:grid-cols-3 sm:gap-3 lg:mt-6">
-        {!m.paidInFull && <ActionTile as="a" tone="green" reduce={reduce} icon={ChatIcon} label="Send payment proof" hint="Share your TrxID on WhatsApp" href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(waText(b, pay.label))}`} target="_blank" rel="noreferrer" />}
+        {!m.paidInFull && <ActionTile as="a" tone="wa" reduce={reduce} icon={WhatsAppIcon} label="Send payment proof" hint="Share your TrxID on WhatsApp" href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(waText(b, pay.label))}`} target="_blank" rel="noreferrer" />}
         <ActionTile tone="blue" reduce={reduce} icon={CalendarIcon} label="Add to calendar" hint="Save the event date" onClick={ics} />
         <ActionTile tone="amber" reduce={reduce} icon={ClipboardIcon} label="View invoice" hint="See the full invoice" onClick={() => setTab('invoice')} />
       </div>

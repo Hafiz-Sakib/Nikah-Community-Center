@@ -2,14 +2,11 @@
 @import '@fontsource/poppins/latin-500.css';
 @import '@fontsource/poppins/latin-600.css';
 @import '@fontsource/poppins/latin-700.css';
-/* Poppins has no taka sign (U+09F3), so browsers pick a different fallback font per device or per element.
-   This pins that one glyph to the same Bengali-capable system font everywhere, so every amount looks alike. */
-@font-face {
-  font-family: 'Taka';
-  src: local('Noto Sans Bengali'), local('NotoSansBengali'), local('Hind Siliguri'), local('Kalpurush'), local('Nirmala UI'), local('Vrinda'), local('Bangla Sangam MN'), local('Kohinoor Bangla');
-  unicode-range: U+09F3;
-  font-weight: 100 900;
-}
+/* Bangla text (and the taka sign ৳, which Poppins lacks) uses Hind Siliguri everywhere, so every device shows the same glyphs. */
+@import '@fontsource/hind-siliguri/bengali-400.css';
+@import '@fontsource/hind-siliguri/bengali-500.css';
+@import '@fontsource/hind-siliguri/bengali-600.css';
+@import '@fontsource/hind-siliguri/bengali-700.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -106,7 +103,7 @@
    Fixed colours on purpose (same in day/night and in the PDF). Base rules = the 794 px A4 layout;
    the container queries below re-flow it for tablets and phones. */
 .inv-wrap { container-type: inline-size; container-name: inv; width: 100%; }
-.inv { position: relative; box-sizing: border-box; width: 100%; max-width: 794px; margin-inline: auto; overflow: hidden; background: #fff; color: #0f172a; font-family: Poppins, Taka, system-ui, sans-serif; border-radius: 14px; box-shadow: 0 1px 2px rgba(15,23,42,.06), 0 18px 40px -22px rgba(15,23,42,.35); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.inv { position: relative; box-sizing: border-box; width: 100%; max-width: 794px; margin-inline: auto; overflow: hidden; background: #fff; color: #0f172a; font-family: Poppins, 'Hind Siliguri', system-ui, sans-serif; border-radius: 14px; box-shadow: 0 1px 2px rgba(15,23,42,.06), 0 18px 40px -22px rgba(15,23,42,.35); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .inv-pdf { max-width: none; border-radius: 0; box-shadow: none; min-height: 1123px; display: flex; flex-direction: column; }
 .inv-pdf .inv-head { padding-top: 26px; }
 .inv-pdf .inv-info { margin-top: 18px; }

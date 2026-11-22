@@ -91,9 +91,9 @@ const Invoice = forwardRef(function Invoice({ b, pdf = false }, ref) {
           <div>
             <div className="inv-label">Terms</div>
             <ul className="inv-terms">
-              <li>The date is held for 48 hours. A submitted payment pauses the timer while we verify it; the booking is confirmed once the advance is verified, otherwise it is cancelled automatically.</li>
-              <li>Cancel 14+ days before the event for a full advance refund. Within 14 days the advance is kept as a booking fee.</li>
-              <li>Quote &amp; package: {q.pkgName}. Prices in Bangladeshi Taka (BDT).</li>
+              <li>Date held for 48 hours; confirmed once the advance is verified.</li>
+              <li>Cancel 14+ days before the event for a full advance refund.</li>
+              <li>Package: {q.pkgName}. Prices in BDT.</li>
             </ul>
           </div>
           <div className="inv-code">

@@ -209,8 +209,7 @@ export const nav = [
   { to: '/food', label: 'Food', icon: 'utensils', hint: 'Bengali wedding menus' },
   { to: '/gallery', label: 'Gallery', icon: 'image', hint: 'Moments we have hosted' },
   { to: '/packages', label: 'Packages', icon: 'gift', hint: 'Pricing & what is included' },
-  { to: '/about', label: 'About Us', icon: 'users', hint: 'Our story, promise & how we work' },
-  { to: '/contact', label: 'Contact', icon: 'phone', hint: 'Call, WhatsApp, visit or message us' },
+  { to: '/connect', label: 'Connect', icon: 'users', hint: 'About us, call, WhatsApp & visits' },
 ]
 
 /* ---------- Food menu ----------

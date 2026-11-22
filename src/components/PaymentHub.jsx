@@ -4,7 +4,7 @@ import { PAYMENT, CONTACT } from '../data'
 import { money, toast } from '../lib/store'
 import { BrandLogo } from './gateway/marks'
 import PayLogo from './PayLogo'
-import { CheckIcon, ClipboardIcon, LockIcon, MapPinIcon, ClockIcon, ShieldIcon, PhoneIcon, ChatIcon } from './Icons'
+import { CheckIcon, ClipboardIcon, LockIcon, MapPinIcon, ClockIcon, ShieldIcon, PhoneIcon, WhatsAppIcon } from './Icons'
 
 const GLIDE = [0.22, 1, 0.36, 1]
 const tint = (c, a = '14') => `${c}${a}`
@@ -233,7 +233,7 @@ const PaymentHub = forwardRef(function PaymentHub({ bookingId, m, busy, method, 
               </ul>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 <a href={`tel:${CONTACT.phone.replace(/\s/g, '')}`} className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-surface px-6 text-sm font-semibold text-fg ring-1 ring-slate-300 transition hover:bg-slate-100 active:scale-95"><PhoneIcon width={16} height={16} />Call the office</a>
-                <a href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(`Hello! I will pay for booking ${bookingId} at the office.`)}`} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700 active:scale-95"><ChatIcon width={16} height={16} />WhatsApp us</a>
+                <a href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(`Hello! I will pay for booking ${bookingId} at the office.`)}`} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 text-sm font-semibold text-white transition hover:bg-[#1ebe5a] active:scale-95"><WhatsAppIcon width={16} height={16} />WhatsApp us</a>
               </div>
             </div>
           )}

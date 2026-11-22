@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { events, packages, foodPkgs, addons, img, capOf } from '../data'
 import { money } from '../lib/store'
-import { ICONS2, ArrowRight } from './Icons'
+import { ICONS2, ArrowRight, ChevronDown } from './Icons'
 import SectionHead from './SectionHead'
 import { PillTabs } from './brew/PillTabs'
 import { TiltCard } from './brew/TiltCard'
@@ -43,6 +43,21 @@ export function EventPlanner() {
 }
 
 /* ---------- 2. Cost estimator (Motion Brew: Amount slider + Pill tabs) ---------- */
+/* Package picker: a dropdown (native select, so it works well with a phone's own picker) instead of a sideways-scrolling tab strip. */
+function PackageSelect({ value, onChange, options }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-xs font-medium text-slate-500">Package</span>
+      <span className="relative block">
+        <select value={value} onChange={(e) => onChange(e.target.value)} aria-label="Package"
+          className="h-12 w-full cursor-pointer appearance-none rounded-2xl bg-slate-100 pl-4 pr-11 text-sm font-semibold text-fg outline-none ring-1 ring-transparent transition hover:bg-slate-200/70 focus-visible:ring-2 focus-visible:ring-brand">
+          {options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+        </select>
+        <ChevronDown width={18} height={18} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+      </span>
+    </label>
+  )
+}
 const catering = foodPkgs.reduce((a, f) => ({ ...a, [f.id]: f.price }), {})
 export function CostEstimator() {
   const [pkgId, setPkgId] = useState('wedding-plus')
@@ -61,7 +76,7 @@ export function CostEstimator() {
       <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <div className="min-w-0 rounded-3xl bg-surface p-6 shadow-card ring-1 ring-slate-200/80 sm:p-8">
           <div className="space-y-4">
-            <div className="overflow-x-auto"><PillTabs label="Package" value={pkgId} onValueChange={setPkgId} tabs={packages.map((x) => ({ id: x.id, label: x.name.replace('Wedding ', '').replace(' Event', '') }))} /></div>
+            <PackageSelect value={pkgId} onChange={setPkgId} options={packages.map((x) => ({ id: x.id, label: x.name }))} />
             <div className="flex flex-wrap gap-3">
               <PillTabs label="Shift" value={shift} onValueChange={setShift} tabs={[{ id: 'single', label: 'One shift' }, { id: 'full', label: 'Full day' }]} />
               <PillTabs label="Catering" value={food} onValueChange={setFood} tabs={[{ id: 'hall', label: 'Hall catering' }, { id: 'own', label: 'Own caterer' }]} />
@@ -71,17 +86,17 @@ export function CostEstimator() {
             <AmountSlider key={pkgId} label={`Expected guests (up to ${capOf(p).toLocaleString('en-IN')})`} min={30} max={capOf(p)} step={capOf(p) > 500 ? 50 : 10} defaultValue={Math.min(g, capOf(p))} onChange={setGuests} />
           </div>
         </div>
-        <div className="flex flex-col justify-between rounded-3xl bg-ink p-6 text-white shadow-dock sm:p-8">
+        <div className="flex flex-col justify-between rounded-3xl bg-surface p-6 text-fg shadow-card ring-1 ring-slate-200/80 dark:bg-ink dark:text-white dark:shadow-dock dark:ring-white/10 sm:p-8">
           <div>
-            <p className="text-sm text-white/60">Estimated total</p>
+            <p className="text-sm text-slate-500 dark:text-white/60">Estimated total</p>
             <p className="mt-2 text-4xl font-semibold sm:text-5xl"><Rolling text={`৳${fmt(total)}`} /></p>
             <ul className="mt-6 space-y-3 text-sm">
-              <li className="flex justify-between gap-4 border-b border-white/10 pb-3"><span className="text-white/70">{p.name}, {shift === 'full' ? 'full day' : 'one shift'}</span><span className="font-medium tabular-nums">{money(hall)}</span></li>
-              <li className="flex justify-between gap-4 border-b border-white/10 pb-3"><span className="text-white/70">{food === 'hall' ? `Hall catering, ${g} × ${money(catering[p.menu ?? pkgId] ?? 0)}` : 'Own caterer'}</span><span className="font-medium tabular-nums">{food === 'hall' ? money(meals) : '—'}</span></li>
+              <li className="flex justify-between gap-4 border-b border-slate-200 pb-3 dark:border-white/10"><span className="text-slate-600 dark:text-white/70">{p.name}, {shift === 'full' ? 'full day' : 'one shift'}</span><span className="font-medium tabular-nums">{money(hall)}</span></li>
+              <li className="flex justify-between gap-4 border-b border-slate-200 pb-3 dark:border-white/10"><span className="text-slate-600 dark:text-white/70">{food === 'hall' ? `Hall catering, ${g} × ${money(catering[p.menu ?? pkgId] ?? 0)}` : 'Own caterer'}</span><span className="font-medium tabular-nums">{food === 'hall' ? money(meals) : '—'}</span></li>
             </ul>
-            <p className="mt-4 text-xs text-white/50">Add-ons and the 15% Friday/Saturday surcharge are not included.</p>
+            <p className="mt-4 text-xs text-slate-500 dark:text-white/50">Add-ons and the 15% Friday/Saturday surcharge are not included.</p>
           </div>
-          <Link to={`/booking?package=${pkgId}&guests=${g}`} className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-ink transition hover:bg-slate-100 active:scale-95">Book this plan <ArrowRight /></Link>
+          <Link to={`/booking?package=${pkgId}&guests=${g}`} className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark active:scale-95 dark:bg-white dark:text-ink dark:hover:bg-slate-100">Book this plan <ArrowRight /></Link>
         </div>
       </div>
     </div></section>

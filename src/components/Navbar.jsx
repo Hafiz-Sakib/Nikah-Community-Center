@@ -17,8 +17,8 @@ const isOn = (to, pathname, isActive) => isActive
 /* Desktop: 4 direct links + one "Venue" dropdown keeps the bar short and calm. Mobile menu lists everything. */
 const DIRECT = ['/', '/events', '/food', '/packages']
 const direct = nav.filter((n) => DIRECT.includes(n.to))
-const venue = nav.filter((n) => !DIRECT.includes(n.to) && n.to !== '/contact')
-const contact = nav.find((n) => n.to === '/contact')
+const venue = nav.filter((n) => !DIRECT.includes(n.to) && n.to !== '/connect')
+const contact = nav.find((n) => n.to === '/connect')
 const linkCls = (on) => `relative flex items-center gap-1 rounded-full whitespace-nowrap px-3.5 py-2 text-sm font-medium transition-colors ${on ? 'text-brand-ink' : 'text-slate-600 hover:text-fg'}`
 const pill = <motion.span layoutId="desk-pill" className="absolute inset-0 -z-10 rounded-full bg-brand-soft" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />
 

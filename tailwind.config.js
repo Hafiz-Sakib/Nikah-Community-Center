@@ -7,7 +7,7 @@ export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
-      fontFamily: { sans: ['Poppins', 'Taka', 'system-ui', 'sans-serif'] },
+      fontFamily: { sans: ['Poppins', 'Hind Siliguri', 'system-ui', 'sans-serif'] },
       colors: {
         // every neutral flips with the theme (see index.css), so existing classes work in day and night
         slate,

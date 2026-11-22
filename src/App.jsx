@@ -1,14 +1,13 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Toaster from './components/Toaster'
 import MyBookings from './components/MyBookings'
 import Admin from './components/Admin'
 import Home from './pages/Home'
-import About from './pages/About'
-import ContactPage from './pages/ContactPage'
+import Connect from './pages/Connect'
 import FacilitiesPage from './pages/FacilitiesPage'
 import EventsPage from './pages/EventsPage'
 import GalleryPage from './pages/GalleryPage'
@@ -46,7 +45,8 @@ export default function App() {
           <Page>
             <Routes location={location}>
               <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
+              <Route path="/connect" element={<Connect />} />
+              <Route path="/about" element={<Navigate to="/connect" replace />} />
               <Route path="/facilities" element={<FacilitiesPage />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/gallery" element={<GalleryPage />} />
@@ -58,7 +58,7 @@ export default function App() {
               <Route path="/signup" element={<AuthPage />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/contact" element={<Navigate to="/connect" replace />} />
               <Route path="/food" element={<FoodPage />} />
               <Route path="/admin" element={<RequireAuth admin><Admin /></RequireAuth>} />
               <Route path="*" element={<NotFound />} />

@@ -6,7 +6,8 @@ import { CateringPrices, BookingTerms } from '../components/PageSections'
 import CtaBand from '../components/CtaBand'
 import PhotoStrip from '../components/PhotoStrip'
 import { motion } from 'motion/react'
-import { addons } from '../data'
+import { addons, process } from '../data'
+import { ICONS2 } from '../components/Icons'
 import { money } from '../lib/store'
 
 export default function PackagesPage() {
@@ -28,6 +29,16 @@ export default function PackagesPage() {
             </motion.li>
           ))}
         </motion.ul>
+      </div></section>
+      <section className="bg-slate-50 py-16 sm:py-24"><div className="container-x">
+        <SectionHead eyebrow="How it works" title="From enquiry to celebration" text="Five simple steps — most bookings take under two minutes online." />
+        <ol className="relative mx-auto mt-14 max-w-2xl space-y-8 before:absolute before:left-6 before:top-2 before:h-[calc(100%-1rem)] before:w-px before:bg-slate-200">
+          {process.map((s, i) => { const Ico = ICONS2[s.icon]; return (
+            <motion.li key={s.title} initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: '-40px' }} transition={{ delay: 0.05 }} className="relative flex gap-5">
+              <span className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-glow"><Ico /></span>
+              <div className="pt-1"><p className="text-xs font-semibold uppercase tracking-wider text-brand">Step {i + 1}</p><h3 className="font-semibold text-fg">{s.title}</h3><p className="mt-1 text-sm text-slate-500">{s.text}</p></div>
+            </motion.li>) })}
+        </ol>
       </div></section>
       <PhotoStrip eyebrow="What it looks like" title="Décor you can expect" text="Floral stages, warm lighting and a setting worth the photographs."
         items={[{ id: 'p033', cap: 'Floral stage' }, { id: 'p039', cap: 'Stage and seating' }, { id: 'p053', cap: 'Bridal backdrop' }]} />

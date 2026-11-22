@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { CONTACT } from '../data'
 import { SHIFTS } from '../lib/store'
-import { CalendarIcon, StackIcon, UtensilsIcon, WalletIcon, ClockIcon, CheckIcon, ChatIcon, PhoneIcon, ArrowRight } from './Icons'
+import { CalendarIcon, StackIcon, UtensilsIcon, WalletIcon, ClockIcon, CheckIcon, WhatsAppIcon, PhoneIcon, ArrowRight } from './Icons'
 import Reveal from './Reveal'
 import SectionHead from './SectionHead'
 
@@ -69,7 +69,7 @@ export function VisitInfo() {
             </ul>
             <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
               <a href={callHref} className="btn-primary"><PhoneIcon width={16} height={16} />Call to book a visit</a>
-              <a href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent('Hello! I would like to visit the hall. Is there a time that works this week?')}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-emerald-50 px-6 py-3 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-100 active:scale-95 dark:!bg-emerald-500/10 dark:!text-emerald-300 dark:!ring-emerald-400/30"><ChatIcon width={16} height={16} />Ask on WhatsApp</a>
+              <a href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent('Hello! I would like to visit the hall. Is there a time that works this week?')}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[#25D366] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1ebe5a] active:scale-95"><WhatsAppIcon width={16} height={16} />Ask on WhatsApp</a>
             </div>
           </div>
         </Reveal>
